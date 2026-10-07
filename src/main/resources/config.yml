@@ -48,6 +48,12 @@ selector:
       icon: GRASS_BLOCK
       slot: 22
 
+# Portails du Nether du lobby : ils ne mènent nulle part, y entrer ouvre le sélecteur de serveurs.
+# Les blocs de portail tiennent sans cadre d'obsidienne (à poser avec WorldEdit : //set nether_portal).
+# false : portails normaux de Minecraft.
+portals:
+  open-selector: true
+
 # Choix du lobby (/lobbies) : les lobbys où EterHub est installé s'y ajoutent seuls.
 lobbies:
   icon: BEACON
