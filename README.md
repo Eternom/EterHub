@@ -16,8 +16,7 @@ Le côté proxy (arrivée sur le lobby le moins rempli, `/lobby`, renvoi au lobb
 - **`spawn`** : le spawn de ce lobby (`config.yml > spawn`, réglé par `/eterhub setspawn`), arrivée au spawn
   (`spawn-on-join`), `/spawn`. `/lobby` et `/hub` sont pris par le proxy, d'où `/eterhub` pour l'administration.
 - **`protect`** : pas de dégâts ni de faim ; casser, poser, seaux, jeter, ramasser, coffres, cadres, supports d'armure
-  et terre labourée réservés à `eterhub.build` ; les joueurs ne frappent aucune entité ; aucun objet ne s'utilise
-  (manger, boire, lancer, poser une armure : avec EterSync, l'inventaire peut être celui de la survie). Les PNJ (Mannequins
+  et terre labourée réservés à `eterhub.build` ; les joueurs ne frappent aucune entité. Les PNJ (Mannequins
   d'EterMarket) restent cliquables. Le vide (`world.void-y`) ramène au spawn. Au démarrage, règles de jeu de tous les
   mondes : heure figée (`world.time`, `ADVANCE_TIME`), beau temps (`ADVANCE_WEATHER`), pas d'apparitions naturelles
   (`SPAWN_MOBS`).
