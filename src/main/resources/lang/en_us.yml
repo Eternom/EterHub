@@ -1,0 +1,39 @@
+# EterHub messages, MiniMessage format: https://docs.advntr.dev/minimessage/format
+# Palette tags (EterLib/config.yml > language.colors): <primary> <accent> <info> <error> <success>
+#   <info> = regular light gray text, <accent> = important words in orange.
+# A missing key falls back to the plugin's built-in text: you only need to keep the lines you change.
+# The message prefix ("Core") is shared by all plugins: EterLib/config.yml > language.prefix.
+# Shared texts ("Cancel", "Unknown player", "players only"...): in EterLib/lang/, for every plugin.
+
+spawn:
+  set: "<info>Lobby spawn set here."
+
+eterhub:
+  usage: "<error>Usage: <accent>/eterhub setspawn"
+
+visibility:
+  hidden: "<info>Other players are now <accent>hidden</accent>."
+  shown: "<info>Other players are <accent>visible</accent> again."
+
+network:
+  here: "<info>You are already on <accent><server></accent>."
+  offline: "<error><accent><server></accent> is offline right now."
+  connecting: "<info>Connecting to <accent><server></accent>..."
+  state:
+    players: "<dark_gray>▸ <info>Players: <accent><count>"
+    here: "<success>● <info>You are here"
+    online: "<success>● <info>Online <dark_gray>· <accent>click</accent> <info>to go"
+    offline: "<error>● <info>Offline"
+
+selector:
+  title: "<primary>Servers"
+  name: "<accent><server>"
+  # Description of a server (lines under its name), by name in velocity.toml:
+  description:
+    survival:
+      - "<info>The main world: jobs,"
+      - "<info>homes, economy and auction house."
+
+lobbies:
+  title: "<primary>Lobbies"
+  name: "<accent><server>"

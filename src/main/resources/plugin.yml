@@ -1,0 +1,61 @@
+name: EterHub
+version: '${version}'
+
+main: fr.eternom.eterHub.Main
+api-version: '26.2'
+load: POSTWORLD
+authors: [ NadTum ]
+description: Contenu des lobbys (protection, spawn, sélecteur de serveurs, choix du lobby, double saut).
+depend: [EterLib]
+
+# /lobby et /hub sont des commandes du proxy (EterVelocityLobby) : l'administration d'EterHub est donc /eterhub.
+commands:
+  spawn:
+    description: Retour au spawn du lobby.
+    usage: /spawn
+    permission: eterhub.spawn
+  servers:
+    description: Sélecteur de serveurs.
+    usage: /servers
+    aliases: [serveurs]
+    permission: eterhub.servers
+  lobbies:
+    description: Choisir un lobby.
+    usage: /lobbies
+    aliases: [lobbys]
+    permission: eterhub.lobbies
+  visibility:
+    description: Masquer ou afficher les autres joueurs.
+    usage: /visibility
+    aliases: [visibilite, hideplayers]
+    permission: eterhub.visibility
+  eterhub:
+    description: Administration du lobby (staff).
+    usage: /eterhub setspawn
+    permission: eterhub.admin
+
+permissions:
+  eterhub.spawn:
+    default: true
+  eterhub.servers:
+    default: true
+  eterhub.lobbies:
+    default: true
+  eterhub.visibility:
+    default: true
+  eterhub.build:
+    description: Casser, poser, jeter, ramasser, ouvrir les coffres au lobby.
+    default: op
+  eterhub.fly:
+    description: Pas de double saut : le vol reste normal (staff avec /fly).
+    default: op
+  eterhub.admin:
+    description: Toutes les permissions d'EterHub (dont /eterhub setspawn).
+    default: op
+    children:
+      eterhub.spawn: true
+      eterhub.servers: true
+      eterhub.lobbies: true
+      eterhub.visibility: true
+      eterhub.build: true
+      eterhub.fly: true

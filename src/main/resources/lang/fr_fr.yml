@@ -1,0 +1,39 @@
+# Messages d'EterHub, format MiniMessage : https://docs.advntr.dev/minimessage/format
+# Balises de la palette (EterLib/config.yml > language.colors) : <primary> <accent> <info> <error> <success>
+#   <info> = texte courant gris clair, <accent> = mots importants en orange.
+# Une clé absente reprend le texte intégré au plugin : tu peux ne garder que les lignes que tu modifies.
+# Le préfixe des messages (« Core ») est commun à tous les plugins : EterLib/config.yml > language.prefix.
+# Textes communs (« Annuler », « Joueur inconnu », « Commande réservée aux joueurs »...) : dans EterLib/lang/, pour tous les plugins.
+
+spawn:
+  set: "<info>Spawn du lobby défini ici."
+
+eterhub:
+  usage: "<error>Utilisation : <accent>/eterhub setspawn"
+
+visibility:
+  hidden: "<info>Les autres joueurs sont <accent>masqués</accent>."
+  shown: "<info>Les autres joueurs sont de nouveau <accent>visibles</accent>."
+
+network:
+  here: "<info>Tu es déjà sur <accent><server></accent>."
+  offline: "<error><accent><server></accent> est hors ligne pour le moment."
+  connecting: "<info>Connexion à <accent><server></accent>..."
+  state:
+    players: "<dark_gray>▸ <info>Joueurs : <accent><count>"
+    here: "<success>● <info>Tu es ici"
+    online: "<success>● <info>En ligne <dark_gray>· <accent>clic</accent> <info>pour y aller"
+    offline: "<error>● <info>Hors ligne"
+
+selector:
+  title: "<primary>Serveurs"
+  name: "<accent><server>"
+  # Description d'un serveur (lignes sous son nom), par nom dans velocity.toml :
+  description:
+    survival:
+      - "<info>Le monde principal : métiers,"
+      - "<info>homes, économie et hôtel des ventes."
+
+lobbies:
+  title: "<primary>Lobbys"
+  name: "<accent><server>"

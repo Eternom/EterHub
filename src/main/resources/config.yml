@@ -1,0 +1,61 @@
+# ============================================================
+#  EterHub : le contenu d'un lobby
+# ============================================================
+#
+#  À installer seulement sur les lobbys (les serveurs de la liste « try » de
+#  velocity.toml, gérés côté proxy par EterVelocityLobby).
+#  EterHub ne touche JAMAIS à l'inventaire ni au mode de jeu : EterSync peut
+#  tourner sur un lobby. Les menus s'ouvrent par commande (/servers, /lobbies),
+#  à relier à des PNJ, panneaux ou autres menus (back-command).
+#  Les textes sont dans lang/. Toute modification nécessite un redémarrage.
+
+# Spawn de CE lobby : réglé en jeu avec /eterhub setspawn (vide = spawn du monde principal).
+spawn:
+  world: ''
+
+# Arriver au spawn en se connectant à ce lobby.
+spawn-on-join: true
+
+world:
+  # Heure figée (0 = matin, 6000 = midi, 18000 = minuit) ; -1 = cycle jour/nuit normal.
+  time: 6000
+  # Toujours beau temps.
+  clear-weather: true
+  # Monstres et animaux qui apparaissent seuls (les PNJ d'EterMarket ne sont pas concernés).
+  natural-mobs: false
+  # Sous cette hauteur, retour au spawn.
+  void-y: -64
+
+# Double saut : double pression sur espace en l'air. Pas pour ceux qui ont eterhub.fly (ils volent).
+double-jump:
+  enabled: true
+  power: 1.2
+  height: 0.9
+
+# Plaques de lancement : marcher dessus projette vers l'avant.
+launch-pads:
+  enabled: true
+  plate: LIGHT_WEIGHTED_PRESSURE_PLATE
+  power: 2.5
+  height: 1.0
+
+# Sélecteur de serveurs (/servers) : nom du serveur dans velocity.toml -> icône et case du menu
+# (5 lignes : cases 10 à 16, 19 à 25, 28 à 34). Le nom affiché vient d'EterLib (server-display-name du
+# serveur) ; une description optionnelle dans lang/ : selector.description.<serveur>.
+selector:
+  servers:
+    survival:
+      icon: GRASS_BLOCK
+      slot: 22
+
+# Choix du lobby (/lobbies) : les lobbys où EterHub est installé s'y ajoutent seuls.
+lobbies:
+  icon: BEACON
+
+# Menus : bouton en bas du menu. Avec une commande (sans le /), il la lance pour le joueur et relie
+# les menus entre eux ; vide, il ferme le menu.
+menus:
+  selector:
+    back-command: ""
+  lobbies:
+    back-command: ""
