@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.stream.IntStream;
 
 /**
- * Choix du lobby, 5 lignes : les lobbys (ceux où EterHub est installé) sur la ligne du milieu, puis au-dessus et
+ * Choix du lobby, 5 lignes : les lobbys EN LIGNE (ceux où EterHub est installé) sur la ligne du milieu, puis au-dessus et
  * en dessous (21 au plus), avec leurs joueurs et leur état ; celui où l'on est brille. Clic = y aller.
  */
 class LobbyMenu implements Menu {
@@ -59,7 +59,8 @@ class LobbyMenu implements Menu {
 
     private void render() {
         Frame.draw(inventory, Material.ORANGE_STAINED_GLASS_PANE);
-        List<String> lobbies = gui.lobbies();
+        // Seulement ceux qui tournent : un lobby arrêté ou un ancien nom (server-name changé) n'encombre pas le menu
+        List<String> lobbies = gui.lobbies().stream().filter(gui::isOnline).toList();
         for (int i = 0; i < lobbies.size() && i < SLOTS.size(); i++) {
             String lobby = lobbies.get(i);
             lobbyAtSlot.put(SLOTS.get(i), lobby);
