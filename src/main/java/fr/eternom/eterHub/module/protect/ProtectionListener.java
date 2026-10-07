@@ -11,6 +11,7 @@ import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.Hanging;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -27,6 +28,7 @@ import org.bukkit.event.player.PlayerBucketFillEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerItemConsumeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -39,6 +41,7 @@ import java.util.function.Consumer;
  * monstres naturels réglés par les règles de jeu au démarrage.
  * EterSync peut tourner sur un lobby : l'inventaire et le mode de jeu ne sont JAMAIS modifiés ici.
  * Les PNJ (Mannequins d'EterMarket) restent cliquables : seuls cadres et supports d'armure sont bloqués.
+ * Les objets ne s'utilisent pas (manger, lancer...) : avec EterSync, l'inventaire peut être celui de la survie.
  */
 public class ProtectionListener implements Listener {
 
@@ -157,6 +160,22 @@ public class ProtectionListener implements Listener {
         if (trample || container) {
             deny(event.getPlayer(), event::setCancelled);
         }
+    }
+
+    /**
+     * Objets inutilisables (manger, boire, lancer une perle, une fusée, une potion, poser une armure...) : avec EterSync
+     * dans le groupe de la survie, ce qui serait dépensé ici disparaîtrait aussi en survie.
+     */
+    @EventHandler(priority = EventPriority.LOW)
+    public void onUseItem(PlayerInteractEvent event) {
+        if (event.getItem() != null && event.getAction() != Action.PHYSICAL && !event.getPlayer().hasPermission(BUILD)) {
+            event.setUseItemInHand(Event.Result.DENY);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onConsume(PlayerItemConsumeEvent event) {
+        deny(event.getPlayer(), event::setCancelled);
     }
 
     @EventHandler(ignoreCancelled = true)

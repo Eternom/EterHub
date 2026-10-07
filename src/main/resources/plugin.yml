@@ -47,7 +47,7 @@ permissions:
     description: Casser, poser, jeter, ramasser, ouvrir les coffres au lobby.
     default: op
   eterhub.fly:
-    description: Pas de double saut : le vol reste normal (staff avec /fly).
+    description: 'Pas de double saut : le vol reste normal (staff avec /fly).'
     default: op
   eterhub.admin:
     description: Toutes les permissions d'EterHub (dont /eterhub setspawn).
