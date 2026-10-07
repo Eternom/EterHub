@@ -13,20 +13,25 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Sélecteur de serveurs (/servers) et choix du lobby (/lobbies). Les serveurs du sélecteur sont dans config.yml
- * (selector.servers : icône et case) ; les lobbys sont ceux où EterHub est installé (table eterhub_lobbies, chacun
- * s'y inscrit au démarrage). Noms affichés, état en ligne et joueurs par serveur viennent d'EterLib, relus toutes
+ * (selector.servers : icône et case) ; les lobbys sont ceux où EterHub TOURNE (table eterhub_lobbies, chacun
+ * y écrit son signe de vie toutes les 5 s). Noms affichés, état en ligne et joueurs par serveur viennent d'EterLib, relus toutes
  * les 5 s en tâche de fond : un menu s'ouvre sans attendre la base. Un clic envoie sur le serveur (EterLib connect).
  */
 public class NetworkGui {
 
     private static final String LOBBIES = "lobbies";
     private static final long REFRESH_TICKS = 5 * 20;
+    /** Un lobby vu (signe de vie d'EterHub) depuis moins longtemps est listé. */
+    private static final Duration LOBBY_ALIVE = Duration.ofSeconds(30);
+    /** Une ligne muette depuis plus longtemps est effacée de la table. */
+    private static final Duration LOBBY_FORGOTTEN = Duration.ofMinutes(10);
 
     /** Un serveur du sélecteur : son nom dans velocity.toml, son icône et sa case dans le menu. */
     record Entry(String server, Material icon, int slot) {
@@ -53,15 +58,15 @@ public class NetworkGui {
         this.lobbyIcon = icon == null ? Material.BEACON : icon;
         this.selectorBack = lib.backButton(plugin.getConfig().getString("menus.selector.back-command", ""));
         this.lobbiesBack = lib.backButton(plugin.getConfig().getString("menus.lobbies.back-command", ""));
-        database.createTable(LOBBIES, Column.of("name", Column.Type.STRING).length(64).primaryKey());
+        database.createTable(LOBBIES,
+                Column.of("name", Column.Type.STRING).length(64).primaryKey(),
+                Column.of("last_seen", Column.Type.LONG));
+        database.addColumn(LOBBIES, Column.of("last_seen", Column.Type.LONG)); // tables d'avant 1.1.0
     }
 
-    /** Bloquant au premier appel (inscription de ce lobby), puis relecture toutes les 5 s en tâche de fond. */
+    /** Toutes les 5 s en tâche de fond : signe de vie de ce lobby, puis relecture des lobbys et des joueurs. */
     public void start() {
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
-            database.set(LOBBIES, Map.of("name", lib.getServerName()), "name");
-            Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::refresh, 0, REFRESH_TICKS);
-        });
+        Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::refresh, 0, REFRESH_TICKS);
     }
 
     public void openServers(Player player) {
@@ -134,10 +139,20 @@ public class NetworkGui {
         return messages;
     }
 
+    /**
+     * Un lobby = un serveur où EterHub tourne : chacun écrit lui-même son signe de vie, et seuls ceux vus il y a moins
+     * de 30 s sont listés. Un serveur sans EterHub (une survie inscrite par erreur, un ancien nom) disparaît donc tout
+     * seul ; les lignes muettes depuis 10 min sont effacées (un lobby qui redémarre se réinscrit aussitôt).
+     */
     private void refresh() {
         try {
+            long now = System.currentTimeMillis();
+            database.set(LOBBIES, Map.of("name", lib.getServerName(), "last_seen", now), "name");
+            database.execute("DELETE FROM " + database.table(LOBBIES) + " WHERE last_seen IS NULL OR last_seen < ?",
+                    now - LOBBY_FORGOTTEN.toMillis());
             counts = lib.getPlayers().countByServer();
-            lobbies = database.get(LOBBIES, Map.of()).stream().map(row -> row.getString("name")).sorted().toList();
+            lobbies = database.query("SELECT name FROM " + database.table(LOBBIES) + " WHERE last_seen >= ?",
+                    now - LOBBY_ALIVE.toMillis()).stream().map(row -> row.getString("name")).sorted().toList();
         } catch (RuntimeException e) {
             plugin.getLogger().warning("Serveurs du réseau non relus : " + e.getMessage());
         }

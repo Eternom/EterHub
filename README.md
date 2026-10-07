@@ -26,7 +26,8 @@ Le côté proxy (arrivée sur le lobby le moins rempli, `/lobby`, renvoi au lobb
   (`launch-pads.plate`, une fois par seconde).
 - **`network`** : `/servers` (sélecteur : `selector.servers` = nom dans `velocity.toml` → icône et case ; nom affiché
   d'EterLib, description `selector.description.<serveur>` dans lang/, joueurs, en ligne ou non) et `/lobbies` (les
-  lobbys où EterHub est installé, table `eterhub_lobbies`, chacun s'y inscrit au démarrage ; seuls ceux en ligne
+  lobbys où EterHub TOURNE, table `eterhub_lobbies` : chacun y écrit son signe de vie toutes les 5 s, seuls ceux vus
+  depuis moins de 30 s sont listés, les lignes muettes depuis 10 min sont effacées ; seuls ceux en ligne
   sont affichés : un ancien nom ou un lobby arrêté ne s'y voit pas). Joueurs et lobbys relus
   toutes les 5 s en tâche de fond. Clic : « tu es ici », « hors ligne », ou envoi sur le serveur.
 - **Portails** (`network/PortalListener`, `portals.open-selector`) : un portail du Nether au lobby ne mène nulle part ;
