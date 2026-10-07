@@ -28,7 +28,8 @@ Le côté proxy (arrivée sur le lobby le moins rempli, `/lobby`, renvoi au lobb
   lobbys où EterHub est installé, table `eterhub_lobbies`, chacun s'y inscrit au démarrage). Joueurs et lobbys relus
   toutes les 5 s en tâche de fond. Clic : « tu es ici », « hors ligne », ou envoi sur le serveur.
 - **Portails** (`network/PortalListener`, `portals.open-selector`) : un portail du Nether au lobby ne mène nulle part ;
-  y entrer ouvre `/servers` (une fois par passage). Les blocs de portail tiennent sans cadre d'obsidienne (physique
+  y entrer replace le joueur juste devant (le jeu ferme tout menu tant qu'on est DANS un portail) puis ouvre
+  `/servers`. Les blocs de portail tiennent sans cadre d'obsidienne (physique
   annulée pour eux) : on les pose avec WorldEdit (`//set nether_portal`) dans n'importe quel décor.
 - **`visibility`** : `/visibility` masque ou réaffiche les autres joueurs pour soi ; choix en base
   (`eterhub_preferences`), le même sur tous les lobbys ; les nouveaux venus restent masqués pour qui les masque.

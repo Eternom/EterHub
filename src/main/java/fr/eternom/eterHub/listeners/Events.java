@@ -13,7 +13,7 @@ public class Events {
         register(main, new MovementListener(main));
         register(main, main.getVisibility());
         if (main.getConfig().getBoolean("portals.open-selector", true)) {
-            register(main, new PortalListener(main.getNetwork()));
+            register(main, new PortalListener(main, main.getNetwork()));
         }
     }
 
