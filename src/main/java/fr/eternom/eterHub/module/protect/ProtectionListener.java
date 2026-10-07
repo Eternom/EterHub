@@ -63,8 +63,12 @@ public class ProtectionListener implements Listener {
         boolean clearWeather = plugin.getConfig().getBoolean("world.clear-weather", true);
         boolean naturalMobs = plugin.getConfig().getBoolean("world.natural-mobs", false);
         for (World world : Bukkit.getWorlds()) {
-            // Seul le monde normal a une horloge : dans le Nether et l'End, setTime est refusé (26.x)
-            if (time >= 0 && world.getEnvironment() == World.Environment.NORMAL) {
+            world.setGameRule(GameRules.SPAWN_MOBS, naturalMobs);
+            // Heure et météo : seulement le monde normal (le Nether et l'End n'ont pas d'horloge en 26.x, setTime y est refusé)
+            if (world.getEnvironment() != World.Environment.NORMAL) {
+                continue;
+            }
+            if (time >= 0) {
                 world.setGameRule(GameRules.ADVANCE_TIME, false);
                 world.setTime(time);
             }
@@ -73,7 +77,6 @@ public class ProtectionListener implements Listener {
                 world.setStorm(false);
                 world.setThundering(false);
             }
-            world.setGameRule(GameRules.SPAWN_MOBS, naturalMobs);
         }
     }
 
