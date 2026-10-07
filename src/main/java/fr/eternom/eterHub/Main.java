@@ -20,7 +20,7 @@ public final class Main extends JavaPlugin {
     /** Version minimale d'EterLib : état des serveurs, joueurs par serveur et connect depuis 1.7.0. */
     private static final String REQUIRED_ETERLIB = "1.7.0";
 
-    /** Préfixe des tables d'EterHub dans la base commune : eterhub_lobbies, eterhub_preferences. */
+    /** Préfixe des tables d'EterHub dans la base commune : eterhub_lobbies, eterhub_preferences, eterhub_spawn. */
     private static final String TABLE_PREFIX = "eterhub_";
 
     private Messages messages;
@@ -45,7 +45,8 @@ public final class Main extends JavaPlugin {
         messages = lib.messages(this, "en_us", "fr_fr");
         Database database = lib.database(TABLE_PREFIX);
 
-        spawn = new Spawn(this);
+        // Messages entre lobbys : un spawn changé sur l'un s'applique aux autres
+        spawn = new Spawn(this, database, lib.network(this, "eterhub", messages));
         network = new NetworkGui(this, lib, database, messages);
         visibility = new Visibility(this, database, messages);
 

@@ -6,7 +6,7 @@
 # Textes communs (« Annuler », « Joueur inconnu », « Commande réservée aux joueurs »...) : dans EterLib/lang/, pour tous les plugins.
 
 spawn:
-  set: "<info>Spawn du lobby défini ici."
+  set: "<info>Spawn défini ici, pour <accent>tous les lobbys</accent>."
 
 eterhub:
   usage: "<error>Utilisation : <accent>/eterhub setspawn"

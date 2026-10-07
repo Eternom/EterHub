@@ -6,7 +6,7 @@
 # Shared texts ("Cancel", "Unknown player", "players only"...): in EterLib/lang/, for every plugin.
 
 spawn:
-  set: "<info>Lobby spawn set here."
+  set: "<info>Spawn set here, for <accent>every lobby</accent>."
 
 eterhub:
   usage: "<error>Usage: <accent>/eterhub setspawn"

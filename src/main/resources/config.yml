@@ -9,11 +9,8 @@
 #  à relier à des PNJ, panneaux ou autres menus (back-command).
 #  Les textes sont dans lang/. Toute modification nécessite un redémarrage.
 
-# Spawn de CE lobby : réglé en jeu avec /eterhub setspawn (vide = spawn du monde principal).
-spawn:
-  world: ''
-
-# Arriver au spawn en se connectant à ce lobby.
+# Arriver au spawn en se connectant. Le spawn est COMMUN à tous les lobbys et gardé en base :
+# il se règle en jeu avec /eterhub setspawn (sans spawn réglé : celui du monde principal).
 spawn-on-join: true
 
 world:

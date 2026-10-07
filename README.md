@@ -13,7 +13,8 @@ Le côté proxy (arrivée sur le lobby le moins rempli, `/lobby`, renvoi au lobb
 
 ## Modules
 
-- **`spawn`** : le spawn de ce lobby (`config.yml > spawn`, réglé par `/eterhub setspawn`), arrivée au spawn
+- **`spawn`** : le spawn COMMUN à tous les lobbys, en base (`eterhub_spawn`, réglé par `/eterhub setspawn`, appliqué tout
+  de suite aux autres lobbys par le bus réseau d'EterLib, canal `eterhub`) : un lobby neuf n'a rien à régler. Arrivée au spawn
   (`spawn-on-join`), `/spawn`. `/lobby` et `/hub` sont pris par le proxy, d'où `/eterhub` pour l'administration.
 - **`protect`** : pas de dégâts ni de faim ; casser, poser, seaux, jeter, ramasser, coffres, cadres, supports d'armure
   et terre labourée réservés à `eterhub.build` ; les joueurs ne frappent aucune entité. Les PNJ (Mannequins
