@@ -30,7 +30,7 @@ selector:
   name: "<accent><server>"
   # Description d'un serveur (lignes sous son nom), par nom dans velocity.toml :
   description:
-    survival:
+    eter-survival-europe-001:
       - "<info>Le monde principal : métiers,"
       - "<info>homes, économie et hôtel des ventes."
 

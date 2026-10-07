@@ -41,7 +41,7 @@ launch-pads:
 # serveur) ; une description optionnelle dans lang/ : selector.description.<serveur>.
 selector:
   servers:
-    survival:
+    eter-survival-europe-001:
       icon: GRASS_BLOCK
       slot: 22
 
