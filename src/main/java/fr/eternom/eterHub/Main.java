@@ -10,6 +10,9 @@ import fr.eternom.eterLib.helper.message.Messages;
 import fr.eternom.eterLib.helper.sql.Database;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.List;
+import java.util.Locale;
+
 /**
  * Le contenu des lobbys (à installer seulement sur eux) : endroit protégé, spawn, sélecteur de serveurs, choix du
  * lobby, masquer les joueurs, double saut et plaques de lancement. Le côté proxy (arrivée, /lobby, renvoi au lobby)
@@ -42,6 +45,16 @@ public final class Main extends JavaPlugin {
             return;
         }
         EterLib lib = EterLib.get();
+        // Plugin de lobby : il fige l'heure, la météo et les mobs de tous les mondes et donne le double saut. Installé par
+        // erreur sur une survie, il l'abîmerait (règles gardées dans le monde) : il ne démarre que sur un lobby.
+        String server = lib.getServerName().toLowerCase(Locale.ROOT);
+        List<String> lobbies = getConfig().getStringList("lobby-servers").stream().map(name -> name.toLowerCase(Locale.ROOT)).toList();
+        if (lobbies.stream().noneMatch(server::startsWith)) {
+            getLogger().severe("Ce serveur (" + lib.getServerName() + ") n'est pas un lobby (lobby-servers : " + lobbies
+                    + ") : EterHub ne touche à rien et s'arrête. Retire-le de ce serveur.");
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
         messages = lib.messages(this, "en_us", "fr_fr");
         Database database = lib.database(TABLE_PREFIX);
 

@@ -10,6 +10,10 @@ Le côté proxy (arrivée sur le lobby le moins rempli, `/lobby`, renvoi au lobb
   (`getServers().isOnline`), joueurs par serveur (`countByServer`), envoi vers un serveur (`getTeleports().connect`).
 - **Ne touche jamais à l'inventaire ni au mode de jeu** : EterSync peut tourner sur un lobby (pas d'objets dans la
   barre ; les menus s'ouvrent par commande, à relier à des PNJ, panneaux ou d'autres menus via `back-command`).
+- **Ne démarre que sur un lobby** : nom du serveur (`server-name` d'EterLib) commençant par un préfixe de
+  `lobby-servers` (`lobby` par défaut, comme les lobbys de l'orchestrateur). Sinon il s'arrête sans rien toucher : ses
+  règles de monde (`spawn_mobs`, `advance_time`, `advance_weather`) restent dans le monde même après l'avoir retiré, et
+  son double saut laisse le droit de voler aux joueurs (corrigé à la connexion par EterEssential 1.0.8).
 
 ## Modules
 
