@@ -6,7 +6,7 @@ Le côté proxy (arrivée sur le lobby le moins rempli, `/lobby`, renvoi au lobb
 
 ## Prérequis
 
-- **EterLib 1.7.0+** (`depend`) : base, langues et textes communs, menus (cadre, bouton Retour), état des serveurs
+- **EterLib 1.10.0+** (`depend`) : base, langues et textes communs, menus (cadre, bouton Retour), état des serveurs
   (`getServers().isOnline`), joueurs par serveur (`countByServer`), envoi vers un serveur (`getTeleports().connect`).
 - **Ne touche jamais à l'inventaire ni au mode de jeu** : EterSync peut tourner sur un lobby (pas d'objets dans la
   barre ; les menus s'ouvrent par commande, à relier à des PNJ, panneaux ou d'autres menus via `back-command`).
@@ -49,3 +49,13 @@ Le côté proxy (arrivée sur le lobby le moins rempli, `/lobby`, renvoi au lobb
 | `eterhub.build` | op | Construire et interagir librement au lobby |
 | `eterhub.fly` | op | Pas de double saut (vol normal) |
 | `eterhub.admin` | op | Tout, dont `/eterhub setspawn` |
+
+## API (pour les autres plugins)
+
+`fr.eternom.eterHub.api.HubApi` (`HubApi.get()`, présente seulement sur un lobby) : personne d'autre ne lit les tables
+`eterhub_*`.
+
+- `spawn()`, `teleportToSpawn(joueur)` ; `openServers(joueur)`, `openLobbies(joueur)` (pour les relier à un PNJ...).
+
+`eterhub_lobbies` : chaque lobby y écrit son signe de vie et EterHub efface lui-même les lignes trop vieilles
+(l'orchestrateur n'y touche plus).

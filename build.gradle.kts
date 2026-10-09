@@ -1,5 +1,6 @@
 plugins {
     id("java-library")
+    id("maven-publish")
 }
 
 repositories {
@@ -16,7 +17,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:26.2.build.129-stable")
 
     // Socle commun : base, langues, menus, serveurs du réseau (plugin EterLib installé sur le serveur)
-    compileOnly("com.github.Eternom:EterLib:1.7.0")
+    compileOnly("com.github.Eternom:EterLib:1.10.3")
 }
 
 java {
@@ -51,3 +52,13 @@ val deployPlugin by tasks.registering(Copy::class) {
     }
 }
 tasks.build { finalizedBy(deployPlugin) }
+
+// Publié pour les autres plugins (son API, fr.eternom.eterHub.api) : compileOnly("com.github.Eternom:EterHub:<tag>")
+publishing {
+    publications {
+        create<MavenPublication>("maven") {
+            artifactId = "EterHub"
+            from(components["java"])
+        }
+    }
+}

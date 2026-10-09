@@ -61,7 +61,6 @@ public class NetworkGui {
         database.createTable(LOBBIES,
                 Column.of("name", Column.Type.STRING).length(64).primaryKey(),
                 Column.of("last_seen", Column.Type.LONG));
-        database.addColumn(LOBBIES, Column.of("last_seen", Column.Type.LONG)); // tables d'avant 1.1.0
     }
 
     /** Toutes les 5 s en tâche de fond : signe de vie de ce lobby, puis relecture des lobbys et des joueurs. */
