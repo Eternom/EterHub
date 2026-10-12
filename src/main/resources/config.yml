@@ -64,6 +64,6 @@ lobbies:
 # les menus entre eux ; vide, il ferme le menu.
 menus:
   selector:
-    back-command: ""
+    back-command: "menu voyager"
   lobbies:
-    back-command: ""
+    back-command: "menu voyager"
