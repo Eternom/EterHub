@@ -6,7 +6,7 @@ Le côté proxy (arrivée sur le lobby le moins rempli, `/lobby`, renvoi au lobb
 
 ## Prérequis
 
-- **EterLib 1.10.0+** (`depend`) : base, langues et textes communs, menus (cadre, bouton Retour), état des serveurs
+- **EterLib 1.15.0+** (`depend`) : base, langues et textes communs, menus (cadre, bouton Retour), état des serveurs
   (`getServers().isOnline`), joueurs par serveur (`countByServer`), envoi vers un serveur (`getTeleports().connect`).
 - **Ne touche jamais à l'inventaire ni au mode de jeu** : EterSync peut tourner sur un lobby (pas d'objets dans la
   barre ; les menus s'ouvrent par commande, à relier à des PNJ, panneaux ou d'autres menus via `back-command`).

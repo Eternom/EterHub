@@ -24,7 +24,7 @@ import java.util.Locale;
 public final class Main extends JavaPlugin {
 
     /** Version minimale d'EterLib : état des serveurs, joueurs par serveur et connect depuis 1.7.0. */
-    private static final String REQUIRED_ETERLIB = "1.10.0";
+    private static final String REQUIRED_ETERLIB = "1.15.0";
 
     /** Préfixe des tables d'EterHub dans la base commune : eterhub_lobbies, eterhub_preferences, eterhub_spawn. */
     private static final String TABLE_PREFIX = "eterhub_";
