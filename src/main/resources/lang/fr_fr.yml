@@ -366,10 +366,15 @@ admin:
 
 editor:
   zone:
-    usage: "<error>/eterhub zone list | pos1 | pos2 | set | warp | show | tp | remove <lieu> | here"
+    usage: "<error>/eterhub zone point | undo | clear | ymin | ymax | height off | pos1 | pos2 | set <lieu> | warp <lieu> | show <lieu> | tp <lieu> | remove <lieu> | list | here"
+    point: "<info>Point <accent><count></accent> : <accent><x> <z></accent> <dark_gray>(3 points ou plus, puis /eterhub zone set <lieu>)"
+    points: "<info>Points de la surface : <accent><count>"
+    cleared: "<info>Sélection effacée."
+    height: "<info>Hauteur : de <accent><min></accent> à <accent><max></accent> <dark_gray>(- : sans limite)"
+    height-off: "<info>Plus de hauteur : toute la hauteur du monde."
     unknown: "<error>Lieu inconnu. Lieux de config.yml : <accent><zones>"
     corner: "<info>Coin <accent><corner></accent> : <accent><x> <y> <z>"
-    no-selection: "<error>Pose d'abord les deux coins : <accent>/eterhub zone pos1</accent> et <accent>pos2</accent>."
+    no-selection: "<error>Trace d'abord : au moins 3 <accent>/eterhub zone point</accent>, ou <accent>pos1</accent> et <accent>pos2</accent>."
     two-worlds: "<error>Les deux coins sont dans deux mondes différents."
     saved: "<success>Lieu <accent><zone></accent> tracé : <info><region> <dark_gray>(<volume> blocs)"
     warp-hint: "<info>Pense au point d'arrivée : <accent>/eterhub zone warp <zone>"

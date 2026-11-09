@@ -7,8 +7,12 @@ import fr.eternom.eterLib.helper.task.Tasks;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.ArrayList;
@@ -18,21 +22,31 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Éditeur des zones, /eterhub zone :
+ * Éditeur des lieux, /eterhub zone. Deux façons de tracer :
  * <pre>
- *   list                 les zones de config.yml, tracées ou non
- *   pos1 | pos2          coin 1 / 2 : le bloc visé (5 blocs), sinon sous les pieds
- *   set <zone>           la zone devient la sélection (pos1 → pos2)
- *   warp <zone>          son point d'arrivée (carte du village) : ici
- *   show <zone>          ses limites en particules (10 s)
- *   tp <zone>            y aller
- *   remove <zone>        effacer ses limites
- *   here                 la zone où l'on est
+ *   point                ajoute un point de la surface : là où l'on est (en marchant le long du bord, dans l'ordre)
+ *   undo | clear         retire le dernier point / toute la sélection
+ *   ymin | ymax          hauteur basse / haute : celle où l'on est (facultatif : sinon toute la hauteur)
+ *   height off           plus de hauteur
+ *   pos1 | pos2          ou un pavé : coin 1 / 2 (bloc visé à 5 blocs, sinon sous les pieds)
+ *   set <lieu>           le lieu prend la sélection (3 points ou plus : la surface ; sinon le pavé pos1 → pos2)
  * </pre>
+ * Et : list, warp <lieu> (point d'arrivée de la carte, ici), show <lieu> (limites en particules, 10 s), tp <lieu>,
+ * remove <lieu>, here.
  */
-public class ZoneCommand implements SubCommand {
+public class ZoneCommand implements SubCommand, Listener {
 
-    private static final List<String> SUBS = List.of("list", "pos1", "pos2", "set", "warp", "show", "tp", "remove", "here");
+    private static final List<String> SUBS = List.of("list", "point", "undo", "clear", "ymin", "ymax", "height", "pos1", "pos2",
+            "set", "warp", "show", "tp", "remove", "here");
+
+    /** La sélection d'un membre du staff. */
+    private static final class Selection {
+        final Location[] corners = new Location[2];
+        final List<int[]> points = new ArrayList<>();
+        String world;
+        Integer minY;
+        Integer maxY;
+    }
 
     private final JavaPlugin plugin;
     private final ZoneService zones;
@@ -40,7 +54,7 @@ public class ZoneCommand implements SubCommand {
     private final VillageMap map;
     private final HubSettings settings;
     private final Messages messages;
-    private final Map<UUID, Location[]> selections = new HashMap<>();
+    private final Map<UUID, Selection> selections = new HashMap<>();
 
     public ZoneCommand(JavaPlugin plugin, ZoneService zones, ZoneStore store, VillageMap map, HubSettings settings, Messages messages) {
         this.plugin = plugin;
@@ -51,12 +65,46 @@ public class ZoneCommand implements SubCommand {
         this.messages = messages;
     }
 
+    private Selection selection(Player player) {
+        return selections.computeIfAbsent(player.getUniqueId(), uuid -> new Selection());
+    }
+
     @Override
     public void run(Player player, String[] args) {
         String sub = args.length > 0 ? args[0].toLowerCase() : "list";
         String id = args.length > 1 ? args[1].toLowerCase() : null;
         switch (sub) {
-            case "pos1", "pos2" -> select(player, sub.equals("pos1") ? 0 : 1);
+            case "pos1", "pos2" -> corner(player, sub.equals("pos1") ? 0 : 1);
+            case "point" -> point(player);
+            case "undo" -> {
+                Selection selection = selection(player);
+                if (!selection.points.isEmpty()) {
+                    selection.points.removeLast();
+                }
+                messages.send(player, "editor.zone.points", "count", String.valueOf(selection.points.size()));
+                preview(player, selection);
+            }
+            case "clear" -> {
+                selections.remove(player.getUniqueId());
+                messages.send(player, "editor.zone.cleared");
+            }
+            case "ymin", "ymax" -> {
+                Selection selection = selection(player);
+                int y = player.getLocation().getBlockY();
+                if (sub.equals("ymin")) {
+                    selection.minY = y;
+                } else {
+                    selection.maxY = y;
+                }
+                messages.send(player, "editor.zone.height", "min", selection.minY == null ? "-" : String.valueOf(selection.minY),
+                        "max", selection.maxY == null ? "-" : String.valueOf(selection.maxY));
+            }
+            case "height" -> {
+                Selection selection = selection(player);
+                selection.minY = null;
+                selection.maxY = null;
+                messages.send(player, "editor.zone.height-off");
+            }
             case "list" -> list(player);
             case "here" -> {
                 String here = zones.idOf(player);
@@ -70,7 +118,8 @@ public class ZoneCommand implements SubCommand {
                 switch (sub) {
                     case "set" -> define(player, id);
                     case "warp" -> warp(player, id);
-                    case "show" -> show(player, id);
+                    case "show" -> zones.index().region(id).ifPresentOrElse(region -> show(player, id, region),
+                            () -> messages.send(player, "editor.zone.not-drawn", "zone", id));
                     case "tp" -> map.travel(player, id, true);
                     case "remove" -> remove(player, id);
                     default -> messages.send(player, "editor.zone.usage");
@@ -79,36 +128,98 @@ public class ZoneCommand implements SubCommand {
         }
     }
 
-    private void select(Player player, int corner) {
+    private void corner(Player player, int corner) {
         Block target = player.getTargetBlockExact(5);
         Location at = (target != null ? target.getLocation() : player.getLocation().getBlock().getLocation()).clone();
-        selections.computeIfAbsent(player.getUniqueId(), uuid -> new Location[2])[corner] = at;
+        selection(player).corners[corner] = at;
         messages.send(player, "editor.zone.corner", "corner", String.valueOf(corner + 1),
                 "x", String.valueOf(at.getBlockX()), "y", String.valueOf(at.getBlockY()), "z", String.valueOf(at.getBlockZ()));
         player.spawnParticle(Particle.HAPPY_VILLAGER, at.clone().add(0.5, 1.2, 0.5), 15, 0.3, 0.3, 0.3, 0);
     }
 
+    private void point(Player player) {
+        Selection selection = selection(player);
+        Location at = player.getLocation();
+        if (selection.world != null && !selection.world.equals(at.getWorld().getName())) {
+            selection.points.clear();
+        }
+        selection.world = at.getWorld().getName();
+        selection.points.add(new int[]{at.getBlockX(), at.getBlockZ()});
+        messages.send(player, "editor.zone.point", "count", String.valueOf(selection.points.size()),
+                "x", String.valueOf(at.getBlockX()), "z", String.valueOf(at.getBlockZ()));
+        preview(player, selection);
+    }
+
+    /** Les côtés de la surface en cours, à la hauteur du joueur (5 s). */
+    private void preview(Player player, Selection selection) {
+        if (selection.points.isEmpty() || selection.world == null) {
+            return;
+        }
+        World world = Bukkit.getWorld(selection.world);
+        if (world == null) {
+            return;
+        }
+        List<Location> points = new ArrayList<>();
+        double y = player.getLocation().getY() + 0.3;
+        int n = selection.points.size();
+        for (int i = 0; i < n; i++) {
+            int[] a = selection.points.get(i);
+            int[] b = selection.points.get((i + 1) % n);
+            if (n < 3 && i == n - 1) {
+                points.add(new Location(world, a[0] + 0.5, y, a[1] + 0.5));
+                break;
+            }
+            line(points, world, a[0] + 0.5, a[1] + 0.5, b[0] + 0.5, b[1] + 0.5, y);
+        }
+        particles(player, points, 5, Particle.HAPPY_VILLAGER);
+    }
+
+    private static void line(List<Location> points, World world, double x1, double z1, double x2, double z2, double y) {
+        double length = Math.hypot(x2 - x1, z2 - z1);
+        int steps = Math.max(1, (int) Math.ceil(length));
+        for (int s = 0; s <= steps; s++) {
+            double t = (double) s / steps;
+            points.add(new Location(world, x1 + (x2 - x1) * t, y, z1 + (z2 - z1) * t));
+        }
+    }
+
     private void define(Player player, String id) {
-        Location[] selection = selections.get(player.getUniqueId());
-        if (selection == null || selection[0] == null || selection[1] == null) {
+        Selection selection = selections.get(player.getUniqueId());
+        Region region;
+        if (selection != null && selection.points.size() >= 3) {
+            int n = selection.points.size();
+            int[] xs = new int[n];
+            int[] zs = new int[n];
+            for (int i = 0; i < n; i++) {
+                xs[i] = selection.points.get(i)[0];
+                zs[i] = selection.points.get(i)[1];
+            }
+            region = Region.polygon(selection.world, xs, zs, selection.minY == null ? Region.NO_MIN : selection.minY,
+                    selection.maxY == null ? Region.NO_MAX : selection.maxY);
+        } else if (selection != null && selection.corners[0] != null && selection.corners[1] != null) {
+            Location[] corners = selection.corners;
+            if (corners[0].getWorld() != corners[1].getWorld()) {
+                messages.send(player, "editor.zone.two-worlds");
+                return;
+            }
+            region = Region.of(corners[0].getWorld().getName(), corners[0].getBlockX(), corners[0].getBlockY(), corners[0].getBlockZ(),
+                    corners[1].getBlockX(), corners[1].getBlockY(), corners[1].getBlockZ());
+        } else {
             messages.send(player, "editor.zone.no-selection");
             return;
         }
-        if (selection[0].getWorld() != selection[1].getWorld()) {
-            messages.send(player, "editor.zone.two-worlds");
-            return;
-        }
-        Region region = Region.of(selection[0].getWorld().getName(), selection[0].getBlockX(), selection[0].getBlockY(),
-                selection[0].getBlockZ(), selection[1].getBlockX(), selection[1].getBlockY(), selection[1].getBlockZ());
         String author = player.getName();
+        Region saved = region;
         Tasks.async(plugin, player, () -> {
-            String old = store.regions().containsKey(id) ? store.regions().get(id).describe() : null;
-            store.saveRegion(id, region);
-            settings.log("zone:" + id, old, region.describe(), author);
+            Region old = store.regions().get(id);
+            store.saveRegion(id, saved);
+            settings.log("zone:" + id, old == null ? null : old.describe(), saved.describe(), author);
             return true;
         }, done -> {
             zones.changed();
-            messages.send(player, "editor.zone.saved", "zone", id, "region", region.describe(), "volume", String.valueOf(region.volume()));
+            selections.remove(player.getUniqueId());
+            messages.send(player, "editor.zone.saved", "zone", id, "region", saved.describe(), "volume", String.valueOf(saved.volume()));
+            show(player, id, saved);
             if (zones.warp(id).isEmpty()) {
                 messages.send(player, "editor.zone.warp-hint", "zone", id);
             }
@@ -150,39 +261,56 @@ public class ZoneCommand implements SubCommand {
         }, () -> messages.send(player, "error.generic"));
     }
 
-    /** Les arêtes de la zone en particules, pour ce joueur, pendant 10 s. */
-    private void show(Player player, String id) {
-        Region region = zones.index().region(id).orElse(null);
-        if (region == null || Bukkit.getWorld(region.world()) == null) {
+    /** Les limites du lieu en particules, pour ce joueur, pendant 10 s. */
+    private void show(Player player, String id, Region region) {
+        World world = Bukkit.getWorld(region.world());
+        if (world == null) {
             messages.send(player, "editor.zone.not-drawn", "zone", id);
             return;
         }
-        org.bukkit.World world = Bukkit.getWorld(region.world());
         List<Location> points = new ArrayList<>();
-        double x1 = region.minX(), y1 = region.minY(), z1 = region.minZ();
-        double x2 = region.maxX() + 1, y2 = region.maxY() + 1, z2 = region.maxZ() + 1;
-        double step = Math.max(1, Math.max(x2 - x1, Math.max(y2 - y1, z2 - z1)) / 60);
-        for (double x = x1; x <= x2; x += step) {
-            for (double[] yz : new double[][]{{y1, z1}, {y1, z2}, {y2, z1}, {y2, z2}}) {
-                points.add(new Location(world, x, yz[0], yz[1]));
+        if (region.isPolygon()) {
+            // Le contour, à sa hauteur basse et haute si elle est réglée, sinon à hauteur du joueur
+            List<Double> levels = region.hasHeight() ? List.of((double) region.minY(), region.maxY() + 1.0)
+                    : List.of(player.getLocation().getY() + 0.3);
+            int n = region.xs().length;
+            for (double y : levels) {
+                for (int i = 0; i < n; i++) {
+                    int j = (i + 1) % n;
+                    line(points, world, region.xs()[i] + 0.5, region.zs()[i] + 0.5, region.xs()[j] + 0.5, region.zs()[j] + 0.5, y);
+                }
             }
-        }
-        for (double y = y1; y <= y2; y += step) {
-            for (double[] xz : new double[][]{{x1, z1}, {x1, z2}, {x2, z1}, {x2, z2}}) {
-                points.add(new Location(world, xz[0], y, xz[1]));
+        } else {
+            double x1 = region.minX(), y1 = region.minY(), z1 = region.minZ();
+            double x2 = region.maxX() + 1, y2 = region.maxY() + 1, z2 = region.maxZ() + 1;
+            double step = Math.max(1, Math.max(x2 - x1, Math.max(y2 - y1, z2 - z1)) / 60);
+            for (double x = x1; x <= x2; x += step) {
+                for (double[] yz : new double[][]{{y1, z1}, {y1, z2}, {y2, z1}, {y2, z2}}) {
+                    points.add(new Location(world, x, yz[0], yz[1]));
+                }
             }
-        }
-        for (double z = z1; z <= z2; z += step) {
-            for (double[] xy : new double[][]{{x1, y1}, {x1, y2}, {x2, y1}, {x2, y2}}) {
-                points.add(new Location(world, xy[0], xy[1], z));
+            for (double y = y1; y <= y2; y += step) {
+                for (double[] xz : new double[][]{{x1, z1}, {x1, z2}, {x2, z1}, {x2, z2}}) {
+                    points.add(new Location(world, xz[0], y, xz[1]));
+                }
+            }
+            for (double z = z1; z <= z2; z += step) {
+                for (double[] xy : new double[][]{{x1, y1}, {x1, y2}, {x2, y1}, {x2, y2}}) {
+                    points.add(new Location(world, xy[0], xy[1], z));
+                }
             }
         }
         messages.send(player, "editor.zone.showing", "zone", id, "region", region.describe());
-        for (int tick = 0; tick < 10; tick++) {
+        particles(player, points, 10, Particle.END_ROD);
+    }
+
+    private void particles(Player player, List<Location> points, int seconds, Particle particle) {
+        for (int tick = 0; tick < seconds; tick++) {
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
                 if (player.isOnline()) {
-                    points.stream().filter(point -> point.distanceSquared(player.getLocation()) < 128 * 128)
-                            .forEach(point -> player.spawnParticle(Particle.END_ROD, point, 1, 0, 0, 0, 0));
+                    points.stream().filter(point -> point.getWorld().equals(player.getWorld())
+                                    && point.distanceSquared(player.getLocation()) < 128 * 128)
+                            .forEach(point -> player.spawnParticle(particle, point, 1, 0, 0, 0, 0));
                 }
             }, tick * 20L);
         }
@@ -199,6 +327,11 @@ public class ZoneCommand implements SubCommand {
         }
     }
 
+    @EventHandler
+    public void onQuit(PlayerQuitEvent event) {
+        selections.remove(event.getPlayer().getUniqueId());
+    }
+
     @Override
     public List<String> complete(Player player, String[] args) {
         if (args.length == 1) {
@@ -206,6 +339,9 @@ public class ZoneCommand implements SubCommand {
         }
         if (args.length == 2 && List.of("set", "warp", "show", "tp", "remove").contains(args[0].toLowerCase())) {
             return SubCommand.filter(new ArrayList<>(zones.zones().keySet()), args[1]);
+        }
+        if (args.length == 2 && args[0].equalsIgnoreCase("height")) {
+            return SubCommand.filter(List.of("off"), args[1]);
         }
         return List.of();
     }

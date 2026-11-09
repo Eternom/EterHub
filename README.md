@@ -41,7 +41,7 @@ l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans
 
 | Staff (`eterhub.admin`) | |
 |---|---|
-| `/eterhub zone list\|pos1\|pos2\|set\|warp\|show\|tp\|remove\|here` | Lieux (limites, point d'arrivée de la carte) |
+| `/eterhub zone point\|undo\|clear\|ymin\|ymax\|height off\|pos1\|pos2\|set\|warp\|show\|tp\|remove\|list\|here` | Lieux : surface libre par points (hauteur facultative, pour un lieu sous un autre) ou pavé ; point d'arrivée de la carte |
 | `/eterhub spawn set\|add\|clear\|list` (`setspawn` : ancien nom) | Spawn et points d'arrivée |
 | `/eterhub pad add <launch\|elevator\|speed\|teleport> [force] [hauteur] [fixe]\|mark\|remove\|list` | Plaques (bloc où l'on est) |
 | `/eterhub holo list\|create\|addline\|setline\|removeline\|move\|delete` | Hologrammes |

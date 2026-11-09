@@ -26,7 +26,9 @@ activities:
 
 # ---------- Lieux du village ----------
 # Chaque lieu : son nom et son sous-titre sont dans lang/ (zones.<id>), ses limites se tracent en jeu :
-#   /eterhub zone pos1 · pos2 (bloc visé ou sous les pieds) · set <lieu> · warp <lieu> (point d'arrivée de la carte)
+#   surface libre : /eterhub zone point (en marchant le long du bord, dans l'ordre ; undo, clear), hauteur facultative
+#   ymin / ymax (un lieu sous un autre), puis set <lieu> ; ou un pavé : pos1 · pos2 · set <lieu>
+#   puis warp <lieu> (point d'arrivée de la carte)
 #   /eterhub zone list · show <lieu> · here
 # Quand deux lieux se chevauchent, le plus petit l'emporte (le Donjon secret dans le Donjon, un lieu dans le Spawn).
 #

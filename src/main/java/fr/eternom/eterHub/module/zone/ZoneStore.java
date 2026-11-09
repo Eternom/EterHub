@@ -40,12 +40,15 @@ public class ZoneStore {
                 Column.of("wz", Column.Type.DOUBLE),
                 Column.of("wyaw", Column.Type.FLOAT),
                 Column.of("wpitch", Column.Type.FLOAT));
+        // Depuis 2.0.1 : surface libre (« x,z;x,z;... »), vide pour un pavé
+        database.addColumn(TABLE, Column.of("points", Column.Type.TEXT));
     }
 
     public Map<String, Region> regions() {
         Map<String, Region> regions = new LinkedHashMap<>();
-        database.get(TABLE, Map.of()).forEach(row -> regions.put(row.getString("id"), Region.of(row.getString("world"),
-                row.getInt("x1"), row.getInt("y1"), row.getInt("z1"), row.getInt("x2"), row.getInt("y2"), row.getInt("z2"))));
+        database.get(TABLE, Map.of()).forEach(row -> regions.put(row.getString("id"), Region.read(row.getString("world"),
+                row.getInt("x1"), row.getInt("y1"), row.getInt("z1"), row.getInt("x2"), row.getInt("y2"), row.getInt("z2"),
+                row.getString("points"))));
         return regions;
     }
 
@@ -58,8 +61,9 @@ public class ZoneStore {
     }
 
     public void saveRegion(String id, Region region) {
-        Map<String, Object> values = Map.of("id", id, "world", region.world(), "x1", region.minX(), "y1", region.minY(),
-                "z1", region.minZ(), "x2", region.maxX(), "y2", region.maxY(), "z2", region.maxZ());
+        Map<String, Object> values = new HashMap<>(Map.of("id", id, "world", region.world(), "x1", region.minX(), "y1", region.minY(),
+                "z1", region.minZ(), "x2", region.maxX(), "y2", region.maxY(), "z2", region.maxZ()));
+        values.put("points", region.isPolygon() ? region.points() : "");
         database.set(TABLE, values, "id");
     }
 

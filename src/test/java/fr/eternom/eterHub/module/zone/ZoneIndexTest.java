@@ -14,7 +14,7 @@ class ZoneIndexTest {
     @Test
     void cornersInAnyOrder() {
         Region region = Region.of("world", 10, 80, -5, -10, 60, 5);
-        assertEquals(new Region("world", -10, 60, -5, 10, 80, 5), region);
+        assertEquals(new Region("world", -10, 60, -5, 10, 80, 5, null, null), region);
         assertTrue(region.contains("world", 10, 80, 5));
         assertTrue(region.contains("world", -10, 60, -5));
         assertFalse(region.contains("world", 11, 70, 0));

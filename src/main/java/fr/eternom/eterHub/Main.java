@@ -182,7 +182,9 @@ public final class Main extends JavaPlugin {
             reloadEverywhere(bus);
         }, () -> info(lib, zones, heads, parkour));
         admin.add("spawn", spawnCommands);
-        admin.add("zone", new ZoneCommand(this, zones, zoneStore, map, settings, messages));
+        ZoneCommand zoneCommand = new ZoneCommand(this, zones, zoneStore, map, settings, messages);
+        admin.add("zone", zoneCommand);
+        getServer().getPluginManager().registerEvents(zoneCommand, this);
         admin.add("pad", pads);
         admin.add("holo", holograms);
         admin.add("parkour", parkour);
