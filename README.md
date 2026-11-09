@@ -1,61 +1,79 @@
 # EterHub
 
-Le contenu des **lobbys** (Paper, à installer seulement sur eux). Document développeur, à tenir à jour avec le code.
-Le côté proxy (arrivée sur le lobby le moins rempli, `/lobby`, renvoi au lobby, annonces d'arrivée) est
-**EterVelocityLobby** ; les lobbys sont la liste `try` de `velocity.toml`.
+Le **village des lobbys** du réseau Akia (Paper 26.2, Java 25). Document développeur, à tenir à jour avec le code.
+Le côté proxy (arrivée, `/lobby`, renvoi au lobby, lobbys jetables) est **EterVelocityLobby**.
 
-## Prérequis
+- **EterLib 1.23.0+** (`depend`) : base, Redis, bus réseau, langues, menus, actions, téléportations.
+- Facultatifs (`softdepend`) : **EterFriend** (amis : visibilité, amis en ligne, suivre un ami), **EterClan** (clan :
+  visibilité, profil), EterNpc (PNJ des lieux, avec les actions `eterhub:*`).
+- Ne démarre que sur un serveur dont le nom commence par `lobby-servers`. Ne touche **jamais** à l'inventaire ni au
+  mode de jeu (EterSync peut tourner sur un lobby) : la vitesse au village passe par la vitesse de marche, remise à la
+  normale au départ (avant EterSync).
 
-- **EterLib 1.15.0+** (`depend`) : base, langues et textes communs, menus (cadre, bouton Retour), état des serveurs
-  (`getServers().isOnline`), joueurs par serveur (`countByServer`), envoi vers un serveur (`getTeleports().connect`).
-- **Ne touche jamais à l'inventaire ni au mode de jeu** : EterSync peut tourner sur un lobby (pas d'objets dans la
-  barre ; les menus s'ouvrent par commande, à relier à des PNJ, panneaux ou d'autres menus via `back-command`).
-- **Ne démarre que sur un lobby** : nom du serveur (`server-name` d'EterLib) commençant par un préfixe de
-  `lobby-servers` (`lobby` par défaut, comme les lobbys de l'orchestrateur). Sinon il s'arrête sans rien toucher : ses
-  règles de monde (`spawn_mobs`, `advance_time`, `advance_weather`) restent dans le monde même après l'avoir retiré, et
-  son double saut laisse le droit de voler aux joueurs (corrigé à la connexion par EterEssential 1.0.8).
+## Principe : tout ce qui se pose en jeu est en base, commun à tous les lobbys
+
+Limites des lieux, spawn et points d'arrivée, plaques, hologrammes, parcours, têtes, réglages changés en jeu : en
+base (`eterhub_*`), relus par tous les lobbys au moindre changement (bus `eterhub`). Un lobby créé par
+l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans `eterhub_settings_log` (`/eterhub journal`).
 
 ## Modules
 
-- **`spawn`** : le spawn COMMUN à tous les lobbys, en base (`eterhub_spawn`, réglé par `/eterhub setspawn`, appliqué tout
-  de suite aux autres lobbys par le bus réseau d'EterLib, canal `eterhub`) : un lobby neuf n'a rien à régler. Arrivée au spawn
-  (`spawn-on-join`), `/spawn`. `/lobby` et `/hub` sont pris par le proxy, d'où `/eterhub` pour l'administration.
-- **`protect`** : pas de dégâts ni de faim ; casser, poser, seaux, jeter, ramasser, coffres, cadres, supports d'armure
-  et terre labourée réservés à `eterhub.build` ; les joueurs ne frappent aucune entité. Les PNJ (Mannequins
-  d'EterMarket) restent cliquables. Le vide (`world.void-y`) ramène au spawn. Au démarrage, règles de jeu de tous les
-  mondes : heure figée (`world.time`, `ADVANCE_TIME`), beau temps (`ADVANCE_WEATHER`), pas d'apparitions naturelles
-  (`SPAWN_MOBS`).
-- **`movement`** : double saut (vol « autorisé » pour capter la double pression sur espace, remplacé par une
-  propulsion, rendu en touchant le sol ; jamais pour `eterhub.fly`, le staff vole normalement) et plaques de lancement
-  (`launch-pads.plate`, une fois par seconde).
-- **`network`** : `/servers` (sélecteur : `selector.servers` = nom dans `velocity.toml` → icône et case ; nom affiché
-  d'EterLib, description `selector.description.<serveur>` dans lang/, joueurs, en ligne ou non) et `/lobbies` (les
-  lobbys où EterHub TOURNE, table `eterhub_lobbies` : chacun y écrit son signe de vie toutes les 5 s, seuls ceux vus
-  depuis moins de 30 s sont listés, les lignes muettes depuis 10 min sont effacées ; seuls ceux en ligne
-  sont affichés : un ancien nom ou un lobby arrêté ne s'y voit pas). Joueurs et lobbys relus
-  toutes les 5 s en tâche de fond. Clic : « tu es ici », « hors ligne », ou envoi sur le serveur.
-- **Portails** (`network/PortalListener`, `portals.open-selector`) : un portail du Nether au lobby ne mène nulle part ;
-  y entrer replace le joueur juste devant (le jeu ferme tout menu tant qu'on est DANS un portail) puis ouvre
-  `/servers`. Les blocs de portail tiennent sans cadre d'obsidienne (physique
-  annulée pour eux) : on les pose avec WorldEdit (`//set nether_portal`) dans n'importe quel décor.
-- **`visibility`** : `/visibility` masque ou réaffiche les autres joueurs pour soi ; choix en base
-  (`eterhub_preferences`), le même sur tous les lobbys ; les nouveaux venus restent masqués pour qui les masque.
+| Paquet | Contenu |
+|---|---|
+| `core` | `HubSettings` (réglages en jeu, journal), `HubStats` (statistiques par jour), `HubPlayers` (première venue, dernière position, visite, dernier serveur joué), `Rewards` (commandes console ou actions EterLib) |
+| `zone` | `Zone` (config), `Region`/`ZoneIndex` (logique pure, testée : la plus petite zone l'emporte), `ZoneStore`, `ZoneService` (suivi aux changements de bloc, titre, son, heure et météo par joueur, accès réservé, découverte, ambiance), `VillageMap` (`/carte`), `ZoneCommand` |
+| `spawn` | `Spawn` (spawn principal + points d'arrivée), `ArrivalListener` (lecture à l'arrivée dans `AsyncPlayerSpawnLocationEvent` priorité LOW : une téléportation réseau d'EterLib passe après et l'emporte), `Tour` (visite guidée), `VoidListener` |
+| `protect` | `ProtectionListener` (tout le village figé et protégé), `BuildMode` (`/eterhub build`) |
+| `movement` | `MovementListener` (double saut), `Pads` (lanceurs, ascenseurs, vitesse, téléporteurs, trampolines), `Cosmetics` (traînées et auras par permission) |
+| `activity` | `Fishing` (pêche sans canne, trophées), `Archaeology` (fouilles, musée), `Parkour`, `Heads`, `HubEvents` (évènements, annonces), `LootTable`/`ParkourTime` (logique pure, testée) |
+| `display` | `Holograms` (TextDisplay non gardés dans le monde : text, players, board, progress), `Tips` |
+| `network` | `NetworkGui` (sélecteur, lobbys, maintenance, Reprendre), `ServerMenu`, `LobbyMenu`, `PortalListener` |
+| `social` | `Visibility` (4 modes), `Seats`, `Profiles`, `FriendsView` (EterFriend / EterClan isolés dans `FriendLink` / `ClanLink`) |
+| `admin` | `AdminCommand` (`/eterhub`), `HubActions` (actions EterLib), `HubApiService` |
 
-## Permissions
+## Commandes
 
-| Permission | Par défaut | Rôle |
-|---|---|---|
-| `eterhub.spawn`, `eterhub.servers`, `eterhub.lobbies`, `eterhub.visibility` | tous | Commandes des joueurs |
-| `eterhub.build` | op | Construire et interagir librement au lobby |
-| `eterhub.fly` | op | Pas de double saut (vol normal) |
-| `eterhub.admin` | op | Tout, dont `/eterhub setspawn` |
+| Joueurs | |
+|---|---|
+| `/spawn` · `/servers` · `/lobbies` · `/carte` · `/visite [passer\|recommencer]` | Navigation |
+| `/visibility [all\|friends\|staff\|none]` | Qui l'on voit |
+| `/peche` · `/musee` · `/parcours [<parcours>\|quitter\|retour]` | Activités |
 
-## API (pour les autres plugins)
+| Staff (`eterhub.admin`) | |
+|---|---|
+| `/eterhub zone list\|pos1\|pos2\|set\|warp\|show\|tp\|remove\|here` | Lieux (limites, point d'arrivée de la carte) |
+| `/eterhub spawn set\|add\|clear\|list` (`setspawn` : ancien nom) | Spawn et points d'arrivée |
+| `/eterhub pad add <launch\|elevator\|speed\|teleport> [force] [hauteur] [fixe]\|mark\|remove\|list` | Plaques (bloc où l'on est) |
+| `/eterhub holo list\|create\|addline\|setline\|removeline\|move\|delete` | Hologrammes |
+| `/eterhub parkour list\|start\|checkpoint\|undo\|finish\|delete <parcours>` | Parcours |
+| `/eterhub head add\|remove\|count` | Chasse aux têtes (en visant la tête) |
+| `/eterhub event start <minutes> <nom>\|stop` · `/eterhub annonce <texte>` | Évènements, annonces (tous les lobbys) |
+| `/eterhub reglage [<chemin> [valeur]\|reset <chemin>]` | Réglages communs, en base |
+| `/eterhub maintenance <serveur> on\|off` · `journal [n]` · `stats [jours] [préfixe]` · `reload` · `info` | Staff |
+| `/eterhub build` (`eterhub.build`) | Mode construction |
 
-`fr.eternom.eterHub.api.HubApi` (`HubApi.get()`, présente seulement sur un lobby) : personne d'autre ne lit les tables
-`eterhub_*`.
+## Actions EterLib (PNJ, menus)
 
-- `spawn()`, `teleportToSpawn(joueur)` ; `openServers(joueur)`, `openLobbies(joueur)` (pour les relier à un PNJ...).
+`eterhub:servers`, `lobbies`, `spawn`, `server <nom>`, `zone <lieu>`, `map`, `visibility`, `fishing`, `museum`,
+`tour [restart]`, `soon <quoi>`, `door <lieu>` (config `doors`) ; conditions `?eterhub:discovered <lieu>`,
+`?eterhub:in-zone <lieu>`. Un lieu réservé peut demander une condition d'EterLib (`access.condition`, ex :
+`?eterjob:rank mineur expert`), testée seulement si elle est fournie sur ce serveur.
 
-`eterhub_lobbies` : chaque lobby y écrit son signe de vie et EterHub efface lui-même les lignes trop vieilles
-(l'orchestrateur n'y touche plus).
+## API
+
+`HubApi` (spawn, menus, lieu d'un joueur, découvertes, aller à un lieu, carte, têtes, parcours, visite) et les
+événements `HubZoneEnterEvent` (entrée dans un lieu, première visite) et `HubActivityEvent` (pêche, fouille, parcours,
+tête, village découvert, visite finie) : de quoi brancher EterQuest / BetonQuest et des succès.
+Classements EterLib fournis : `hub_fishing` (plus belle prise du mois, en grammes), `hub_parkour_<parcours>` (meilleur
+temps, en millisecondes).
+
+## Tables
+
+`eterhub_settings`, `settings_log`, `stats`, `players`, `preferences`, `lobbies`, `spawn`, `zones`, `discoveries`,
+`pads`, `holograms`, `catches`, `finds`, `parkour_points`, `parkour_times`, `heads`, `heads_found`.
+Redis : `eterhub:event` (évènement en cours), `eterhub:maintenance` (serveurs en maintenance).
+
+## Technique
+
+- Tests : `ZoneIndexTest`, `LootTableTest`, `ParkourTimeTest` (`gradlew test`).
+- Compilation : `gradlew build` → `build/libs/EterHub-<version>.jar`. Release : tag = version de `gradle.properties`.

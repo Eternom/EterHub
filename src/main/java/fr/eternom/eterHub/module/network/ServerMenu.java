@@ -20,34 +20,43 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Sélecteur de serveurs, 5 lignes : chaque serveur de selector.servers à sa case (icône, nom affiché, description
- * de lang/ selector.description.<serveur>, joueurs, en ligne ou non) ; « = retour ou fermer. Clic = y aller.
+ * Sélecteur de serveurs, 5 lignes : chaque serveur de selector.servers à sa case (icône, nom, description de lang/
+ * selector.description.<serveur>, remplissage, amis, état) ; « Reprendre » (dernier serveur joué) ; retour.
+ * Rafraîchi toutes les 5 s tant qu'il est ouvert.
  */
 class ServerMenu implements Menu {
 
     static final int SIZE = 45;
-    private static final int BACK = 40;
+    static final int BACK = 40;
+    static final int RESUME = 36;
 
     private final NetworkGui gui;
     private final Messages messages;
     private final Player viewer;
+    private final Map<String, List<String>> friends;
     private final Inventory inventory;
-    private final Map<Integer, String> serverAtSlot = new HashMap<>();
+    private final Map<Integer, Entry> entryAt = new HashMap<>();
 
-    ServerMenu(NetworkGui gui, Player viewer) {
+    ServerMenu(NetworkGui gui, Player viewer, Map<String, List<String>> friends) {
         this.gui = gui;
         this.messages = gui.messages();
         this.viewer = viewer;
+        this.friends = friends;
         this.inventory = Bukkit.createInventory(this, SIZE, messages.get(viewer, "selector.title"));
         render();
     }
 
     @Override
     public void onClick(Player player, int slot, ClickType click) {
-        String server = serverAtSlot.get(slot);
-        if (server != null) {
+        Entry entry = entryAt.get(slot);
+        if (entry != null) {
             Sounds.click(player);
-            gui.connect(player, server);
+            gui.choose(player, entry);
+        } else if (slot == RESUME) {
+            gui.resume(player).ifPresent(server -> {
+                Sounds.click(player);
+                gui.connect(player, server, 0);
+            });
         } else if (slot == BACK) {
             gui.selectorBack().click(player);
         }
@@ -58,27 +67,31 @@ class ServerMenu implements Menu {
         return inventory;
     }
 
-    private void render() {
+    void render() {
         Frame.draw(inventory, Material.ORANGE_STAINED_GLASS_PANE);
+        entryAt.clear();
         for (Entry entry : gui.entries()) {
-            serverAtSlot.put(entry.slot(), entry.server());
-            inventory.setItem(entry.slot(), Items.item(entry.icon(),
+            entryAt.put(entry.slot(), entry);
+            inventory.setItem(entry.slot(), Items.item(entry.soon() ? Material.GRAY_DYE : entry.icon(),
                     messages.get(viewer, "selector.name", "server", gui.displayName(entry.server())),
-                    lore(entry.server()), gui.isHere(entry.server())));
+                    lore(entry), gui.isHere(entry.server())));
         }
+        gui.resume(viewer).ifPresent(server -> inventory.setItem(RESUME, Items.item(Material.RECOVERY_COMPASS,
+                messages.get(viewer, "selector.resume", "server", gui.displayName(server)),
+                List.of(messages.get(viewer, "selector.resume-lore", "server", gui.displayName(server))))));
         inventory.setItem(BACK, gui.selectorBack().item(viewer));
     }
 
-    private List<Component> lore(String server) {
+    private List<Component> lore(Entry entry) {
         List<Component> lore = new ArrayList<>();
-        String description = messages.raw(viewer, "selector.description." + server);
+        String description = messages.raw(viewer, "selector.description." + entry.server());
         if (description != null) {
             for (String line : description.split("\n")) {
                 lore.add(messages.render(line, TagResolver.empty()));
             }
             lore.add(Component.empty());
         }
-        lore.addAll(gui.state(viewer, server));
+        lore.addAll(gui.state(viewer, entry.server(), entry.capacity(), entry.soon(), friends.get(entry.server())));
         return lore;
     }
 }

@@ -1,39 +1,420 @@
 # Messages d'EterHub, format MiniMessage : https://docs.advntr.dev/minimessage/format
 # Balises de la palette (EterLib/config.yml > language.colors) : <primary> <accent> <info> <error> <success>
-#   <info> = texte courant gris clair, <accent> = mots importants en orange.
 # Une clé absente reprend le texte intégré au plugin : tu peux ne garder que les lignes que tu modifies.
-# Le préfixe des messages (« Core ») est commun à tous les plugins : EterLib/config.yml > language.prefix.
-# Textes communs (« Annuler », « Joueur inconnu », « Commande réservée aux joueurs »...) : dans EterLib/lang/, pour tous les plugins.
+# Textes communs (« Annuler », « Joueur inconnu »...) : dans EterLib/lang/, pour tous les plugins.
+
+command:
+  no-permission: "<error>Tu n'as pas la permission."
+
+# ---------- Lieux du village ----------
+zones:
+  spawn:
+    name: "<accent>Place du Spawn"
+    subtitle: "<info>Le cœur du village"
+  guilde:
+    name: "<accent>La Guilde"
+    subtitle: "<info>Métiers et quêtes"
+  banque:
+    name: "<accent>La Banque"
+    subtitle: "<info>Ton argent en lieu sûr"
+  etals:
+    name: "<accent>Les Étals"
+    subtitle: "<info>Le marché (bientôt)"
+  maisons-boutiques:
+    name: "<accent>Maisons et boutiques"
+    subtitle: "<info>Le quartier marchand (bientôt)"
+  cathedrale:
+    name: "<accent>La Cathédrale"
+    subtitle: "<info>Annonces et tableaux d'honneur"
+  colisee:
+    name: "<accent>Le Colisée"
+    subtitle: "<info>L'arène (bientôt)"
+  donjon:
+    name: "<accent>Le Donjon"
+    subtitle: "<info>Ceux qui entrent ne reviennent pas tous"
+  donjon-secret:
+    name: "<accent>Le Donjon secret"
+    subtitle: "<info>Il se mérite"
+  mines:
+    name: "<accent>Les Mines"
+    subtitle: "<info>Un parcours dans les galeries"
+  grotte-glace:
+    name: "<accent>La Grotte de glace"
+    subtitle: "<info>Attention, ça glisse"
+  grotte-araignees:
+    name: "<accent>La Grotte aux araignées"
+    subtitle: "<info>Ne réveille personne"
+  archeologie:
+    name: "<accent>Le site d'Archéologie"
+    subtitle: "<info>Fouille le sable suspect"
+  foret-enchantee:
+    name: "<accent>La Forêt enchantée"
+    subtitle: "<info>Les lucioles veillent"
+  foret:
+    name: "<accent>La Forêt"
+    subtitle: "<info>Une promenade au calme"
+  champs:
+    name: "<accent>Les Champs"
+    subtitle: "<info>Les terres du village"
+  lac:
+    name: "<accent>Le Lac de pêche"
+    subtitle: "<info>Accroupis-toi face à l'eau pour pêcher"
+  cimetiere:
+    name: "<accent>Le Cimetière"
+    subtitle: "<info>Ici reposent les anciens"
+  evenement:
+    name: "<accent>La Zone d'évènement"
+    subtitle: "<info>Là où tout se passe"
+
+zone:
+  denied: "<error>L'accès à <accent><zone></accent> t'est fermé pour le moment."
+  discovered: "<success>Lieu découvert : <accent><zone></accent> <dark_gray>(<count>/<total>)"
+  all-discovered: "<success>Tu as découvert les <accent><total></accent> lieux du village !"
+  unknown: "<error>Lieu inconnu : <accent><zone></accent>."
+
+map:
+  title: "Carte du village <dark_gray>(<count>/<total>)"
+  counter: "<accent>Lieux découverts : <count>/<total>"
+  counter-lore: "<info>Visite le village pour tous les trouver."
+  here: "<success>● Tu es ici"
+  travel: "<accent>Clic <info>· y aller"
+  no-warp-lore: "<dark_gray>Pas encore de point d'arrivée"
+  restricted: "<error>Accès réservé"
+  unknown: "<dark_gray>???"
+  unknown-lore: "<info>Pas encore découvert."
+  not-discovered: "<error>Découvre ce lieu à pied d'abord."
+  no-warp: "<error><accent><zone></accent> n'a pas encore de point d'arrivée."
+
+# ---------- Arrivée ----------
+welcome:
+  first:
+    title: "<accent>Bienvenue, <player> !"
+    subtitle: "<info>Suis la visite pour découvrir le village"
+    message: "<info>Bienvenue sur <accent>EterCraft</accent> ! <dark_gray>· <click:open_url:'<wiki>'><accent><u>Wiki</u></accent></click> <dark_gray>· <click:open_url:'<discord>'><accent><u>Discord</u></accent></click> <dark_gray>· <click:open_url:'<shop>'><accent><u>Boutique</u></accent></click>"
+  back:
+    title: "<accent>Re, <player> !"
+    subtitle: "<info>Le village t'attendait"
+    message: "<info>Content de te revoir ! <dark_gray>· <click:open_url:'<wiki>'><accent><u>Wiki</u></accent></click> <dark_gray>· <click:open_url:'<discord>'><accent><u>Discord</u></accent></click> <dark_gray>· <click:open_url:'<shop>'><accent><u>Boutique</u></accent></click>"
 
 spawn:
+  label: "Spawn"
   set: "<info>Spawn défini ici, pour <accent>tous les lobbys</accent>."
+  added: "<info>Point d'arrivée ajouté <dark_gray>(<count> en tout)."
+  cleared: "<info>Points d'arrivée en plus retirés (le spawn principal reste)."
+  list: "<info>Points d'arrivée : <accent><count>"
+  missing-world: "<error>Points d'arrivée dans un monde absent ici : <accent><points>"
+  usage: "<error>Utilisation : <accent>/eterhub spawn set | add | clear | list"
 
-eterhub:
-  usage: "<error>Utilisation : <accent>/eterhub setspawn"
+tour:
+  start: "<success>Visite guidée : <accent><count></accent> lieux à voir. <dark_gray>(/visite passer pour l'arrêter)"
+  bar: "<accent>Visite <step>/<count></accent> <dark_gray>· <info>Va à : <accent><zone>"
+  done: "<success>Visite terminée ! Le village n'a plus de secret pour toi... ou presque."
+  skipped: "<info>Visite arrêtée. <accent>/visite</accent> pour la reprendre."
+  already: "<info>La visite est déjà en cours. <accent>/visite passer</accent> pour l'arrêter."
+  unavailable: "<error>Pas de visite pour le moment."
+  steps:
+    guilde: "<info>Commence par <accent>la Guilde</accent> : choisis un métier auprès du chef des guildes."
+    banque: "<info>À <accent>la Banque</accent>, ton argent et celui de ton clan."
+    cathedrale: "<info><accent>La Cathédrale</accent> : annonces et tableaux d'honneur."
+    colisee: "<info><accent>Le Colisée</accent> : bientôt des duels."
+    donjon: "<info>Enfin, <accent>le Donjon</accent>... si tu l'oses."
 
-visibility:
-  hidden: "<info>Les autres joueurs sont <accent>masqués</accent>."
-  shown: "<info>Les autres joueurs sont de nouveau <accent>visibles</accent>."
-
+# ---------- Navigation ----------
 network:
   here: "<info>Tu es déjà sur <accent><server></accent>."
   offline: "<error><accent><server></accent> est hors ligne pour le moment."
+  maintenance: "<error><accent><server></accent> est en maintenance, reviens bientôt."
+  full: "<error><accent><server></accent> est plein, réessaie dans un instant."
+  soon: "<info><accent><server></accent> arrive bientôt !"
   connecting: "<info>Connexion à <accent><server></accent>..."
   state:
     players: "<dark_gray>▸ <info>Joueurs : <accent><count>"
+    fill: "<dark_gray>▸ <bar> <info><count>/<capacity>"
+    friends: "<dark_gray>▸ <success>Amis : <info><friends>"
     here: "<success>● <info>Tu es ici"
     online: "<success>● <info>En ligne <dark_gray>· <accent>clic</accent> <info>pour y aller"
     offline: "<error>● <info>Hors ligne"
+    maintenance: "<gold>● <info>En maintenance"
+    full: "<error>● <info>Plein"
+    soon: "<gray>● <info>Bientôt"
 
 selector:
   title: "<primary>Serveurs"
   name: "<accent><server>"
-  # Description d'un serveur (lignes sous son nom), par nom dans velocity.toml :
+  resume: "<accent>Reprendre : <server>"
+  resume-lore: "<info>Retourner là où tu jouais."
   description:
     eter-survival-europe-001:
       - "<info>Le monde principal : métiers,"
-      - "<info>homes, économie et hôtel des ventes."
+      - "<info>homes, clans et économie."
 
 lobbies:
   title: "<primary>Lobbys"
   name: "<accent><server>"
+  advised: "<success>★ Conseillé"
+  follow: "<accent>Suivre un ami"
+  follow-lore: "<info>Tes amis en ligne : clic pour les rejoindre."
+
+soon:
+  message: "<info>Ce lieu ouvre bientôt<accent> <what></accent>. Reste à l'écoute !"
+
+door:
+  closed: "<error>La porte de <accent><zone></accent> est encore scellée..."
+
+# ---------- Social ----------
+visibility:
+  changed: "<info>Tu vois maintenant : <accent><mode></accent>."
+  mode:
+    all: "tous les joueurs"
+    friends: "tes amis et ton clan"
+    staff: "le staff seulement"
+    none: "personne"
+
+profile:
+  title: "Profil de <player>"
+  name: "<accent><player>"
+  playtime: "<info>Temps de jeu : <accent><hours> h"
+  success: "<info>Points de succès : <accent><points>"
+  clan: "<info>Clan : <accent><clan>"
+  no-clan: "<info>Sans clan"
+  friend: "<success>Vous êtes amis"
+  village: "<accent>Au village"
+  add-friend: "<success>Ajouter en ami"
+  add-friend-lore: "<info>Envoyer une demande à <accent><player>"
+
+progress:
+  discoveries: "<info>Lieux découverts : <accent><count>/<total>"
+  heads: "<info>Têtes trouvées : <accent><count>/<total>"
+  museum: "<info>Musée : <accent><count>/<total>"
+
+# ---------- Activités ----------
+rarity:
+  common: "<gray>Commun"
+  uncommon: "<green>Peu commun"
+  rare: "<aqua>Rare"
+  legendary: "<gold>Légendaire"
+
+fishing:
+  cast: "<info>Ligne lancée... <accent>garde Maj enfoncé"
+  bite: "<accent><bold>Ça mord ! Lâche Maj !"
+  reeled: "<info>Ligne rentrée trop tôt."
+  escaped: "<error>Le poisson s'est échappé..."
+  caught-common: "<info>Tu pêches un(e) <accent><fish></accent> de <accent><weight> kg</accent>."
+  caught-uncommon: "<success>Joli ! Un(e) <accent><fish></accent> de <accent><weight> kg</accent>."
+  caught-rare: "<aqua>Prise rare ! <accent><fish></accent> de <accent><weight> kg</accent> !"
+  caught-legendary: "<gold><bold>PRISE LÉGENDAIRE !</bold> <accent><fish></accent> de <accent><weight> kg</accent> !"
+  title-rare: "<aqua>Prise rare !"
+  title-legendary: "<gold>Prise légendaire !"
+  subtitle: "<accent><fish></accent> <info>· <weight> kg"
+  announce-rare: "<aqua>🎣 <accent><player></accent> <info>a pêché un(e) <accent><fish></accent> de <accent><weight> kg</accent> au lac !"
+  announce-legendary: "<gold>🎣 <accent><player></accent> <info>a pêché un(e) <gold><fish></gold> de <accent><weight> kg</accent> au lac !"
+  fish:
+    gardon: "Gardon"
+    perche: "Perche"
+    truite: "Truite"
+    sandre: "Sandre"
+    brochet: "Brochet"
+    poisson-lune: "Poisson-lune"
+    carpe-doree: "Carpe dorée"
+    anguille-spectrale: "Anguille spectrale"
+    vieille-botte: "Vieille botte"
+  menu:
+    title: "Pêche au lac"
+    day: "<accent>Plus belles prises du jour"
+    month: "<accent>Plus belles prises du mois"
+    how: "<accent>Comment pêcher"
+    how-1: "<info>Au Lac, accroupis-toi face à l'eau."
+    how-2: "<info>Garde Maj enfoncé, attends que ça morde,"
+    how-3: "<info>puis lâche Maj dans la seconde !"
+    best: "<info>Ta plus belle prise : <accent><weight> kg"
+    species: "<info>Espèces pêchées : <accent><count>/<total>"
+    empty: "<dark_gray>Personne encore"
+    line: "<accent><rank>. <info><player> <dark_gray>· <info><fish> <accent><weight> kg"
+
+archaeology:
+  progress: "<info>Fouille... <accent><bar>"
+  found: "<info>Trouvaille : <accent><find></accent> <dark_gray>(<rarity><dark_gray>)"
+  found-new: "<success>Nouvelle trouvaille : <accent><find></accent> <dark_gray>(<rarity><dark_gray>) · <info>musée <accent><count>/<total>"
+  title: "<accent>Nouvelle trouvaille !"
+  complete: "<success>Ton musée est complet ! Bravo, archéologue."
+  finds:
+    tesson-bleu:
+      name: "Tesson bleu"
+      lore: "<info>Un morceau de vaisselle ancienne."
+    pointe-de-fleche:
+      name: "Pointe de flèche"
+      lore: "<info>Taillée dans le silex, bien avant le village."
+    piece-ancienne:
+      name: "Pièce ancienne"
+      lore: "<info>Frappée à l'effigie d'un roi oublié."
+    poterie-du-lac:
+      name: "Poterie du lac"
+      lore: "<info>Décorée de poissons et de vagues."
+    fragment-chronique-1:
+      name: "Chronique, fragment I"
+      lore: "<info>« Avant le village, il n'y avait que la forêt\n<info>et le lac, et ceux qui veillaient sur eux. »"
+    fragment-chronique-2:
+      name: "Chronique, fragment II"
+      lore: "<info>« Les guildes vinrent, et avec elles\n<info>les premières pierres de la cathédrale. »"
+    fragment-chronique-3:
+      name: "Chronique, fragment III"
+      lore: "<info>« Sous le donjon, une porte fut scellée.\n<info>Nul ne sait ce qu'elle retient. »"
+    sceau-du-roi:
+      name: "Sceau du roi"
+      lore: "<info>Celui qui le porte commandait le village."
+  museum:
+    title: "Musée <dark_gray>(<count>/<total>)"
+    name: "<accent><find>"
+    unknown: "<dark_gray>???"
+    amount: "<info>Trouvé <accent><count></accent> fois"
+
+parkour:
+  started: "<success>Parcours <accent><course></accent> lancé ! <dark_gray>(<count> points de passage · double Maj = retour)"
+  checkpoint: "<info>Point de passage <accent><count>/<total></accent> <dark_gray>· <accent><time>"
+  missed: "<error>Il te manque <accent><count></accent> point(s) de passage."
+  timer: "<accent><time></accent> <dark_gray>· <info>passages <count>/<total>"
+  finish-title: "<success>Arrivée !"
+  finish-subtitle: "<info><time>"
+  finish-record: "<gold>Nouveau record : <time>"
+  finished: "<info>Parcours <accent><course></accent> fini en <accent><time></accent> <dark_gray>(record : <best>)"
+  record: "<gold>Record personnel sur <accent><course></accent> : <accent><time></accent> !"
+  quit: "<info>Parcours abandonné."
+  not-running: "<error>Tu ne fais pas de parcours."
+  list: "<info>Parcours : <accent><courses></accent> <dark_gray>· /parcours <nom>"
+  top-title: "<primary>Classement · <course>"
+  top-line: "<accent><rank>. <info><player> <dark_gray>· <accent><time>"
+  top-you: "<info>Toi : <accent><time></accent> <dark_gray>(<rank>e · <runs> arrivées)"
+  top-none: "<info>Tu n'as pas encore fini ce parcours."
+  courses:
+    mines: "Les Mines"
+    grotte-glace: "La Grotte de glace"
+    grotte-araignees: "La Grotte aux araignées"
+
+heads:
+  found: "<success>Tête trouvée ! <accent><count>/<total>"
+  already: "<info>Déjà trouvée <dark_gray>(<count>/<total>)"
+  all: "<gold>Tu as trouvé les <accent><total></accent> têtes cachées du village !"
+
+event:
+  bar: "<accent><name></accent> <dark_gray>· <info>Zone d'évènement <dark_gray>· <accent><time>"
+  started: "<success>Évènement <accent><name></accent> lancé pour <accent><minutes> min</accent> sur tous les lobbys."
+  ended: "<info>L'évènement <accent><name></accent> est terminé. Merci d'être venus !"
+  usage: "<error>Utilisation : <accent>/eterhub event start <minutes> <nom> | stop"
+
+announce:
+  title: "<gold>La Cathédrale annonce"
+  chat: "<gold>🔔 <info><text>"
+  usage: "<error>Utilisation : <accent>/eterhub annonce <texte>"
+
+# ---------- Affichages ----------
+hologram:
+  players: "<accent><count></accent> <info>joueurs"
+  offline: "<error>Hors ligne"
+  loading: "<dark_gray>..."
+  board-line: "<accent><rank>. <info><player> <dark_gray>· <accent><value>"
+  board-empty: "<dark_gray>Personne encore"
+  board-missing: "<dark_gray>Classement indisponible ici"
+  default-text: "<accent>Nouveau tableau"
+  default-players: "<accent>Serveur"
+  default-board: "<gold>Tableau d'honneur"
+  default-progress: "<accent>Ta progression"
+
+# Astuces dans la barre d'action : une ligne par astuce ; par lieu (tips.<lieu>), sinon default.
+tips:
+  default:
+    - "<info>Astuce : <accent>/carte</accent> pour voir les lieux découverts."
+    - "<info>Astuce : double saut avec <accent>espace</accent> deux fois."
+    - "<info>Astuce : clic droit sur un joueur pour voir son profil."
+    - "<info>Astuce : clic droit sur un banc pour t'asseoir."
+    - "<info>Astuce : des têtes sont cachées dans tout le village..."
+  lac:
+    - "<info>Astuce : accroupis-toi face à l'eau, lâche Maj quand ça mord."
+    - "<info>Astuce : <accent>/peche</accent> pour les plus belles prises."
+  archeologie:
+    - "<info>Astuce : clique plusieurs fois sur le sable suspect pour fouiller."
+    - "<info>Astuce : <accent>/musee</accent> pour voir tes trouvailles."
+  mines:
+    - "<info>Astuce : deux fois Maj pour revenir au dernier point de passage."
+
+# ---------- Staff ----------
+build:
+  on: "<success>Mode construction <accent>activé</accent> : tu peux casser et poser."
+  off: "<info>Mode construction <accent>désactivé</accent>."
+  no-permission: "<error>Il faut la permission eterhub.build."
+
+admin:
+  usage: "<error>Utilisation : <accent>/eterhub <partie></accent> <dark_gray>(<parts>, reglage, maintenance, journal, stats, reload, info)"
+  reloaded: "<success>EterHub rechargé sur tous les lobbys."
+  setting:
+    list: "<primary>Réglages modifiables <dark_gray>(* = changé en jeu)"
+    line: "<dark_gray>▸ <accent><path></accent> <info>= <value>"
+    saved: "<success><accent><path></accent> = <accent><value></accent> sur tous les lobbys."
+    reset: "<info><accent><path></accent> revient à config.yml : <accent><value>"
+    unknown: "<error>Réglage non modifiable en jeu : <accent><path>"
+    bad-value: "<error>Valeur invalide pour <accent><path></accent> : <value>"
+  maintenance:
+    on: "<success><accent><server></accent> est en maintenance (le staff passe)."
+    off: "<success><accent><server></accent> n'est plus en maintenance."
+    list: "<info>En maintenance : <accent><servers>"
+    none: "<info>Aucun serveur en maintenance."
+  journal:
+    title: "<primary>Journal des changements <dark_gray>(<count>)"
+    line: "<dark_gray><date> <accent><author></accent> <info><path> <dark_gray>: <old> → <new>"
+  stats:
+    title: "<primary>Statistiques des <days> derniers jours"
+    line: "<dark_gray>▸ <info><name> <accent><total>"
+
+editor:
+  zone:
+    usage: "<error>/eterhub zone list | pos1 | pos2 | set | warp | show | tp | remove <lieu> | here"
+    unknown: "<error>Lieu inconnu. Lieux de config.yml : <accent><zones>"
+    corner: "<info>Coin <accent><corner></accent> : <accent><x> <y> <z>"
+    no-selection: "<error>Pose d'abord les deux coins : <accent>/eterhub zone pos1</accent> et <accent>pos2</accent>."
+    two-worlds: "<error>Les deux coins sont dans deux mondes différents."
+    saved: "<success>Lieu <accent><zone></accent> tracé : <info><region> <dark_gray>(<volume> blocs)"
+    warp-hint: "<info>Pense au point d'arrivée : <accent>/eterhub zone warp <zone>"
+    warp-saved: "<success>Point d'arrivée de <accent><zone></accent> réglé ici."
+    not-drawn: "<error><accent><zone></accent> n'est pas encore tracé."
+    removed: "<success>Limites de <accent><zone></accent> effacées."
+    showing: "<info>Limites de <accent><zone></accent> : <region>"
+    here: "<info>Tu es dans <accent><zone>"
+    here-none: "<info>Tu n'es dans aucun lieu."
+    list-title: "<primary>Lieux tracés : <count>/<total>"
+    line-ready: "<success>✔ <accent><zone></accent> <info><name>"
+    line-no-warp: "<gold>● <accent><zone></accent> <info><name> <dark_gray>(sans point d'arrivée)"
+    line-missing: "<error>✘ <accent><zone></accent> <info><name> <dark_gray>(pas tracé)"
+  pad:
+    usage: "<error>/eterhub pad add <launch|elevator|speed|teleport> [force] [hauteur] [fixe] | mark | remove | list"
+    marked: "<info>Cible notée : <accent>/eterhub pad add teleport</accent> sur la plaque de départ."
+    need-mark: "<error>Note d'abord la cible : <accent>/eterhub pad mark</accent> à l'arrivée."
+    added: "<success>Plaque <accent><type></accent> posée en <accent><x> <y> <z>"
+    removed: "<success>Plaque retirée."
+    none: "<error>Pas de plaque ici."
+    list: "<primary>Plaques proches : <count> <dark_gray>(<total> en tout)"
+    line: "<dark_gray>▸ <accent><type></accent> <info><x> <y> <z> <dark_gray>· force <power>"
+  holo:
+    usage: "<error>/eterhub holo list | create <id> <text|players|board|progress> [argument] | addline <id> <texte> | setline <id> <n> <texte> | removeline <id> <n> | move <id> | delete <id>"
+    exists: "<error>Identifiant pris ou invalide : <accent><id>"
+    unknown: "<error>Hologramme inconnu : <accent><id>"
+    bad-line: "<error>Ligne invalide (1 à <count>)."
+    saved: "<success>Hologramme <accent><id></accent> enregistré."
+    deleted: "<success>Hologramme <accent><id></accent> supprimé."
+    list: "<primary>Hologrammes : <count>"
+    line: "<dark_gray>▸ <accent><id></accent> <info><type> <argument> <dark_gray>(<x> <y> <z>)"
+  parkour:
+    usage: "<error>/eterhub parkour list | start | checkpoint | undo | finish | delete <parcours>"
+    saved: "<success>Parcours <accent><course></accent> : <point> posé ici."
+    undone: "<success>Dernier point de passage de <accent><course></accent> retiré."
+    deleted: "<success>Parcours <accent><course></accent> supprimé (et ses temps)."
+    none: "<error>Rien à retirer pour <accent><course></accent>."
+    list: "<primary>Parcours : <count>"
+    line: "<success>✔ <accent><course></accent> <info><count> passages"
+    line-incomplete: "<error>✘ <accent><course></accent> <info>départ ou arrivée manquant"
+  head:
+    usage: "<error>/eterhub head add | remove | count (en visant une tête)"
+    look: "<error>Vise une tête de joueur (6 blocs)."
+    added: "<success>Tête ajoutée <dark_gray>(<total> en tout)."
+    exists: "<error>Cette tête est déjà dans la chasse."
+    removed: "<success>Tête retirée de la chasse."
+    unknown: "<error>Cette tête n'est pas dans la chasse."
+    count: "<info>Têtes cachées : <accent><total>"

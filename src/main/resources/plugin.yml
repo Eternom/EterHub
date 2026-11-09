@@ -5,8 +5,10 @@ main: fr.eternom.eterHub.Main
 api-version: '26.2'
 load: POSTWORLD
 authors: [ NadTum ]
-description: Contenu des lobbys (protection, spawn, sélecteur de serveurs, choix du lobby, double saut).
+description: "Le village des lobbys : lieux, découverte, activités, protection, navigation."
 depend: [EterLib]
+# EterFriend : amis (visibilité, amis en ligne) ; EterClan : clan (visibilité, profil) ; EterNpc : PNJ des lieux
+softdepend: [EterFriend, EterClan, EterNpc, EterSuccess, EterReward]
 
 # /lobby et /hub sont des commandes du proxy (EterVelocityLobby) : l'administration d'EterHub est donc /eterhub.
 commands:
@@ -25,14 +27,39 @@ commands:
     aliases: [lobbys]
     permission: eterhub.lobbies
   visibility:
-    description: Masquer ou afficher les autres joueurs.
-    usage: /visibility
+    description: "Qui l'on voit au lobby : tous, amis et clan, staff, personne."
+    usage: /visibility [all|friends|staff|none]
     aliases: [visibilite, hideplayers]
     permission: eterhub.visibility
+  carte:
+    description: La carte du village.
+    usage: /carte
+    aliases: [map, village]
+    permission: eterhub.play
+  peche:
+    description: La pêche au lac (classements).
+    usage: /peche
+    aliases: [fishing, pêche]
+    permission: eterhub.play
+  musee:
+    description: Le musée des fouilles.
+    usage: /musee
+    aliases: [museum, musée]
+    permission: eterhub.play
+  parcours:
+    description: Les parcours (classement, quitter, retour).
+    usage: /parcours [<parcours>|top <parcours>|quitter|retour]
+    aliases: [parkour]
+    permission: eterhub.play
+  visite:
+    description: La visite guidée du village.
+    usage: /visite [passer|recommencer]
+    aliases: [tour]
+    permission: eterhub.play
   eterhub:
-    description: Administration du lobby (staff).
-    usage: /eterhub setspawn
-    permission: eterhub.admin
+    description: Administration des lobbys (staff).
+    usage: /eterhub <zone|spawn|pad|holo|parkour|head|event|annonce|build|reglage|maintenance|journal|stats|reload|info>
+    permission: eterhub.use
 
 permissions:
   eterhub.spawn:
@@ -43,19 +70,46 @@ permissions:
     default: true
   eterhub.visibility:
     default: true
+  eterhub.play:
+    description: Carte, pêche, musée, parcours, visite.
+    default: true
+  eterhub.use:
+    description: "Ouvre /eterhub (chaque partie demande eterhub.admin, sauf build : eterhub.build)."
+    default: true
   eterhub.build:
-    description: Casser, poser, jeter, ramasser, ouvrir les coffres au lobby.
+    description: Activer le mode construction (/eterhub build) pour casser, poser, ouvrir au lobby.
     default: op
   eterhub.fly:
-    description: 'Pas de double saut : le vol reste normal (staff avec /fly).'
+    description: "Pas de double saut : le vol reste normal (staff avec /fly)."
+    default: op
+  eterhub.staff:
+    description: Vu par ceux qui choisissent « staff seulement » ou « amis et clan ».
+    default: op
+  eterhub.zone.bypass:
+    description: Entrer dans tous les lieux réservés, voir et rejoindre tous les lieux de la carte.
+    default: op
+  eterhub.zone.donjon-secret:
+    description: Entrer dans le Donjon secret.
+    default: op
+  eterhub.maintenance.bypass:
+    description: Rejoindre un serveur en maintenance depuis le sélecteur.
+    default: op
+  eterhub.full.bypass:
+    description: Rejoindre un serveur plein depuis le sélecteur.
     default: op
   eterhub.admin:
-    description: Toutes les permissions d'EterHub (dont /eterhub setspawn).
+    description: "Toutes les permissions d'EterHub : éditeurs, réglages, maintenance, journal, statistiques."
     default: op
     children:
       eterhub.spawn: true
       eterhub.servers: true
       eterhub.lobbies: true
       eterhub.visibility: true
+      eterhub.play: true
+      eterhub.use: true
       eterhub.build: true
       eterhub.fly: true
+      eterhub.staff: true
+      eterhub.zone.bypass: true
+      eterhub.maintenance.bypass: true
+      eterhub.full.bypass: true

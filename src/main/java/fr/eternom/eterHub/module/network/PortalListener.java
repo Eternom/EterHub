@@ -38,6 +38,8 @@ public class PortalListener implements Listener {
     /** Dernière position de chaque joueur hors d'un portail. */
     private final Map<UUID, Location> lastOutside = new HashMap<>();
     private final Map<UUID, Long> lastOpened = new HashMap<>();
+    /** Joueurs entrés dans un portail et pas encore ressortis (le menu ne se rouvre pas). */
+    private final java.util.Set<UUID> inside = new java.util.HashSet<>();
 
     public PortalListener(JavaPlugin plugin, NetworkGui gui) {
         this.plugin = plugin;
@@ -51,10 +53,12 @@ public class PortalListener implements Listener {
         }
         long now = System.currentTimeMillis();
         Long last = lastOpened.get(player.getUniqueId());
-        if (last != null && now - last < COOLDOWN_MILLIS) {
+        // Un seul menu par passage : il faut ressortir du portail (ou attendre) pour le rouvrir
+        if (last != null && (now - last < COOLDOWN_MILLIS || inside.contains(player.getUniqueId()))) {
             return;
         }
         lastOpened.put(player.getUniqueId(), now);
+        inside.add(player.getUniqueId());
         Location back = lastOutside.get(player.getUniqueId());
         if (back != null) {
             player.teleportAsync(back, PlayerTeleportEvent.TeleportCause.PLUGIN);
@@ -70,6 +74,7 @@ public class PortalListener implements Listener {
     public void onMove(PlayerMoveEvent event) {
         Location to = event.getTo();
         if (event.hasChangedBlock() && !inPortal(to)) {
+            inside.remove(event.getPlayer().getUniqueId());
             lastOutside.put(event.getPlayer().getUniqueId(), to.clone());
         }
     }
@@ -78,6 +83,7 @@ public class PortalListener implements Listener {
     public void onQuit(PlayerQuitEvent event) {
         lastOutside.remove(event.getPlayer().getUniqueId());
         lastOpened.remove(event.getPlayer().getUniqueId());
+        inside.remove(event.getPlayer().getUniqueId());
     }
 
     /** Aucun voyage par portail au lobby (joueurs et entités). */

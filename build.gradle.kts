@@ -24,7 +24,15 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:26.2.build.129-stable")
 
     // Socle commun : base, langues, menus, serveurs du réseau (plugin EterLib installé sur le serveur)
-    compileOnly("com.github.Eternom:EterLib:1.20.1")
+    compileOnly("com.github.Eternom:EterLib:1.23.0")
+    // Facultatifs sur un lobby (softdepend) : amis (visibilité, amis en ligne), clans (visibilité « amis et clan »)
+    compileOnly("com.github.Eternom:EterFriend:1.0.0")
+    compileOnly("com.github.Eternom:EterClan:1.7.0")
+
+    testImplementation("io.papermc.paper:paper-api:26.2.build.129-stable")
+    testImplementation(platform("org.junit:junit-bom:5.11.4"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 java {
@@ -32,6 +40,9 @@ java {
 }
 
 tasks {
+    test {
+        useJUnitPlatform()
+    }
     processResources {
         val props = mapOf("version" to version)
         // Déclarée comme entrée : sinon le cache de Gradle réutilise un plugin.yml avec l'ancienne version

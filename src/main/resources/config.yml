@@ -1,69 +1,366 @@
 # ============================================================
-#  EterHub : le contenu d'un lobby
+#  EterHub : le village des lobbys
 # ============================================================
 #
-#  À installer seulement sur les lobbys (les serveurs de la liste « try » de
-#  velocity.toml, gérés côté proxy par EterVelocityLobby).
-#  EterHub ne touche JAMAIS à l'inventaire ni au mode de jeu : EterSync peut
-#  tourner sur un lobby. Les menus s'ouvrent par commande (/servers, /lobbies),
-#  à relier à des PNJ, panneaux ou autres menus (back-command).
-#  Les textes sont dans lang/. Toute modification nécessite un redémarrage.
+#  À installer seulement sur les lobbys. EterHub ne touche JAMAIS à l'inventaire ni au mode de jeu : EterSync peut
+#  tourner sur un lobby. Tout ce qui se pose en jeu (limites des lieux, spawn, plaques, hologrammes, parcours, têtes)
+#  est en base, COMMUN à tous les lobbys : un nouveau lobby n'a rien à régler.
+#
+#  Réglages en jeu : les valeurs simples (oui/non, nombres, textes) des sections activities, arrival, double-jump,
+#  launch-pads, world, tips, cosmetics, social, fishing, archaeology, parkour, heads, tour, discovery et spawn-command
+#  se changent avec /eterhub reglage <chemin> <valeur>, pour tous les lobbys (la valeur en base l'emporte sur ce
+#  fichier ; /eterhub reglage reset <chemin> y revient). Le reste : /eterhub reload (tous les lobbys).
+#  Textes : lang/ (noms des lieux, astuces, poissons, trouvailles...).
 
 # Sécurité : EterHub ne démarre que si le nom de ce serveur (server-name d'EterLib) commence par l'un de ces préfixes.
-# Il fige l'heure, la météo et les mobs de TOUS les mondes (règles gardées dans le monde même après l'avoir retiré) et
-# donne le double saut : installé par erreur sur une survie, il l'abîmerait. Les lobbys de l'orchestrateur s'appellent lobby-N.
 lobby-servers: [lobby]
 
-# Arriver au spawn en se connectant. Le spawn est COMMUN à tous les lobbys et gardé en base :
-# il se règle en jeu avec /eterhub setspawn (sans spawn réglé : celui du monde principal).
-spawn-on-join: true
+# Activités, une par une (false : coupée partout).
+activities:
+  discovery: true
+  tour: true
+  fishing: true
+  archaeology: true
+  parkour: true
+  heads: true
+
+# ---------- Lieux du village ----------
+# Chaque lieu : son nom et son sous-titre sont dans lang/ (zones.<id>), ses limites se tracent en jeu :
+#   /eterhub zone pos1 · pos2 (bloc visé ou sous les pieds) · set <lieu> · warp <lieu> (point d'arrivée de la carte)
+#   /eterhub zone list · show <lieu> · here
+# Quand deux lieux se chevauchent, le plus petit l'emporte (le Donjon secret dans le Donjon, un lieu dans le Spawn).
+#
+#   icon        icône dans la carte du village (/carte)
+#   rules       ce qui est permis (sinon zone-defaults) : double-jump, fishing, projectiles, dig, boats, sit
+#   sound       son à l'entrée ; ambient.sound / ambient.every : son qui revient toutes les N secondes
+#   particles   particules vues par le joueur autour de lui (type sans données : FIREFLY, SNOWFLAKE, ENCHANT, SPORE_BLOSSOM_AIR...)
+#   time        heure vue par le joueur dans ce lieu (18000 = minuit, -1 = celle du monde)
+#   weather     météo vue par le joueur : clear, rain (pluie, ou neige dans un biome froid), ou vide
+#   access      lieu réservé : permission, ou condition d'EterLib (ex : "?eterjob:rank mineur expert") ; refus = petit recul
+#   discoverable  compte pour la découverte du village (première visite retenue)
+#   title       titre à l'entrée
+#   halloween   ambiance d'Halloween (20 octobre - 2 novembre)
+zone-defaults:
+  rules:
+    double-jump: true
+    fishing: false
+    projectiles: false
+    dig: false
+    boats: false
+    sit: true
+
+zones:
+  spawn:
+    icon: BEACON
+    sound: "minecraft:block.bell.resonate"
+  guilde:
+    icon: IRON_PICKAXE
+    sound: "minecraft:block.anvil.use"
+  banque:
+    icon: GOLD_INGOT
+    sound: "minecraft:block.chain.place"
+  etals:
+    icon: BARREL
+    sound: "minecraft:entity.villager.ambient"
+  maisons-boutiques:
+    icon: OAK_DOOR
+    sound: "minecraft:block.wooden_door.open"
+  cathedrale:
+    icon: BELL
+    sound: "minecraft:block.bell.use"
+    ambient:
+      sound: "minecraft:block.amethyst_block.chime"
+      every: 20
+    particles:
+      type: END_ROD
+      count: 2
+      radius: 8
+  colisee:
+    icon: IRON_SWORD
+    sound: "minecraft:event.raid.horn"
+    rules:
+      projectiles: true
+  donjon:
+    icon: SKELETON_SKULL
+    sound: "minecraft:ambient.cave"
+    rules:
+      double-jump: false
+      sit: false
+    time: 18000
+  donjon-secret:
+    icon: WITHER_SKELETON_SKULL
+    sound: "minecraft:block.end_portal.spawn"
+    rules:
+      double-jump: false
+      sit: false
+    time: 18000
+    particles:
+      type: SOUL
+      count: 3
+      radius: 6
+    access:
+      permission: "eterhub.zone.donjon-secret"
+      condition: ""
+  mines:
+    icon: IRON_ORE
+    sound: "minecraft:block.stone.break"
+    rules:
+      double-jump: false
+  grotte-glace:
+    icon: BLUE_ICE
+    sound: "minecraft:block.glass.break"
+    rules:
+      double-jump: false
+    particles:
+      type: SNOWFLAKE
+      count: 6
+      radius: 8
+    weather: rain
+  grotte-araignees:
+    icon: COBWEB
+    sound: "minecraft:entity.spider.ambient"
+    rules:
+      double-jump: false
+    time: 18000
+  archeologie:
+    icon: BRUSH
+    sound: "minecraft:item.brush.brushing.sand"
+    rules:
+      dig: true
+  foret-enchantee:
+    icon: FLOWERING_AZALEA
+    sound: "minecraft:block.amethyst_block.resonate"
+    particles:
+      type: FIREFLY
+      count: 6
+      radius: 10
+    time: 14000
+  foret:
+    icon: OAK_SAPLING
+    sound: "minecraft:block.azalea_leaves.place"
+    particles:
+      type: FALLING_SPORE_BLOSSOM
+      count: 2
+      radius: 10
+  champs:
+    icon: WHEAT
+    sound: "minecraft:block.crop.break"
+  lac:
+    icon: FISHING_ROD
+    sound: "minecraft:ambient.underwater.enter"
+    rules:
+      fishing: true
+      boats: true
+  cimetiere:
+    icon: WITHER_ROSE
+    sound: "minecraft:ambient.soul_sand_valley.mood"
+    ambient:
+      sound: "minecraft:entity.phantom.ambient"
+      every: 30
+    time: 18000
+    particles:
+      type: ASH
+      count: 6
+      radius: 8
+    halloween: true
+  evenement:
+    icon: FIREWORK_ROCKET
+    sound: "minecraft:entity.firework_rocket.launch"
+    rules:
+      projectiles: true
+
+# Découverte du village : la première visite de chaque lieu (discoverable) est retenue.
+discovery:
+  # Aller à un lieu découvert depuis la carte (/carte).
+  teleport: true
+  # Récompenses (commandes console, {player} = pseudo ; ou « action: <action d'EterLib> »).
+  reward-each: []
+  reward-all:
+    - "action: eterlib:title \"<accent>Explorateur\" \"<info>Tout le village découvert !\""
+
+# Portes des donjons (action eterhub:door <lieu> sur un PNJ ou un panneau) : serveur de destination, vide = fermée.
+doors:
+  donjon: ""
+  donjon-secret: ""
+
+# ---------- Arrivée ----------
+arrival:
+  # Revenir à sa dernière position au lobby (sinon un point d'arrivée de la place du Spawn).
+  return-to-last-position: false
+  # Vitesse de marche au village : 0 = normale, 1 = un peu plus vite, jusqu'à 5. Remise à la normale au départ.
+  speed-level: 1
+  # Message de bienvenue (lang/ welcome.first.message / welcome.back.message).
+  message: true
+  sound: "minecraft:block.note_block.chime"
+  first-sound: "minecraft:ui.toast.challenge_complete"
+
+# Liens du message de bienvenue (<wiki>, <discord>, <shop> dans lang/).
+links:
+  wiki: "https://etercraft.be/wiki"
+  discord: "https://discord.gg/HGVUMcJeJ3"
+  shop: "https://etercraft.be/boutique"
+
+# /spawn : court délai d'EterLib (annulé si l'on bouge), puis un effet.
+spawn-command:
+  warmup: true
+
+# Visite guidée (première venue, ou /visite) : les lieux dans l'ordre ; texte de chaque étape : lang/ tour.steps.<lieu>.
+tour:
+  steps: [guilde, banque, cathedrale, colisee, donjon]
+  reward: []
 
 world:
-  # Heure figée (0 = matin, 6000 = midi, 18000 = minuit) ; -1 = cycle jour/nuit normal.
+  # Heure figée du monde (0 = matin, 6000 = midi, 18000 = minuit) ; -1 = cycle normal. Les lieux ont leur propre heure.
   time: 6000
-  # Toujours beau temps.
   clear-weather: true
-  # Monstres et animaux qui apparaissent seuls (les PNJ d'EterMarket ne sont pas concernés).
   natural-mobs: false
-  # Sous cette hauteur, retour au spawn.
+  # Sous cette hauteur, retour au spawn. Par monde : void-y-per-world.<monde>.
   void-y: -64
+  void-y-per-world: {}
 
-# Double saut : double pression sur espace en l'air. Pas pour ceux qui ont eterhub.fly (ils volent).
+# ---------- Mouvement ----------
 double-jump:
   enabled: true
   power: 1.2
   height: 0.9
+  cooldown-ms: 600
 
-# Plaques de lancement : marcher dessus projette vers l'avant.
+# Plaques posées en jeu : /eterhub pad add <launch|elevator|speed|teleport> [force] [hauteur] [fixe] (bloc où l'on est),
+# pad mark (cible d'un téléporteur), pad remove, pad list. Ascenseur : sauter monte, s'accroupir descend.
 launch-pads:
   enabled: true
+  # Plaques de lancement d'un type de bloc (partout), comme avant 2.0.
   plate: LIGHT_WEIGHTED_PRESSURE_PLATE
   power: 2.5
   height: 1.0
+  # Trampolines : ce bloc fait rebondir (vide = aucun).
+  trampoline: SLIME_BLOCK
+  trampoline-power: 1.4
+  # Couloirs de vitesse : marcher sur ces blocs rend plus rapide quelques secondes.
+  speed-blocks: []
 
-# Sélecteur de serveurs (/servers) : nom du serveur dans velocity.toml -> icône et case du menu
-# (5 lignes : cases 10 à 16, 19 à 25, 28 à 34). Le nom affiché vient d'EterLib (server-display-name du
-# serveur) ; une description optionnelle dans lang/ : selector.description.<serveur>.
+# Cosmétiques selon le grade (permissions à donner aux groupes LuckPerms) :
+# trails : traînée du double saut (eterhub.trail.<id>) ; auras : particules autour du joueur (eterhub.aura.<id>).
+# Dans l'ordre : la dernière que le joueur a l'emporte.
+cosmetics:
+  enabled: true
+  zone-particles: true
+  trails:
+    nuage: CLOUD
+    coeur: HEART
+    note: NOTE
+    flamme: FLAME
+    ame: SOUL_FIRE_FLAME
+    totem: TOTEM_OF_UNDYING
+  auras:
+    enchantement: ENCHANT
+    etoiles: END_ROD
+    cerise: CHERRY_LEAVES
+
+social:
+  # S'asseoir sur les escaliers et dalles (clic droit main vide), là où la règle sit le permet.
+  sit: true
+  # Profil d'un joueur d'un clic droit sur lui (main vide).
+  profile-on-click: true
+
+tips:
+  enabled: true
+  interval-seconds: 45
+
+# ---------- Activités ----------
+# Pêche au Lac (règle fishing) : sans canne, s'accroupir en regardant l'eau, garder Maj, lâcher quand ça mord.
+# Les prises sont des trophées (rien dans l'inventaire). Noms : lang/ fishing.fish.<id>.
+fishing:
+  wait-min-seconds: 4
+  wait-max-seconds: 12
+  bite-window-seconds: 1.2
+  # Annoncer aussi les prises rares (les légendaires le sont toujours), sur tous les lobbys.
+  announce-rare: false
+  # Récompenses par rareté (commandes console ou « action: ... »).
+  reward-common: []
+  reward-uncommon: []
+  reward-rare: []
+  reward-legendary: []
+  # chance : relative ; min / max : poids en kg.
+  fish:
+    gardon: {rarity: common, chance: 30, icon: COD, min: 0.2, max: 1.2}
+    perche: {rarity: common, chance: 25, icon: COD, min: 0.3, max: 1.8}
+    truite: {rarity: uncommon, chance: 16, icon: SALMON, min: 0.8, max: 3.5}
+    sandre: {rarity: uncommon, chance: 12, icon: SALMON, min: 1.5, max: 6}
+    brochet: {rarity: rare, chance: 8, icon: SALMON, min: 3, max: 12}
+    poisson-lune: {rarity: rare, chance: 5, icon: TROPICAL_FISH, min: 2, max: 9}
+    carpe-doree: {rarity: legendary, chance: 2, icon: TROPICAL_FISH, min: 10, max: 25}
+    anguille-spectrale: {rarity: legendary, chance: 1, icon: PUFFERFISH, min: 4, max: 15}
+    vieille-botte: {rarity: common, chance: 1, icon: LEATHER_BOOTS, min: 0.5, max: 0.5}
+
+# Fouilles du site d'Archéologie (règle dig) : cliquer plusieurs fois sur le sable / gravier suspect.
+# Les trouvailles vont au musée personnel (/musee). Noms et textes : lang/ archaeology.finds.<id>.
+archaeology:
+  hits: 6
+  respawn-seconds: 60
+  reward-common: []
+  reward-uncommon: []
+  reward-rare: []
+  reward-legendary: []
+  reward-complete: []
+  finds:
+    tesson-bleu: {rarity: common, chance: 30, icon: BRICK}
+    pointe-de-fleche: {rarity: common, chance: 25, icon: FLINT}
+    piece-ancienne: {rarity: uncommon, chance: 15, icon: GOLD_NUGGET}
+    poterie-du-lac: {rarity: uncommon, chance: 12, icon: DECORATED_POT}
+    fragment-chronique-1: {rarity: rare, chance: 6, icon: PAPER}
+    fragment-chronique-2: {rarity: rare, chance: 6, icon: PAPER}
+    fragment-chronique-3: {rarity: rare, chance: 4, icon: PAPER}
+    sceau-du-roi: {rarity: legendary, chance: 2, icon: HEART_OF_THE_SEA}
+
+# Parcours d'aventure : /eterhub parkour start|checkpoint|finish|undo|delete <parcours> (bloc où l'on se tient).
+# Noms : lang/ parkour.courses.<id>. Retour : deux accroupissements, une chute, ou le vide.
+parkour:
+  fall-distance: 6
+  reward-first: []
+  reward-record: []
+
+# Chasse aux têtes : poser une tête de joueur, la viser, /eterhub head add.
+heads:
+  reward-each: []
+  reward-all: []
+
+# Hologrammes : /eterhub holo create <id> <text|players|board|progress> [argument]
+#   players <serveur> · board <classement> [time|grams|minutes] (success, playtime_total, monthly_general, clans,
+#   hub_fishing, hub_parkour_<id>...) · progress (chaque joueur voit la sienne).
+holograms:
+  board-size: 10
+
+# ---------- Navigation ----------
+# Sélecteur de serveurs (/servers), 5 lignes (cases 10 à 16, 19 à 25, 28 à 34 ; 36 = Reprendre, 40 = retour).
+#   icon, slot ; capacity : joueurs max (barre de remplissage, « plein » ; 0 = sans) ; soon : « bientôt » ;
+#   command : commande lancée au lieu d'une connexion ; action : action d'EterLib au lieu d'une connexion.
+# Nom affiché : EterLib (server-display-name du serveur) ; description : lang/ selector.description.<serveur>.
+# Maintenance : /eterhub maintenance <serveur> on|off (le staff passe : eterhub.maintenance.bypass).
 selector:
   servers:
     eter-survival-europe-001:
       icon: GRASS_BLOCK
       slot: 22
+      capacity: 0
 
-# Portails du Nether du lobby : ils ne mènent nulle part, y entrer ouvre le sélecteur de serveurs.
-# Les blocs de portail tiennent sans cadre d'obsidienne (à poser avec WorldEdit : //set nether_portal).
-# false : portails normaux de Minecraft.
+# Portails du Nether du lobby : y entrer ouvre le sélecteur (un seul menu par passage). false : portails normaux.
 portals:
   open-selector: true
 
-# Choix du lobby (/lobbies) : les lobbys où EterHub est installé s'y ajoutent seuls.
+# Choix du lobby (/lobbies) : les lobbys où EterHub tourne s'y ajoutent seuls ; le moins rempli est conseillé.
 lobbies:
   icon: BEACON
+  # Joueurs max par lobby pour la barre de remplissage (0 = sans).
+  capacity: 20
 
-# Menus : bouton en bas du menu. Avec une commande (sans le /), il la lance pour le joueur et relie
-# les menus entre eux ; vide, il ferme le menu.
+# Menus : bouton en bas. Avec une commande (sans le /), il la lance et relie les menus ; vide, il ferme.
 menus:
   selector:
     back-command: "menu voyager"
   lobbies:
     back-command: "menu voyager"
+  map:
+    back-command: ""
+  activities:
+    back-command: ""
