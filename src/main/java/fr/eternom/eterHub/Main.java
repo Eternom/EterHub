@@ -76,8 +76,8 @@ import java.util.function.Function;
  * ascenseurs, activités (pêche au lac, fouilles et musée, parcours, chasse aux têtes, évènements et annonces),
  * hologrammes et tableaux d'honneur, sélecteur de serveurs et choix du lobby, visibilité, s'asseoir, profils.
  * Tout ce qui se règle en jeu est en base, commun à tous les lobbys : un nouveau lobby n'a rien à régler. Le côté proxy
- * (arrivée, /lobby) est EterVelocityLobby. Ne touche jamais à l'inventaire ni au mode de jeu : EterSync peut tourner
- * sur un lobby.
+ * (arrivée, /lobby) est EterVelocityLobby. Ne touche jamais à l'inventaire (EterSync peut tourner sur un lobby) ;
+ * tout le monde y est en survie, sauf le staff (arrival.force-survival).
  */
 public final class Main extends JavaPlugin {
 

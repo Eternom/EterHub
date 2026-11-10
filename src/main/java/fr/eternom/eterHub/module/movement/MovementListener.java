@@ -33,8 +33,8 @@ import java.util.function.Predicate;
  * espace ; au lieu de voler, le joueur est propulsé (délai entre deux sauts, particules de son grade, son), et le saut
  * revient en touchant le sol. Coupé dans les zones qui l'interdisent (grottes, donjons), pendant un parcours, en
  * véhicule. Le droit de voler donné ici est repris au changement de monde, de mode, de zone, en véhicule.
- * Ceux qui ont eterhub.fly (staff, /fly) ne sont jamais touchés : ils volent normalement. Le mode de jeu n'est jamais
- * changé (EterSync peut le synchroniser). Les mouvements ne sont regardés qu'aux changements de bloc.
+ * Ceux qui ont eterhub.fly (staff, /fly) ne sont jamais touchés : ils volent normalement. Le mode de jeu est réglé
+ * à l'arrivée (survie, ArrivalListener). Les mouvements ne sont regardés qu'aux changements de bloc.
  */
 public class MovementListener implements Listener {
 

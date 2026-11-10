@@ -2,8 +2,8 @@
 #  EterHub : le village des lobbys
 # ============================================================
 #
-#  À installer seulement sur les lobbys. EterHub ne touche JAMAIS à l'inventaire ni au mode de jeu : EterSync peut
-#  tourner sur un lobby. Tout ce qui se pose en jeu (limites des lieux, spawn, plaques, hologrammes, parcours, têtes)
+#  À installer seulement sur les lobbys. EterHub ne touche JAMAIS à l'inventaire (EterSync peut tourner sur un lobby) ;
+#  tout le monde y est en survie, sauf le staff (arrival.force-survival). Tout ce qui se pose en jeu (limites des lieux, spawn, plaques, hologrammes, parcours, têtes)
 #  est en base, COMMUN à tous les lobbys : un nouveau lobby n'a rien à régler.
 #
 #  Réglages en jeu : les valeurs simples (oui/non, nombres, textes) des sections activities, arrival, double-jump,
@@ -362,6 +362,8 @@ arrival:
   return-to-last-position: false
   # Vitesse de marche au village : 0 = normale, 1 = un peu plus vite, jusqu'à 5. Remise à la normale au départ.
   speed-level: 1
+  # Tout le monde en survie au lobby (récolter, pêcher...), sauf le staff (eterhub.staff) qui garde son mode.
+  force-survival: true
   # Message de bienvenue (lang/ welcome.first.message / welcome.back.message).
   message: true
   sound: "minecraft:block.note_block.chime"

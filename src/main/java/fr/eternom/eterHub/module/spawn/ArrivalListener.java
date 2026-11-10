@@ -12,12 +12,14 @@ import net.kyori.adventure.key.Key;
 import net.kyori.adventure.sound.Sound;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -41,6 +43,8 @@ import java.util.function.Consumer;
 public class ArrivalListener implements Listener {
 
     private static final float BASE_WALK_SPEED = 0.2f;
+    /** Le staff garde son mode de jeu au lobby. */
+    public static final String STAFF = "eterhub.staff";
 
     private final JavaPlugin plugin;
     private final HubPlayers players;
@@ -116,6 +120,13 @@ public class ArrivalListener implements Listener {
             }
         });
         applySpeed(player);
+        forceSurvival(player);
+        // EterSync peut remettre le mode de jeu un peu après l'arrivée : on repasse derrière
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (player.isOnline()) {
+                forceSurvival(player);
+            }
+        }, 40);
         welcome(player, newcomer);
         if (newcomer && settings.bool("activities.tour", true)) {
             Bukkit.getScheduler().runTaskLater(plugin, () -> {
@@ -174,6 +185,31 @@ public class ArrivalListener implements Listener {
     public void applySpeed(Player player) {
         int level = Math.max(0, Math.min(5, settings.integer("arrival.speed-level", 1)));
         player.setWalkSpeed(Math.min(1f, BASE_WALK_SPEED * (1 + 0.2f * level)));
+    }
+
+    /**
+     * Au lobby, tout le monde est en survie (arrival.force-survival) : on peut récolter, pêcher, casser les cultures. Le
+     * staff (eterhub.staff) garde son mode (créatif, spectateur, mode staff). Ne touche à rien d'autre (inventaire).
+     */
+    public void forceSurvival(Player player) {
+        if (settings.bool("arrival.force-survival", true) && !player.hasPermission(STAFF)
+                && player.getGameMode() != GameMode.SURVIVAL) {
+            player.setGameMode(GameMode.SURVIVAL);
+        }
+    }
+
+    /** Un autre mode de jeu (synchronisation, commande) : remis en survie au tick suivant, sauf pour le staff. */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onGameMode(PlayerGameModeChangeEvent event) {
+        if (event.getNewGameMode() == GameMode.SURVIVAL || event.getPlayer().hasPermission(STAFF)) {
+            return;
+        }
+        Player player = event.getPlayer();
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            if (player.isOnline()) {
+                forceSurvival(player);
+            }
+        });
     }
 
     /** En tout premier : la vitesse revient à la normale avant que d'autres plugins (EterSync) ne gardent le joueur. */

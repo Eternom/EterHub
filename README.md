@@ -6,8 +6,9 @@ Le côté proxy (arrivée, `/lobby`, renvoi au lobby, lobbys jetables) est **Ete
 - **EterLib 1.23.0+** (`depend`) : base, Redis, bus réseau, langues, menus, actions, téléportations.
 - Facultatifs (`softdepend`) : **EterFriend** (amis : visibilité, amis en ligne, suivre un ami), **EterClan** (clan :
   visibilité, profil), EterNpc (PNJ des lieux, avec les actions `eterhub:*`).
-- Ne démarre que sur un serveur dont le nom commence par `lobby-servers`. Ne touche **jamais** à l'inventaire ni au
-  mode de jeu (EterSync peut tourner sur un lobby) : la vitesse au village passe par la vitesse de marche, remise à la
+- Ne démarre que sur un serveur dont le nom commence par `lobby-servers`. Ne touche **jamais** à l'inventaire
+  (EterSync peut tourner sur un lobby). Tout le monde y est en **survie** (`arrival.force-survival`), sauf le staff
+  (`eterhub.staff`) qui garde son mode. La vitesse au village passe par la vitesse de marche, remise à la
   normale au départ (avant EterSync).
 
 ## Principe : tout ce qui se pose en jeu est en base, commun à tous les lobbys

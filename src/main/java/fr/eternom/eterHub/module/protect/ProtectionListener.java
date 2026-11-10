@@ -76,7 +76,7 @@ import java.util.function.Consumer;
  *   la canne à pêche n'accroche pas les joueurs ; bateaux et chariots seulement là où la zone le permet ;
  * - le monde ne change pas : pas de feu, de feuilles qui tombent, de fonte ou de formation de glace et de neige,
  *   d'écoulement, de chute de sable, de pousse des cultures, d'explosion, de portail allumé.
- * EterSync peut tourner sur un lobby : l'inventaire et le mode de jeu ne sont JAMAIS modifiés ici.
+ * EterSync peut tourner sur un lobby : l'inventaire n'est JAMAIS modifié ici (le mode de jeu : ArrivalListener).
  */
 public class ProtectionListener implements Listener {
 
