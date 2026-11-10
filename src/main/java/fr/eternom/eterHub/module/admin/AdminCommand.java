@@ -78,9 +78,9 @@ public class AdminCommand implements TabExecutor {
         }
         switch (sub) {
             case "setspawn" -> parts.get("spawn").run(player, new String[]{"set"});
-            case "reglage", "setting" -> setting(player, rest);
+            case "setting" -> setting(player, rest);
             case "maintenance" -> maintenance(player, rest);
-            case "journal", "log" -> journal(player, rest);
+            case "log" -> journal(player, rest);
             case "stats" -> stats(player, rest);
             case "info" -> info.get().forEach(line -> player.sendMessage(messages.render(line,
                     net.kyori.adventure.text.minimessage.tag.resolver.TagResolver.empty())));
@@ -180,17 +180,17 @@ public class AdminCommand implements TabExecutor {
         }
         if (args.length == 1) {
             List<String> options = new ArrayList<>(parts.keySet());
-            options.addAll(List.of("reglage", "maintenance", "journal", "stats", "reload", "info", "setspawn"));
+            options.addAll(List.of("setting", "maintenance", "log", "stats", "reload", "info", "setspawn"));
             return SubCommand.filter(options, args[0]);
         }
         String sub = args[0].toLowerCase(Locale.ROOT);
         String[] rest = Arrays.copyOfRange(args, 1, args.length);
-        if (sub.equals("reglage") && args.length == 2) {
+        if (sub.equals("setting") && args.length == 2) {
             List<String> options = new ArrayList<>(settings.list().keySet());
             options.addAll(List.of("list", "reset"));
             return SubCommand.filter(options, args[1]);
         }
-        if (sub.equals("reglage") && args.length == 3 && args[1].equalsIgnoreCase("reset")) {
+        if (sub.equals("setting") && args.length == 3 && args[1].equalsIgnoreCase("reset")) {
             return SubCommand.filter(new ArrayList<>(settings.list().keySet()), args[2]);
         }
         if (sub.equals("maintenance") && args.length == 3) {

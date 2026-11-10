@@ -30,10 +30,10 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * La visite guidée du village (première venue, ou /visite) : une suite de lieux (config.yml > tour.steps), un à la
+ * La visite guidée du village (première venue, ou /tour) : une suite de lieux (config.yml > tour.steps), un à la
  * fois, dans une bossbar (« Étape 2/5 : la Banque »), avec un chemin de particules vers le point d'arrivée du lieu.
- * Entrer dans le lieu passe à l'étape suivante ; à la fin, une récompense (tour.reward). /visite passer l'arrête,
- * /visite la reprend. L'étape est gardée en base (reprise sur n'importe quel lobby). Elle passera plus tard par
+ * Entrer dans le lieu passe à l'étape suivante ; à la fin, une récompense (tour.reward). /tour skip l'arrête,
+ * /tour la reprend. L'étape est gardée en base (reprise sur n'importe quel lobby). Elle passera plus tard par
  * BetonQuest (HubZoneEnterEvent suffit à suivre les lieux).
  */
 public class Tour implements Listener, TabExecutor {
@@ -182,8 +182,8 @@ public class Tour implements Listener, TabExecutor {
         }
         String sub = args.length > 0 ? args[0].toLowerCase() : "";
         switch (sub) {
-            case "passer", "skip", "stop" -> stop(player, true);
-            case "recommencer", "restart" -> begin(player, true);
+            case "skip", "stop" -> stop(player, true);
+            case "restart" -> begin(player, true);
             default -> {
                 if (running(player)) {
                     messages.send(player, "tour.already");
@@ -197,6 +197,6 @@ public class Tour implements Listener, TabExecutor {
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
-        return args.length == 1 ? fr.eternom.eterHub.module.core.SubCommand.filter(List.of("passer", "recommencer"), args[0]) : List.of();
+        return args.length == 1 ? fr.eternom.eterHub.module.core.SubCommand.filter(List.of("skip", "restart"), args[0]) : List.of();
     }
 }

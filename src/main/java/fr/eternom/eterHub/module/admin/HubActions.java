@@ -28,8 +28,8 @@ import java.util.List;
  *   eterhub:zone <lieu>        aller à un lieu du village (même non découvert : le PNJ y emmène)
  *   eterhub:map                la carte du village
  *   eterhub:visibility         changer qui l'on voit
- *   eterhub:fishing            pêche : classements et règles (/peche)
- *   eterhub:museum             le musée des fouilles (/musee)
+ *   eterhub:fishing            pêche : classements et règles (/fishing)
+ *   eterhub:museum             le musée des fouilles (/museum)
  *   eterhub:tour [restart]     la visite guidée
  *   eterhub:soon <quoi>        « bientôt » (Étals, Maisons et boutiques...)
  *   eterhub:door <lieu>        porte d'un donjon : le serveur de config.yml > doors, fermée sinon

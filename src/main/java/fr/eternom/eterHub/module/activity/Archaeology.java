@@ -49,7 +49,7 @@ import java.util.concurrent.ThreadLocalRandom;
  * Les fouilles du site d'Archéologie (zones où la règle dig est permise, activities.archaeology) : cliquer plusieurs
  * fois sur du sable ou du gravier suspect le fouille (son du pinceau, poussière). Fini : une trouvaille tirée dans
  * archaeology.finds (fragments de lore, poteries...), et le bloc redevient du sable ordinaire, puis se reforme
- * (archaeology.respawn-seconds). Rien n'entre dans l'inventaire : les trouvailles vont au musée personnel (/musee),
+ * (archaeology.respawn-seconds). Rien n'entre dans l'inventaire : les trouvailles vont au musée personnel (/museum),
  * gardées en base (eterhub_finds). Collection complète : archaeology.reward-complete.
  */
 public class Archaeology implements Listener, TabExecutor {
@@ -204,7 +204,7 @@ public class Archaeology implements Listener, TabExecutor {
         museums.remove(event.getPlayer().getUniqueId());
     }
 
-    // ---------- Musée : /musee ----------
+    // ---------- Musée : /museum ----------
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {

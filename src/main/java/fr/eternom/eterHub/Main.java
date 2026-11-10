@@ -173,11 +173,11 @@ public final class Main extends JavaPlugin {
         register("servers", networkCommand);
         register("lobbies", networkCommand);
         register("visibility", visibility);
-        register("carte", new SimpleCommand(map::open));
-        register("peche", fishing);
-        register("musee", archaeology);
-        register("parcours", parkour);
-        register("visite", tour);
+        register("map", new SimpleCommand(map::open));
+        register("fishing", fishing);
+        register("museum", archaeology);
+        register("parkour", parkour);
+        register("tour", tour);
         AdminCommand admin = new AdminCommand(this, messages, settings, stats, network, () -> {
             reloadEverywhere(bus);
         }, () -> info(lib, zones, heads, parkour));
@@ -190,7 +190,7 @@ public final class Main extends JavaPlugin {
         admin.add("parkour", parkour);
         admin.add("head", heads);
         admin.add("event", events);
-        admin.add("annonce", events.announcer());
+        admin.add("announce", events.announcer());
         admin.add("build", build);
         register("eterhub", admin);
         bus.on("reload", data -> reloadLocal(settings, zones, fishing, protection));
@@ -295,7 +295,7 @@ public final class Main extends JavaPlugin {
         return messages;
     }
 
-    /** Une commande joueur sans argument qui ouvre un menu (/carte). */
+    /** Une commande joueur sans argument qui ouvre un menu (/map). */
     private record SimpleCommand(java.util.function.Consumer<Player> action) implements TabExecutor {
         @Override
         public boolean onCommand(org.bukkit.command.CommandSender sender, org.bukkit.command.Command command, String label, String[] args) {

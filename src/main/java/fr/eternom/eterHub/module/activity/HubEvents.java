@@ -27,7 +27,7 @@ import java.util.Optional;
  * Évènements et annonces du village, sur TOUS les lobbys :
  * - /eterhub event start <minutes> <nom> : une bossbar avec le compte à rebours, pour tout le monde, qui invite à la
  *   Zone d'évènement ; /eterhub event stop. Gardé dans Redis : un lobby créé pendant l'évènement l'affiche aussi ;
- * - /eterhub annonce <texte> : la Cathédrale annonce (titre, son de cloche, message), sur tous les lobbys.
+ * - /eterhub announce <texte> : la Cathédrale annonce (titre, son de cloche, message), sur tous les lobbys.
  */
 public class HubEvents implements Listener, SubCommand {
 
@@ -177,7 +177,7 @@ public class HubEvents implements Listener, SubCommand {
         return args.length == 1 ? SubCommand.filter(List.of("start", "stop"), args[0]) : List.of();
     }
 
-    /** /eterhub annonce <texte> : sur tous les lobbys. */
+    /** /eterhub announce <texte> : sur tous les lobbys. */
     public SubCommand announcer() {
         return new SubCommand() {
             @Override

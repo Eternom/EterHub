@@ -19,46 +19,40 @@ commands:
   servers:
     description: Sélecteur de serveurs.
     usage: /servers
-    aliases: [serveurs]
     permission: eterhub.servers
   lobbies:
     description: Choisir un lobby.
     usage: /lobbies
-    aliases: [lobbys]
     permission: eterhub.lobbies
   visibility:
     description: "Qui l'on voit au lobby : tous, amis et clan, staff, personne."
     usage: /visibility [all|friends|staff|none]
-    aliases: [visibilite, hideplayers]
+    aliases: [hideplayers]
     permission: eterhub.visibility
-  carte:
+  map:
     description: La carte du village.
-    usage: /carte
-    aliases: [map, village]
+    usage: /map
+    aliases: [village]
     permission: eterhub.play
-  peche:
+  fishing:
     description: La pêche au lac (classements).
-    usage: /peche
-    aliases: [fishing, pêche]
+    usage: /fishing
     permission: eterhub.play
-  musee:
+  museum:
     description: Le musée des fouilles.
-    usage: /musee
-    aliases: [museum, musée]
+    usage: /museum
     permission: eterhub.play
-  parcours:
-    description: Les parcours (classement, quitter, retour).
-    usage: /parcours [<parcours>|top <parcours>|quitter|retour]
-    aliases: [parkour]
+  parkour:
+    description: Les parcours (classement, abandonner, revenir au dernier point).
+    usage: /parkour [<parcours>|top <parcours>|quit|back]
     permission: eterhub.play
-  visite:
+  tour:
     description: La visite guidée du village.
-    usage: /visite [passer|recommencer]
-    aliases: [tour]
+    usage: /tour [skip|restart]
     permission: eterhub.play
   eterhub:
     description: Administration des lobbys (staff).
-    usage: /eterhub <zone|spawn|pad|holo|parkour|head|event|annonce|build|reglage|maintenance|journal|stats|reload|info>
+    usage: /eterhub <zone|spawn|pad|holo|parkour|head|event|announce|build|setting|maintenance|log|stats|reload|info>
     permission: eterhub.use
 
 permissions:

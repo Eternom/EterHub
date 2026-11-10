@@ -106,11 +106,11 @@ spawn:
   usage: "<error>Utilisation : <accent>/eterhub spawn set | add | clear | list"
 
 tour:
-  start: "<success>Visite guidée : <accent><count></accent> lieux à voir. <dark_gray>(/visite passer pour l'arrêter)"
+  start: "<success>Visite guidée : <accent><count></accent> lieux à voir. <dark_gray>(/tour skip pour l'arrêter)"
   bar: "<accent>Visite <step>/<count></accent> <dark_gray>· <info>Va à : <accent><zone>"
   done: "<success>Visite terminée ! Le village n'a plus de secret pour toi... ou presque."
-  skipped: "<info>Visite arrêtée. <accent>/visite</accent> pour la reprendre."
-  already: "<info>La visite est déjà en cours. <accent>/visite passer</accent> pour l'arrêter."
+  skipped: "<info>Visite arrêtée. <accent>/tour</accent> pour la reprendre."
+  already: "<info>La visite est déjà en cours. <accent>/tour skip</accent> pour l'arrêter."
   unavailable: "<error>Pas de visite pour le moment."
   steps:
     guilde: "<info>Commence par <accent>la Guilde</accent> : choisis un métier auprès du chef des guildes."
@@ -280,7 +280,7 @@ parkour:
   record: "<gold>Record personnel sur <accent><course></accent> : <accent><time></accent> !"
   quit: "<info>Parcours abandonné."
   not-running: "<error>Tu ne fais pas de parcours."
-  list: "<info>Parcours : <accent><courses></accent> <dark_gray>· /parcours <nom>"
+  list: "<info>Parcours : <accent><courses></accent> <dark_gray>· /parkour <nom>"
   top-title: "<primary>Classement · <course>"
   top-line: "<accent><rank>. <info><player> <dark_gray>· <accent><time>"
   top-you: "<info>Toi : <accent><time></accent> <dark_gray>(<rank>e · <runs> arrivées)"
@@ -304,7 +304,7 @@ event:
 announce:
   title: "<gold>La Cathédrale annonce"
   chat: "<gold>🔔 <info><text>"
-  usage: "<error>Utilisation : <accent>/eterhub annonce <texte>"
+  usage: "<error>Utilisation : <accent>/eterhub announce <texte>"
 
 # ---------- Affichages ----------
 hologram:
@@ -322,17 +322,17 @@ hologram:
 # Astuces dans la barre d'action : une ligne par astuce ; par lieu (tips.<lieu>), sinon default.
 tips:
   default:
-    - "<info>Astuce : <accent>/carte</accent> pour voir les lieux découverts."
+    - "<info>Astuce : <accent>/map</accent> pour voir les lieux découverts."
     - "<info>Astuce : double saut avec <accent>espace</accent> deux fois."
     - "<info>Astuce : clic droit sur un joueur pour voir son profil."
     - "<info>Astuce : clic droit sur un banc pour t'asseoir."
     - "<info>Astuce : des têtes sont cachées dans tout le village..."
   lac:
     - "<info>Astuce : accroupis-toi face à l'eau, lâche Maj quand ça mord."
-    - "<info>Astuce : <accent>/peche</accent> pour les plus belles prises."
+    - "<info>Astuce : <accent>/fishing</accent> pour les plus belles prises."
   archeologie:
     - "<info>Astuce : clique plusieurs fois sur le sable suspect pour fouiller."
-    - "<info>Astuce : <accent>/musee</accent> pour voir tes trouvailles."
+    - "<info>Astuce : <accent>/museum</accent> pour voir tes trouvailles."
   mines:
     - "<info>Astuce : deux fois Maj pour revenir au dernier point de passage."
 
@@ -343,7 +343,7 @@ build:
   no-permission: "<error>Il faut la permission eterhub.build."
 
 admin:
-  usage: "<error>Utilisation : <accent>/eterhub <partie></accent> <dark_gray>(<parts>, reglage, maintenance, journal, stats, reload, info)"
+  usage: "<error>Utilisation : <accent>/eterhub <partie></accent> <dark_gray>(<parts>, setting, maintenance, log, stats, reload, info)"
   reloaded: "<success>EterHub rechargé sur tous les lobbys."
   setting:
     list: "<primary>Réglages modifiables <dark_gray>(* = changé en jeu)"

@@ -55,7 +55,7 @@ import java.util.concurrent.ThreadLocalRandom;
  *   Maj dans la seconde ferre le poisson. Lâcher trop tôt rentre la ligne.
  * - Avec une canne : le poisson pris devient un trophée (l'objet est retiré).
  * Prise : poisson tiré dans fishing.fish (rareté, poids), titre pour les rares, annonce sur tous les lobbys pour les
- * légendaires (et les rares si fishing.announce-rare), classement du jour et du mois (/peche, « hub_fishing »).
+ * légendaires (et les rares si fishing.announce-rare), classement du jour et du mois (/fishing, « hub_fishing »).
  */
 public class Fishing implements Listener, TabExecutor {
 
@@ -258,7 +258,7 @@ public class Fishing implements Listener, TabExecutor {
         return raw != null ? raw : id;
     }
 
-    // ---------- /peche ----------
+    // ---------- /fishing ----------
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {

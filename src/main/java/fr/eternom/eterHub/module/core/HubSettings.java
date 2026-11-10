@@ -18,7 +18,7 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Réglages communs à tous les lobbys, modifiables en jeu (/eterhub reglage) : un réglage simple de config.yml (oui/non,
+ * Réglages communs à tous les lobbys, modifiables en jeu (/eterhub setting) : un réglage simple de config.yml (oui/non,
  * nombre, texte) sous l'une des sections EDITABLE peut être remplacé en base (eterhub_settings). La valeur de la base
  * l'emporte sur config.yml, sur TOUS les lobbys (bus réseau) : un nouveau lobby n'a rien à régler. Chaque changement est
  * noté dans eterhub_settings_log (qui, quand, avant, après). Les modules lisent le réglage à chaque usage : un changement

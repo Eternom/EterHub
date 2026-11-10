@@ -8,8 +8,8 @@
 #
 #  Réglages en jeu : les valeurs simples (oui/non, nombres, textes) des sections activities, arrival, double-jump,
 #  launch-pads, world, tips, cosmetics, social, fishing, archaeology, parkour, heads, tour, discovery et spawn-command
-#  se changent avec /eterhub reglage <chemin> <valeur>, pour tous les lobbys (la valeur en base l'emporte sur ce
-#  fichier ; /eterhub reglage reset <chemin> y revient). Le reste : /eterhub reload (tous les lobbys).
+#  se changent avec /eterhub setting <chemin> <valeur>, pour tous les lobbys (la valeur en base l'emporte sur ce
+#  fichier ; /eterhub setting reset <chemin> y revient). Le reste : /eterhub reload (tous les lobbys).
 #  Textes : lang/ (noms des lieux, astuces, poissons, trouvailles...).
 
 # Sécurité : EterHub ne démarre que si le nom de ce serveur (server-name d'EterLib) commence par l'un de ces préfixes.
@@ -32,7 +32,7 @@ activities:
 #   /eterhub zone list · show <lieu> · here
 # Quand deux lieux se chevauchent, le plus petit l'emporte (le Donjon secret dans le Donjon, un lieu dans le Spawn).
 #
-#   icon        icône dans la carte du village (/carte)
+#   icon        icône dans la carte du village (/map)
 #   rules       ce qui est permis (sinon zone-defaults) : double-jump, fishing, projectiles, dig, boats, sit
 #   sound       son à l'entrée ; ambient.sound / ambient.every : son qui revient toutes les N secondes
 #   particles   particules vues par le joueur autour de lui (type sans données : FIREFLY, SNOWFLAKE, ENCHANT, SPORE_BLOSSOM_AIR...)
@@ -173,7 +173,7 @@ zones:
 
 # Découverte du village : la première visite de chaque lieu (discoverable) est retenue.
 discovery:
-  # Aller à un lieu découvert depuis la carte (/carte).
+  # Aller à un lieu découvert depuis la carte (/map).
   teleport: true
   # Récompenses (commandes console, {player} = pseudo ; ou « action: <action d'EterLib> »).
   reward-each: []
@@ -206,7 +206,7 @@ links:
 spawn-command:
   warmup: true
 
-# Visite guidée (première venue, ou /visite) : les lieux dans l'ordre ; texte de chaque étape : lang/ tour.steps.<lieu>.
+# Visite guidée (première venue, ou /tour) : les lieux dans l'ordre ; texte de chaque étape : lang/ tour.steps.<lieu>.
 tour:
   steps: [guilde, banque, cathedrale, colisee, donjon]
   reward: []
@@ -296,7 +296,7 @@ fishing:
     vieille-botte: {rarity: common, chance: 1, icon: LEATHER_BOOTS, min: 0.5, max: 0.5}
 
 # Fouilles du site d'Archéologie (règle dig) : cliquer plusieurs fois sur le sable / gravier suspect.
-# Les trouvailles vont au musée personnel (/musee). Noms et textes : lang/ archaeology.finds.<id>.
+# Les trouvailles vont au musée personnel (/museum). Noms et textes : lang/ archaeology.finds.<id>.
 archaeology:
   hits: 6
   respawn-seconds: 60
@@ -359,9 +359,9 @@ lobbies:
 # Menus : bouton en bas. Avec une commande (sans le /), il la lance et relie les menus ; vide, il ferme.
 menus:
   selector:
-    back-command: "menu voyager"
+    back-command: "menu travel"
   lobbies:
-    back-command: "menu voyager"
+    back-command: "menu travel"
   map:
     back-command: ""
   activities:

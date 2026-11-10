@@ -117,7 +117,7 @@ public class Profiles implements Listener {
             if (slot == ADD_FRIEND && canAdd) {
                 Sounds.click(player);
                 player.closeInventory();
-                player.performCommand("ami ajouter " + targetName);
+                player.performCommand("friend add " + targetName);
             }
         }
 

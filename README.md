@@ -14,14 +14,14 @@ Le côté proxy (arrivée, `/lobby`, renvoi au lobby, lobbys jetables) est **Ete
 
 Limites des lieux, spawn et points d'arrivée, plaques, hologrammes, parcours, têtes, réglages changés en jeu : en
 base (`eterhub_*`), relus par tous les lobbys au moindre changement (bus `eterhub`). Un lobby créé par
-l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans `eterhub_settings_log` (`/eterhub journal`).
+l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans `eterhub_settings_log` (`/eterhub log`).
 
 ## Modules
 
 | Paquet | Contenu |
 |---|---|
 | `core` | `HubSettings` (réglages en jeu, journal), `HubStats` (statistiques par jour), `HubPlayers` (première venue, dernière position, visite, dernier serveur joué), `Rewards` (commandes console ou actions EterLib) |
-| `zone` | `Zone` (config), `Region`/`ZoneIndex` (logique pure, testée : la plus petite zone l'emporte), `ZoneStore`, `ZoneService` (suivi aux changements de bloc, titre, son, heure et météo par joueur, accès réservé, découverte, ambiance), `VillageMap` (`/carte`), `ZoneCommand` |
+| `zone` | `Zone` (config), `Region`/`ZoneIndex` (logique pure, testée : la plus petite zone l'emporte), `ZoneStore`, `ZoneService` (suivi aux changements de bloc, titre, son, heure et météo par joueur, accès réservé, découverte, ambiance), `VillageMap` (`/map`), `ZoneCommand` |
 | `spawn` | `Spawn` (spawn principal + points d'arrivée), `ArrivalListener` (lecture à l'arrivée dans `AsyncPlayerSpawnLocationEvent` priorité LOW : une téléportation réseau d'EterLib passe après et l'emporte), `Tour` (visite guidée), `VoidListener` |
 | `protect` | `ProtectionListener` (tout le village figé et protégé), `BuildMode` (`/eterhub build`) |
 | `movement` | `MovementListener` (double saut), `Pads` (lanceurs, ascenseurs, vitesse, téléporteurs, trampolines), `Cosmetics` (traînées et auras par permission) |
@@ -35,9 +35,9 @@ l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans
 
 | Joueurs | |
 |---|---|
-| `/spawn` · `/servers` · `/lobbies` · `/carte` · `/visite [passer\|recommencer]` | Navigation |
+| `/spawn` · `/servers` · `/lobbies` · `/map` · `/tour [skip\|restart]` | Navigation |
 | `/visibility [all\|friends\|staff\|none]` | Qui l'on voit |
-| `/peche` · `/musee` · `/parcours [<parcours>\|quitter\|retour]` | Activités |
+| `/fishing` · `/museum` · `/parkour [<parcours>\|top <parcours>\|quit\|back]` | Activités |
 
 | Staff (`eterhub.admin`) | |
 |---|---|
@@ -47,9 +47,9 @@ l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans
 | `/eterhub holo list\|create\|addline\|setline\|removeline\|move\|delete` | Hologrammes |
 | `/eterhub parkour list\|start\|checkpoint\|undo\|finish\|delete <parcours>` | Parcours |
 | `/eterhub head add\|remove\|count` | Chasse aux têtes (en visant la tête) |
-| `/eterhub event start <minutes> <nom>\|stop` · `/eterhub annonce <texte>` | Évènements, annonces (tous les lobbys) |
-| `/eterhub reglage [<chemin> [valeur]\|reset <chemin>]` | Réglages communs, en base |
-| `/eterhub maintenance <serveur> on\|off` · `journal [n]` · `stats [jours] [préfixe]` · `reload` · `info` | Staff |
+| `/eterhub event start <minutes> <nom>\|stop` · `/eterhub announce <texte>` | Évènements, annonces (tous les lobbys) |
+| `/eterhub setting [<chemin> [valeur]\|reset <chemin>]` | Réglages communs, en base |
+| `/eterhub maintenance <serveur> on\|off` · `log [n]` · `stats [jours] [préfixe]` · `reload` · `info` | Staff |
 | `/eterhub build` (`eterhub.build`) | Mode construction |
 
 ## Actions EterLib (PNJ, menus)

@@ -47,7 +47,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * (barre d'action), les points de passage se prennent dans l'ordre, l'arrivée donne le temps. Deux accroupissements
  * rapides, une chute (parkour.fall-distance sous le dernier point) ou le vide ramènent au dernier point. Pas de double
  * saut pendant un parcours. Premier parcours fini : parkour.reward-first ; record personnel : parkour.reward-record.
- * Temps en base (eterhub_parkour_times), classement par parcours (/parcours, et la source « hub_parkour_<id> »).
+ * Temps en base (eterhub_parkour_times), classement par parcours (/parkour, et la source « hub_parkour_<id> »).
  * Éditeur : /eterhub parkour start|checkpoint|undo|finish|delete|list <parcours> (le bloc où l'on se tient).
  */
 public class Parkour implements Listener, SubCommand, TabExecutor {
@@ -312,7 +312,7 @@ public class Parkour implements Listener, SubCommand, TabExecutor {
         });
     }
 
-    // ---------- /parcours ----------
+    // ---------- /parkour ----------
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -321,7 +321,7 @@ public class Parkour implements Listener, SubCommand, TabExecutor {
             return true;
         }
         String sub = args.length > 0 ? args[0].toLowerCase(Locale.ROOT) : "";
-        if (sub.equals("quitter") || sub.equals("quit")) {
+        if (sub.equals("quit")) {
             if (running(player)) {
                 quit(player, true);
             } else {
@@ -329,7 +329,7 @@ public class Parkour implements Listener, SubCommand, TabExecutor {
             }
             return true;
         }
-        if (sub.equals("retour") || sub.equals("back")) {
+        if (sub.equals("back")) {
             back(player);
             return true;
         }
@@ -361,7 +361,7 @@ public class Parkour implements Listener, SubCommand, TabExecutor {
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 1) {
-            List<String> options = new ArrayList<>(List.of("quitter", "retour", "top"));
+            List<String> options = new ArrayList<>(List.of("quit", "back", "top"));
             options.addAll(courses.keySet());
             return SubCommand.filter(options, args[0]);
         }

@@ -25,7 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * La carte du village (/carte) : chaque lieu, découvert ou non (« ??? »), dans l'ordre de config.yml, avec le compteur
+ * La carte du village (/map) : chaque lieu, découvert ou non (« ??? »), dans l'ordre de config.yml, avec le compteur
  * « 12/19 lieux découverts ». Un lieu découvert, au point d'arrivée réglé, se rejoint d'un clic (le staff : tous).
  */
 public class VillageMap {
