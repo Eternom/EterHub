@@ -3,7 +3,7 @@
 Le **village des lobbys** du réseau Akia (Paper 26.2, Java 25). Document développeur, à tenir à jour avec le code.
 Le côté proxy (arrivée, `/lobby`, renvoi au lobby, lobbys jetables) est **EterVelocityLobby**.
 
-- **EterLib 1.23.0+** (`depend`) : base, Redis, bus réseau, langues, menus, actions, téléportations.
+- **EterLib 1.25.0+** (`depend`) : base, Redis, bus réseau, langues, menus, actions, téléportations.
 - Facultatifs (`softdepend`) : **EterFriend** (amis : visibilité, amis en ligne, suivre un ami), **EterClan** (clan :
   visibilité, profil), EterNpc (PNJ des lieux, avec les actions `eterhub:*`).
 - Ne démarre que sur un serveur dont le nom commence par `lobby-servers`. Ne touche **jamais** à l'inventaire
@@ -63,6 +63,16 @@ l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans
 `tour [restart]`, `soon <quoi>`, `door <lieu>` (config `doors`) ; conditions `?eterhub:discovered <lieu>`,
 `?eterhub:in-zone <lieu>`. Un lieu réservé peut demander une condition d'EterLib (`access.condition`, ex :
 `?eterjob:rank mineur expert`), testée seulement si elle est fournie sur ce serveur.
+
+## Quêtes (EterQuest)
+
+Le village parle aux quêtes par le pont d'EterLib (`QuestBridge`, sans dépendre d'EterQuest ; `QuestSignals`) :
+`eterhub:harvest {crop, quality, zone}`, `eterhub:fish {fish, rarity, grams}`, `eterhub:find {find, rarity}`,
+`eterhub:head {hunt, zone, rare}`, `eterhub:parkour {course, ms, record}`, `eterhub:zone {zone, first}`, `eterhub:tour`,
+`eterhub:discovery-complete`. Les PNJ du village (fermier, vigneron, poissonnier) peuvent donner et reprendre des
+quêtes de métier (EterJob). **Récolte de quête** : une récolte qu'une quête du joueur attend va au panier de la
+commande — pas d'objet, et le plafond du jour n'est ni compté ni bloquant (quêtes et récoltes du jour restent
+séparées) ; plafond atteint et qualité pas celle demandée : la culture part sans rien donner (pas de tirage à volonté).
 
 ## API
 

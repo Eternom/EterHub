@@ -260,6 +260,8 @@ public class Fishing implements Listener, TabExecutor {
         }
         Rewards.give(plugin, player, plugin.getConfig().getStringList("fishing.reward-" + rarity.key()));
         Bukkit.getPluginManager().callEvent(new HubActivityEvent(player, "fishing", fish, rarity.ordinal(), false));
+        fr.eternom.eterLib.module.quest.QuestBridge.signal(player, "eterhub:fish", java.util.Map.of("fish", fish, "rarity", rarity.key(),
+                "grams", String.valueOf(grams)), 1);
     }
 
     private String fishName(Player viewer, String id) {

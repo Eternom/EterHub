@@ -24,7 +24,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:26.2.build.129-stable")
 
     // Socle commun : base, langues, menus, serveurs du réseau (plugin EterLib installé sur le serveur)
-    compileOnly("com.github.Eternom:EterLib:1.23.0")
+    compileOnly("com.github.Eternom:EterLib:1.25.0")
     // Facultatifs sur un lobby (softdepend) : amis (visibilité, amis en ligne), clans (visibilité « amis et clan »)
     compileOnly("com.github.Eternom:EterFriend:1.0.0")
     compileOnly("com.github.Eternom:EterClan:1.7.0")

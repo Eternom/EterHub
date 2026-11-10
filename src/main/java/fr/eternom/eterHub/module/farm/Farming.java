@@ -16,6 +16,7 @@ import fr.eternom.eterLib.helper.task.Tasks;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
+import fr.eternom.eterLib.module.quest.QuestBridge;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -69,6 +70,9 @@ import java.util.concurrent.ThreadLocalRandom;
  * Le fermier et le vigneron les rachètent (FarmMarket). /harvest : le carnet des récoltes.
  */
 public class Farming implements Listener, TabExecutor {
+
+    /** Le signal des quêtes (EterQuest) : {crop, quality, zone}. */
+    private static final String QUEST_SIGNAL = "eterhub:harvest";
 
     private static final ZoneId ZONE = ZoneId.of("Europe/Paris");
 
@@ -200,11 +204,9 @@ public class Farming implements Listener, TabExecutor {
             notice(player, "farming.not-ripe");
             return;
         }
-        if (!allowed(player, crop)) {
-            return;
+        if (gather(player, block, crop)) {
+            regrow(block, crop);
         }
-        harvest(player, block, crop);
-        regrow(block, crop);
     }
 
     /** Cueillir les vignes (clic droit). */
@@ -221,23 +223,59 @@ public class Farming implements Listener, TabExecutor {
         }
         event.setCancelled(true);
         Player player = event.getPlayer();
-        if (!allowed(player, crop)) {
-            return;
+        if (gather(player, block, crop)) {
+            pick(block, crop);
         }
-        harvest(player, block, crop);
-        pick(block, crop);
     }
 
-    /** Le plafond du jour (tout le réseau). */
-    private boolean allowed(Player player, Crop crop) {
-        if (!today.containsKey(player.getUniqueId())) {
+    /**
+     * Récolter. Dans le plafond du jour (tout le réseau) : une récolte normale (un objet). Si une quête du joueur en veut
+     * encore (EterQuest : eterhub:harvest), la récolte va au panier de la commande : pas d'objet, et le plafond du jour
+     * n'est ni compté ni bloquant (quêtes et récoltes du jour restent séparées). true : la culture est prise (elle repousse).
+     */
+    private boolean gather(Player player, Block block, Crop crop) {
+        UUID uuid = player.getUniqueId();
+        if (!today.containsKey(uuid)) {
             return false;
         }
-        if (count(player.getUniqueId(), crop.id()) >= crop.dailyCap()) {
+        String zone = zones.at(block.getLocation()).id();
+        boolean bonus = zone.equals(parcelOfTheDay().orElse(""));
+        boolean full = count(uuid, crop.id()) >= crop.dailyCap();
+        boolean forQuest = QuestBridge.wanted(player, QUEST_SIGNAL, Map.of("crop", crop.id(), "zone", zone)) > 0;
+        if (full && !forQuest) {
             notice(player, "farming.cap-reached", "crop", cropName(player, crop.id()), "cap", String.valueOf(crop.dailyCap()));
             return false;
         }
+        double goldenBoost = bonus ? settings.number("farming.daily-golden-multiplier", 2) : 1;
+        Quality quality = Quality.roll(ThreadLocalRandom.current().nextDouble(), settings.number("farming.quality.fine.chance", 0.15),
+                settings.number("farming.quality.golden.chance", 0.02) * goldenBoost);
+        Map<String, String> data = Map.of("crop", crop.id(), "quality", quality.key(), "zone", zone);
+        if (forQuest && QuestBridge.wanted(player, QUEST_SIGNAL, data) > 0) {
+            questHarvest(player, block, crop, quality);
+            QuestBridge.signal(player, QUEST_SIGNAL, data, 1);
+            return true;
+        }
+        if (full) {
+            // Plafond atteint, et la quête attend une autre qualité : la culture part quand même (pas de tirage à volonté)
+            notice(player, "farming.quest-other-quality", "crop", cropName(player, crop.id()));
+            block.getWorld().playSound(block.getLocation(), Sound.BLOCK_CROP_BREAK, 0.6f, 0.8f);
+            return true;
+        }
+        harvest(player, block, crop, quality, bonus);
+        QuestBridge.signal(player, QUEST_SIGNAL, data, 1);
         return true;
+    }
+
+    /** Une récolte pour une quête : au panier de la commande (pas d'objet, pas de plafond). */
+    private void questHarvest(Player player, Block block, Crop crop, Quality quality) {
+        Location center = block.getLocation().add(0.5, 0.5, 0.5);
+        player.playSound(center, crop.pickable() ? Sound.BLOCK_SWEET_BERRY_BUSH_PICK_BERRIES : Sound.BLOCK_CROP_BREAK, 0.8f, 1.2f);
+        player.spawnParticle(Particle.COMPOSTER, center, 8, 0.3, 0.3, 0.3, 0);
+        if (quality == Quality.GOLDEN) {
+            player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 0.6f, 1.6f);
+            player.spawnParticle(Particle.WAX_OFF, center, 15, 0.3, 0.3, 0.3, 0);
+        }
+        stats.add("activity:harvest-quest");
     }
 
     private void notice(Player player, String key, String... placeholders) {
@@ -249,12 +287,7 @@ public class Farming implements Listener, TabExecutor {
         }
     }
 
-    private void harvest(Player player, Block block, Crop crop) {
-        String zone = zones.at(block.getLocation()).id();
-        boolean bonus = zone.equals(parcelOfTheDay().orElse(""));
-        double goldenBoost = bonus ? settings.number("farming.daily-golden-multiplier", 2) : 1;
-        Quality quality = Quality.roll(ThreadLocalRandom.current().nextDouble(), settings.number("farming.quality.fine.chance", 0.15),
-                settings.number("farming.quality.golden.chance", 0.02) * goldenBoost);
+    private void harvest(Player player, Block block, Crop crop, Quality quality, boolean bonus) {
         ItemStack item = item(player, crop, quality, bonus);
         player.getInventory().addItem(item).values().forEach(left -> {
             org.bukkit.entity.Item dropped = player.getWorld().dropItem(player.getLocation(), left);

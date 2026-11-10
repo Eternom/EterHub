@@ -270,6 +270,7 @@ farming:
   daily-hint: "<info>Plot of the day: <accent><parcel></accent> <dark_gray>(harvests ×2)"
   not-ripe: "<info>Not ripe yet..."
   cap-reached: "<error>You harvested enough <accent><crop></accent> today <dark_gray>(<cap>/<cap>) · <info>come back tomorrow!"
+  quest-other-quality: "<info>This <accent><crop></accent> is not the quality your order expects <dark_gray>· <info>and you harvested enough for today."
   cap-now: "<info>Daily quota reached for <accent><crop></accent> <dark_gray>(<cap>) · <info>come back tomorrow!"
   harvested-normal: "<info>+1 <accent><crop></accent> <dark_gray>(<count>/<cap>)"
   harvested-fine: "<success>+1 fine <accent><crop></accent>! <dark_gray>(<count>/<cap>)"

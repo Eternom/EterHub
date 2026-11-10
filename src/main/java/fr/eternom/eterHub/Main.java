@@ -81,7 +81,7 @@ import java.util.function.Function;
  */
 public final class Main extends JavaPlugin {
 
-    private static final String REQUIRED_ETERLIB = "1.23.0";
+    private static final String REQUIRED_ETERLIB = "1.25.0";
     private static final String TABLE_PREFIX = "eterhub_";
 
     private Messages messages;
@@ -248,7 +248,8 @@ public final class Main extends JavaPlugin {
 
         // Écouteurs
         for (Listener listener : List.of(arrival, voidListener, new ZoneListener(zones, messages), protection, build, movement, pads,
-                fishing, archaeology, parkour, heads, events, tour, holograms, visibility, seats, profiles, farming)) {
+                fishing, archaeology, parkour, heads, events, tour, holograms, visibility, seats, profiles, farming,
+                new fr.eternom.eterHub.module.activity.QuestSignals())) {
             getServer().getPluginManager().registerEvents(listener, this);
         }
         if (getConfig().getBoolean("portals.open-selector", true)) {
