@@ -4,25 +4,42 @@ import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.configuration.ConfigurationSection;
 
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Logger;
 
 /**
- * Un lieu du village, tel que décrit dans config.yml (zones.<id>) : icône, règles, ambiance (son d'entrée, son qui
- * revient, particules, heure et météo vues par le joueur), accès réservé et découverte. Ses limites (deux coins) et son
- * point de téléportation sont tracés en jeu et gardés en base (ZoneStore). Nom et sous-titre : lang/ zones.<id>.
+ * Un lieu du village, tel que décrit dans config.yml (zones.<id>) : icône, règles, ambiance, accès réservé et
+ * découverte. Ses limites et son point d'arrivée sont tracés en jeu et gardés en base (ZoneStore). Nom et sous-titre :
+ * lang/ zones.<id>.
+ * Ambiance : des couches de particules (particles) et des sons (ambient), chacun avec sa fréquence (every, en secondes)
+ * et sa probabilité (chance) : certains toujours là, d'autres rares ; vus et entendus par le joueur seulement.
+ * Hors de tout lieu : celles de zone-defaults.
  */
-public record Zone(String id, Material icon, Map<ZoneRule, Boolean> rules, String enterSound, String ambientSound,
-                   int ambientSeconds, Particle particle, int particleCount, double particleRadius, long time,
-                   String weather, String permission, String condition, boolean discoverable, boolean title,
-                   boolean halloween) {
+public record Zone(String id, Material icon, Map<ZoneRule, Boolean> rules, String enterSound, List<Effect> particles,
+                   List<Ambient> sounds, long time, String weather, String permission, String condition, boolean discoverable,
+                   boolean title, boolean halloween) {
 
-    /** Hors de toute zone : les règles par défaut, sans ambiance. */
-    public static Zone wilderness(Map<ZoneRule, Boolean> defaults) {
-        return new Zone("", Material.GRASS_BLOCK, defaults, "", "", 0, null, 0, 0, -1, "", "", "", false, false, false);
+    /**
+     * Une couche de particules : count particules dans un rayon autour du joueur, entre minY et maxY au-dessus de ses
+     * pieds, toutes les every secondes, avec la probabilité chance (1 = toujours) ; speed : leur vitesse.
+     */
+    public record Effect(Particle type, int count, double radius, double minY, double maxY, int every, double chance, double speed) {
+    }
+
+    /** Un son d'ambiance : joué toutes les every secondes avec la probabilité chance, un peu autour du joueur. */
+    public record Ambient(String sound, int every, double chance, float volume, float pitch, float pitchSpread) {
+    }
+
+    /** Hors de tout lieu : les règles et l'ambiance par défaut. */
+    public static Zone wilderness(ConfigurationSection config, Logger logger) {
+        ConfigurationSection defaults = config.getConfigurationSection("zone-defaults");
+        return new Zone("", Material.GRASS_BLOCK, defaults(config), "", particles(defaults, "zone-defaults", logger),
+                sounds(defaults, "zone-defaults", logger), -1, "", "", "", false, false, false);
     }
 
     public boolean allows(ZoneRule rule) {
@@ -35,9 +52,7 @@ public record Zone(String id, Material icon, Map<ZoneRule, Boolean> rules, Strin
 
     /** Toutes les zones de config.yml, dans leur ordre (celui de la carte du village). */
     public static Map<String, Zone> load(ConfigurationSection config, Logger logger) {
-        Map<ZoneRule, Boolean> defaults = rules(config.getConfigurationSection("zone-defaults.rules"), new EnumMap<>(Map.of(
-                ZoneRule.DOUBLE_JUMP, true, ZoneRule.FISHING, false, ZoneRule.PROJECTILES, false, ZoneRule.DIG, false,
-                ZoneRule.BOATS, false, ZoneRule.SIT, true)));
+        Map<ZoneRule, Boolean> defaults = defaults(config);
         Map<String, Zone> zones = new LinkedHashMap<>();
         ConfigurationSection section = config.getConfigurationSection("zones");
         if (section == null) {
@@ -50,23 +65,9 @@ public record Zone(String id, Material icon, Map<ZoneRule, Boolean> rules, Strin
                 continue;
             }
             Material icon = Material.matchMaterial(zone.getString("icon", "MAP"));
-            Particle particle = null;
-            String particleName = zone.getString("particles.type", "");
-            if (!particleName.isEmpty()) {
-                try {
-                    particle = Particle.valueOf(particleName.toUpperCase(Locale.ROOT));
-                    if (particle.getDataType() != Void.class) {
-                        logger.warning("zones." + id + ".particles.type : " + particleName + " demande des données, ignorée");
-                        particle = null;
-                    }
-                } catch (IllegalArgumentException e) {
-                    logger.warning("zones." + id + ".particles.type : particule inconnue " + particleName);
-                }
-            }
             zones.put(id, new Zone(id, icon == null || !icon.isItem() ? Material.MAP : icon,
-                    rules(zone.getConfigurationSection("rules"), defaults),
-                    zone.getString("sound", ""), zone.getString("ambient.sound", ""), Math.max(0, zone.getInt("ambient.every", 0)),
-                    particle, Math.max(0, zone.getInt("particles.count", 4)), Math.max(1, zone.getDouble("particles.radius", 8)),
+                    rules(zone.getConfigurationSection("rules"), defaults), zone.getString("sound", ""),
+                    particles(zone, "zones." + id, logger), sounds(zone, "zones." + id, logger),
                     zone.getLong("time", -1), zone.getString("weather", "").toLowerCase(Locale.ROOT),
                     zone.getString("access.permission", ""), zone.getString("access.condition", ""),
                     zone.getBoolean("discoverable", true), zone.getBoolean("title", true), zone.getBoolean("halloween", false)));
@@ -91,5 +92,73 @@ public record Zone(String id, Material icon, Map<ZoneRule, Boolean> rules, Strin
             }
         }
         return rules;
+    }
+
+    /** particles : une liste de couches, ou (ancien format) une seule couche { type, count, radius }. */
+    private static List<Effect> particles(ConfigurationSection zone, String path, Logger logger) {
+        List<Effect> effects = new ArrayList<>();
+        if (zone == null) {
+            return effects;
+        }
+        List<Map<?, ?>> entries = zone.getMapList("particles");
+        if (entries.isEmpty() && zone.isConfigurationSection("particles")) {
+            entries = List.of(zone.getConfigurationSection("particles").getValues(false));
+        }
+        for (Map<?, ?> entry : entries) {
+            String name = String.valueOf(entry.get("type"));
+            Particle type;
+            try {
+                type = Particle.valueOf(name.toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException e) {
+                logger.warning(path + ".particles : particule inconnue " + name);
+                continue;
+            }
+            if (type.getDataType() != Void.class) {
+                logger.warning(path + ".particles : " + name + " demande des données, ignorée");
+                continue;
+            }
+            effects.add(new Effect(type, Math.max(1, number(entry, "count", 4).intValue()), Math.max(1, number(entry, "radius", 8).doubleValue()),
+                    number(entry, "min-y", 0).doubleValue(), number(entry, "max-y", 4).doubleValue(),
+                    Math.max(1, number(entry, "every", 1).intValue()), Math.clamp(number(entry, "chance", 1).doubleValue(), 0, 1),
+                    Math.max(0, number(entry, "speed", 0).doubleValue())));
+        }
+        return List.copyOf(effects);
+    }
+
+    /** ambient : une liste de sons, ou (ancien format) { sound, every }. */
+    private static List<Ambient> sounds(ConfigurationSection zone, String path, Logger logger) {
+        List<Ambient> sounds = new ArrayList<>();
+        if (zone == null) {
+            return sounds;
+        }
+        List<Map<?, ?>> entries = zone.getMapList("ambient");
+        if (entries.isEmpty() && zone.isConfigurationSection("ambient")) {
+            entries = List.of(zone.getConfigurationSection("ambient").getValues(false));
+        }
+        for (Map<?, ?> entry : entries) {
+            Object sound = entry.get("sound");
+            if (sound == null || String.valueOf(sound).isBlank()) {
+                continue;
+            }
+            sounds.add(new Ambient(String.valueOf(sound), Math.max(1, number(entry, "every", 30).intValue()),
+                    Math.clamp(number(entry, "chance", 1).doubleValue(), 0, 1), number(entry, "volume", 0.6).floatValue(),
+                    number(entry, "pitch", 1).floatValue(), Math.max(0, number(entry, "pitch-spread", 0.1).floatValue())));
+        }
+        return List.copyOf(sounds);
+    }
+
+    private static Number number(Map<?, ?> entry, String key, Number fallback) {
+        Object value = entry.get(key);
+        if (value instanceof Number number) {
+            return number;
+        }
+        if (value != null) {
+            try {
+                return Double.parseDouble(String.valueOf(value).replace(',', '.'));
+            } catch (NumberFormatException ignored) {
+                // valeur abîmée : celle par défaut
+            }
+        }
+        return fallback;
     }
 }

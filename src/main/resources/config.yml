@@ -34,14 +34,19 @@ activities:
 #
 #   icon        icône dans la carte du village (/map)
 #   rules       ce qui est permis (sinon zone-defaults) : double-jump, fishing, projectiles, dig, boats, sit
-#   sound       son à l'entrée ; ambient.sound / ambient.every : son qui revient toutes les N secondes
-#   particles   particules vues par le joueur autour de lui (type sans données : FIREFLY, SNOWFLAKE, ENCHANT, SPORE_BLOSSOM_AIR...)
+#   sound       son à l'entrée
+#   ambient     sons d'ambiance, chacun : sound, every (secondes), chance (0 à 1), volume, pitch, pitch-spread
+#               (variation de hauteur) ; ils semblent venir des alentours. Ex : un son rare = every 20, chance 0.3
+#   particles   couches de particules, vues par le joueur autour de lui, chacune : type (sans données : FIREFLY,
+#               SNOWFLAKE, SOUL, CHERRY_LEAVES, END_ROD, ASH...), count, radius, min-y / max-y (hauteur au-dessus de ses
+#               pieds), every (toutes les N secondes), chance (0 à 1), speed. Peu de grosses, beaucoup de petites.
 #   time        heure vue par le joueur dans ce lieu (18000 = minuit, -1 = celle du monde)
 #   weather     météo vue par le joueur : clear, rain (pluie, ou neige dans un biome froid), ou vide
 #   access      lieu réservé : permission, ou condition d'EterLib (ex : "?eterjob:rank mineur expert") ; refus = petit recul
 #   discoverable  compte pour la découverte du village (première visite retenue)
 #   title       titre à l'entrée
 #   halloween   ambiance d'Halloween (20 octobre - 2 novembre)
+# Les musiques (music_disc.*) sont jouées bas et rarement : une ambiance, pas un juke-box.
 zone-defaults:
   rules:
     double-jump: true
@@ -50,38 +55,79 @@ zone-defaults:
     dig: false
     boats: false
     sit: true
+  # Hors de tout lieu : quelques pétales de sakura, et des oiseaux de temps en temps.
+  particles:
+    - {type: CHERRY_LEAVES, count: 3, radius: 12, min-y: 2, max-y: 7, every: 2, chance: 0.8}
+  ambient:
+    - {sound: "minecraft:entity.parrot.ambient", every: 40, chance: 0.35, volume: 0.25, pitch: 1.3, pitch-spread: 0.2}
 
 zones:
   spawn:
     icon: BEACON
     sound: "minecraft:block.bell.resonate"
+    ambient:
+      - {sound: "minecraft:block.bell.use", every: 60, chance: 0.5, volume: 0.35, pitch: 0.9}
+      - {sound: "minecraft:entity.villager.ambient", every: 25, chance: 0.4, volume: 0.25, pitch-spread: 0.2}
+    particles:
+      - {type: CHERRY_LEAVES, count: 4, radius: 12, min-y: 2, max-y: 8, every: 2, chance: 0.9}
+      - {type: HAPPY_VILLAGER, count: 1, radius: 8, min-y: 0, max-y: 3, every: 5, chance: 0.5}
   guilde:
     icon: IRON_PICKAXE
     sound: "minecraft:block.anvil.use"
+    ambient:
+      - {sound: "minecraft:block.anvil.use", every: 18, chance: 0.45, volume: 0.3, pitch: 1.1, pitch-spread: 0.15}
+      - {sound: "minecraft:block.smithing_table.use", every: 25, chance: 0.4, volume: 0.3}
+      - {sound: "minecraft:entity.villager.work_toolsmith", every: 30, chance: 0.35, volume: 0.3}
+    particles:
+      - {type: SMALL_FLAME, count: 2, radius: 7, min-y: 0.5, max-y: 2.5, every: 2, chance: 0.6}
+      - {type: WHITE_SMOKE, count: 1, radius: 7, min-y: 2, max-y: 5, every: 4, chance: 0.5}
   banque:
     icon: GOLD_INGOT
     sound: "minecraft:block.chain.place"
+    ambient:
+      - {sound: "minecraft:entity.experience_orb.pickup", every: 20, chance: 0.35, volume: 0.25, pitch: 0.8, pitch-spread: 0.2}
+      - {sound: "minecraft:block.chain.step", every: 30, chance: 0.3, volume: 0.25}
+    particles:
+      - {type: WAX_OFF, count: 2, radius: 6, min-y: 0.5, max-y: 3, every: 3, chance: 0.5}
   etals:
     icon: BARREL
-    sound: "minecraft:entity.villager.ambient"
+    sound: "minecraft:entity.villager.trade"
+    ambient:
+      - {sound: "minecraft:entity.villager.trade", every: 15, chance: 0.5, volume: 0.3, pitch-spread: 0.25}
+      - {sound: "minecraft:entity.villager.ambient", every: 12, chance: 0.5, volume: 0.25, pitch-spread: 0.3}
+      - {sound: "minecraft:entity.chicken.ambient", every: 35, chance: 0.3, volume: 0.25}
+    particles:
+      - {type: HAPPY_VILLAGER, count: 1, radius: 8, min-y: 0, max-y: 3, every: 4, chance: 0.4}
   maisons-boutiques:
     icon: OAK_DOOR
     sound: "minecraft:block.wooden_door.open"
+    ambient:
+      - {sound: "minecraft:block.wooden_door.close", every: 30, chance: 0.35, volume: 0.25, pitch-spread: 0.15}
+      - {sound: "minecraft:block.campfire.crackle", every: 15, chance: 0.4, volume: 0.25}
+      - {sound: "minecraft:entity.cat.ambient", every: 60, chance: 0.3, volume: 0.25, pitch-spread: 0.2}
+    particles:
+      - {type: CAMPFIRE_COSY_SMOKE, count: 1, radius: 10, min-y: 5, max-y: 10, every: 3, chance: 0.6}
   cathedrale:
     icon: BELL
     sound: "minecraft:block.bell.use"
     ambient:
-      sound: "minecraft:block.amethyst_block.chime"
-      every: 20
+      - {sound: "minecraft:block.amethyst_block.chime", every: 12, chance: 0.6, volume: 0.35, pitch-spread: 0.3}
+      - {sound: "minecraft:block.amethyst_block.resonate", every: 40, chance: 0.4, volume: 0.25, pitch: 0.7}
+      - {sound: "minecraft:block.bell.resonate", every: 90, chance: 0.4, volume: 0.3, pitch: 0.8}
     particles:
-      type: END_ROD
-      count: 2
-      radius: 8
+      - {type: END_ROD, count: 2, radius: 8, min-y: 2, max-y: 8, every: 2, chance: 0.7}
+      - {type: ENCHANT, count: 6, radius: 6, min-y: 0, max-y: 3, every: 1, chance: 0.8, speed: 0.5}
   colisee:
     icon: IRON_SWORD
     sound: "minecraft:event.raid.horn"
     rules:
       projectiles: true
+    ambient:
+      - {sound: "minecraft:entity.player.attack.sweep", every: 20, chance: 0.35, volume: 0.25, pitch-spread: 0.2}
+      - {sound: "minecraft:item.shield.block", every: 25, chance: 0.35, volume: 0.25}
+      - {sound: "minecraft:event.raid.horn", every: 240, chance: 0.25, volume: 0.15, pitch: 1.2}
+    particles:
+      - {type: CRIT, count: 3, radius: 10, min-y: 0, max-y: 3, every: 4, chance: 0.4, speed: 0.1}
   donjon:
     icon: SKELETON_SKULL
     sound: "minecraft:ambient.cave"
@@ -89,6 +135,14 @@ zones:
       double-jump: false
       sit: false
     time: 18000
+    ambient:
+      - {sound: "minecraft:block.pointed_dripstone.drip_water", every: 6, chance: 0.6, volume: 0.4, pitch-spread: 0.2}
+      - {sound: "minecraft:block.chain.step", every: 25, chance: 0.4, volume: 0.3, pitch: 0.7}
+      - {sound: "minecraft:ambient.cave", every: 60, chance: 0.5, volume: 0.35}
+      - {sound: "minecraft:music_disc.13", every: 600, chance: 0.35, volume: 0.2}
+    particles:
+      - {type: DRIPPING_DRIPSTONE_WATER, count: 3, radius: 8, min-y: 3, max-y: 6, every: 2, chance: 0.7}
+      - {type: ASH, count: 6, radius: 8, min-y: 0, max-y: 4, every: 1, chance: 0.8}
   donjon-secret:
     icon: WITHER_SKELETON_SKULL
     sound: "minecraft:block.end_portal.spawn"
@@ -96,10 +150,13 @@ zones:
       double-jump: false
       sit: false
     time: 18000
+    ambient:
+      - {sound: "minecraft:entity.warden.ambient", every: 45, chance: 0.4, volume: 0.15, pitch: 0.6}
+      - {sound: "minecraft:block.sculk_sensor.clicking", every: 15, chance: 0.4, volume: 0.25}
+      - {sound: "minecraft:ambient.soul_sand_valley.mood", every: 50, chance: 0.5, volume: 0.35}
     particles:
-      type: SOUL
-      count: 3
-      radius: 6
+      - {type: SOUL, count: 3, radius: 6, min-y: 0, max-y: 3, every: 1, chance: 0.8}
+      - {type: SCULK_SOUL, count: 1, radius: 5, min-y: 0, max-y: 2, every: 4, chance: 0.5}
     access:
       permission: "eterhub.zone.donjon-secret"
       condition: ""
@@ -108,68 +165,124 @@ zones:
     sound: "minecraft:block.stone.break"
     rules:
       double-jump: false
+    ambient:
+      - {sound: "minecraft:block.deepslate.break", every: 10, chance: 0.5, volume: 0.3, pitch-spread: 0.2}
+      - {sound: "minecraft:block.stone.hit", every: 6, chance: 0.5, volume: 0.25, pitch-spread: 0.3}
+      - {sound: "minecraft:block.gravel.fall", every: 40, chance: 0.3, volume: 0.3}
+      - {sound: "minecraft:ambient.cave", every: 90, chance: 0.4, volume: 0.3}
+    particles:
+      - {type: ASH, count: 8, radius: 8, min-y: 0, max-y: 4, every: 1, chance: 0.9}
+      - {type: DUST_PLUME, count: 1, radius: 6, min-y: 0, max-y: 1, every: 5, chance: 0.4}
   grotte-glace:
     icon: BLUE_ICE
     sound: "minecraft:block.glass.break"
     rules:
       double-jump: false
-    particles:
-      type: SNOWFLAKE
-      count: 6
-      radius: 8
     weather: rain
+    ambient:
+      - {sound: "minecraft:block.powder_snow.step", every: 12, chance: 0.4, volume: 0.3, pitch-spread: 0.2}
+      - {sound: "minecraft:block.glass.hit", every: 15, chance: 0.4, volume: 0.25, pitch: 1.4, pitch-spread: 0.3}
+      - {sound: "minecraft:entity.player.hurt_freeze", every: 60, chance: 0.25, volume: 0.15, pitch: 1.5}
+      - {sound: "minecraft:item.elytra.flying", every: 45, chance: 0.3, volume: 0.1, pitch: 0.6}
+    particles:
+      - {type: SNOWFLAKE, count: 8, radius: 9, min-y: 0, max-y: 5, every: 1, chance: 1}
+      - {type: WHITE_ASH, count: 4, radius: 8, min-y: 1, max-y: 5, every: 2, chance: 0.6}
   grotte-araignees:
     icon: COBWEB
     sound: "minecraft:entity.spider.ambient"
     rules:
       double-jump: false
     time: 18000
+    ambient:
+      - {sound: "minecraft:entity.spider.ambient", every: 12, chance: 0.5, volume: 0.35, pitch-spread: 0.2}
+      - {sound: "minecraft:entity.spider.step", every: 8, chance: 0.4, volume: 0.25}
+      - {sound: "minecraft:block.pointed_dripstone.drip_water", every: 10, chance: 0.4, volume: 0.3}
+    particles:
+      - {type: WHITE_ASH, count: 6, radius: 8, min-y: 0, max-y: 4, every: 1, chance: 0.8}
+      - {type: MYCELIUM, count: 3, radius: 6, min-y: 0, max-y: 2, every: 2, chance: 0.6}
   archeologie:
     icon: BRUSH
     sound: "minecraft:item.brush.brushing.sand"
     rules:
       dig: true
+    ambient:
+      - {sound: "minecraft:item.brush.brushing.sand", every: 15, chance: 0.45, volume: 0.25, pitch-spread: 0.15}
+      - {sound: "minecraft:item.brush.brushing.gravel", every: 20, chance: 0.4, volume: 0.25}
+      - {sound: "minecraft:block.sand.fall", every: 40, chance: 0.3, volume: 0.25}
+    particles:
+      - {type: DUST_PLUME, count: 2, radius: 7, min-y: 0, max-y: 1.5, every: 3, chance: 0.6}
+      - {type: WHITE_ASH, count: 3, radius: 8, min-y: 0, max-y: 3, every: 2, chance: 0.5}
   foret-enchantee:
     icon: FLOWERING_AZALEA
     sound: "minecraft:block.amethyst_block.resonate"
-    particles:
-      type: FIREFLY
-      count: 6
-      radius: 10
     time: 14000
+    ambient:
+      - {sound: "minecraft:block.amethyst_block.chime", every: 10, chance: 0.5, volume: 0.3, pitch: 1.4, pitch-spread: 0.4}
+      - {sound: "minecraft:entity.allay.ambient_without_item", every: 40, chance: 0.35, volume: 0.25}
+      - {sound: "minecraft:music_disc.far", every: 600, chance: 0.35, volume: 0.2}
+    particles:
+      - {type: FIREFLY, count: 6, radius: 10, min-y: 0, max-y: 4, every: 1, chance: 1}
+      - {type: SPORE_BLOSSOM_AIR, count: 6, radius: 10, min-y: 0, max-y: 6, every: 1, chance: 0.8}
+      - {type: END_ROD, count: 1, radius: 9, min-y: 1, max-y: 5, every: 6, chance: 0.35, speed: 0.02}
   foret:
     icon: OAK_SAPLING
     sound: "minecraft:block.azalea_leaves.place"
+    ambient:
+      - {sound: "minecraft:entity.parrot.ambient", every: 20, chance: 0.4, volume: 0.25, pitch: 1.3, pitch-spread: 0.3}
+      - {sound: "minecraft:block.wood.hit", every: 35, chance: 0.35, volume: 0.3, pitch: 1.5}
+      - {sound: "minecraft:block.grass.step", every: 15, chance: 0.3, volume: 0.2}
     particles:
-      type: FALLING_SPORE_BLOSSOM
-      count: 2
-      radius: 10
+      - {type: FALLING_SPORE_BLOSSOM, count: 2, radius: 10, min-y: 4, max-y: 9, every: 2, chance: 0.7}
+      - {type: CHERRY_LEAVES, count: 2, radius: 10, min-y: 3, max-y: 8, every: 3, chance: 0.5}
   champs:
     icon: WHEAT
     sound: "minecraft:block.crop.break"
+    ambient:
+      - {sound: "minecraft:entity.bee.pollinate", every: 15, chance: 0.4, volume: 0.25, pitch-spread: 0.2}
+      - {sound: "minecraft:entity.cow.ambient", every: 40, chance: 0.35, volume: 0.25}
+      - {sound: "minecraft:entity.sheep.ambient", every: 45, chance: 0.35, volume: 0.25}
+      - {sound: "minecraft:entity.chicken.ambient", every: 30, chance: 0.35, volume: 0.25}
+    particles:
+      - {type: FALLING_NECTAR, count: 3, radius: 9, min-y: 0, max-y: 3, every: 2, chance: 0.7}
+      - {type: WHITE_ASH, count: 2, radius: 10, min-y: 1, max-y: 4, every: 3, chance: 0.4}
   lac:
     icon: FISHING_ROD
     sound: "minecraft:ambient.underwater.enter"
     rules:
       fishing: true
       boats: true
+    ambient:
+      - {sound: "minecraft:block.water.ambient", every: 8, chance: 0.6, volume: 0.35}
+      - {sound: "minecraft:entity.fish.swim", every: 15, chance: 0.5, volume: 0.25, pitch-spread: 0.2}
+      - {sound: "minecraft:entity.dolphin.ambient_water", every: 60, chance: 0.25, volume: 0.1, pitch: 1.4}
+      - {sound: "minecraft:entity.frog.ambient", every: 30, chance: 0.35, volume: 0.25, pitch-spread: 0.2}
+    particles:
+      - {type: SPLASH, count: 4, radius: 10, min-y: 0, max-y: 0.5, every: 2, chance: 0.6}
+      - {type: BUBBLE_POP, count: 2, radius: 9, min-y: 0, max-y: 0.5, every: 3, chance: 0.5}
   cimetiere:
     icon: WITHER_ROSE
     sound: "minecraft:ambient.soul_sand_valley.mood"
-    ambient:
-      sound: "minecraft:entity.phantom.ambient"
-      every: 30
     time: 18000
-    particles:
-      type: ASH
-      count: 6
-      radius: 8
     halloween: true
+    ambient:
+      - {sound: "minecraft:entity.phantom.ambient", every: 30, chance: 0.4, volume: 0.2, pitch-spread: 0.2}
+      - {sound: "minecraft:block.bell.resonate", every: 120, chance: 0.35, volume: 0.25, pitch: 0.6}
+      - {sound: "minecraft:entity.wolf.howl", every: 90, chance: 0.3, volume: 0.15, pitch: 0.8}
+      - {sound: "minecraft:ambient.soul_sand_valley.additions", every: 25, chance: 0.4, volume: 0.3}
+    particles:
+      - {type: SOUL, count: 2, radius: 9, min-y: 0, max-y: 2.5, every: 2, chance: 0.7}
+      - {type: ASH, count: 6, radius: 9, min-y: 0, max-y: 4, every: 1, chance: 0.8}
+      - {type: SCULK_SOUL, count: 1, radius: 7, min-y: 0, max-y: 1.5, every: 6, chance: 0.3}
   evenement:
     icon: FIREWORK_ROCKET
     sound: "minecraft:entity.firework_rocket.launch"
     rules:
       projectiles: true
+    ambient:
+      - {sound: "minecraft:entity.firework_rocket.twinkle_far", every: 30, chance: 0.3, volume: 0.15}
+    particles:
+      - {type: FIREWORK, count: 2, radius: 10, min-y: 3, max-y: 8, every: 4, chance: 0.4, speed: 0.02}
+      - {type: GLOW, count: 2, radius: 8, min-y: 0, max-y: 3, every: 3, chance: 0.5}
 
 # Découverte du village : la première visite de chaque lieu (discoverable) est retenue.
 discovery:

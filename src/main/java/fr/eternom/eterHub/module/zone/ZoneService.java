@@ -57,7 +57,7 @@ public class ZoneService {
     private volatile ZoneIndex index = ZoneIndex.EMPTY;
     private volatile Map<String, ZoneStore.Warp> warps = Map.of();
     private final Map<UUID, String> current = new ConcurrentHashMap<>();
-    private final Map<UUID, Long> lastAmbient = new ConcurrentHashMap<>();
+    private final Map<String, Long> lastSound = new ConcurrentHashMap<>();
     private final Map<UUID, Long> lastDenied = new ConcurrentHashMap<>();
     /** Accès accordé par la condition d'EterLib, le temps d'une vérification. */
     private final Map<UUID, String> granted = new ConcurrentHashMap<>();
@@ -81,7 +81,7 @@ public class ZoneService {
     /** Relit les descriptions de config.yml (rechargement). */
     public void loadDefinitions() {
         zones = Zone.load(plugin.getConfig(), plugin.getLogger());
-        wilderness = Zone.wilderness(Zone.defaults(plugin.getConfig()));
+        wilderness = Zone.wilderness(plugin.getConfig(), plugin.getLogger());
     }
 
     public void start() {
@@ -269,7 +269,8 @@ public class ZoneService {
 
     public void quit(Player player) {
         current.remove(player.getUniqueId());
-        lastAmbient.remove(player.getUniqueId());
+        String prefix = player.getUniqueId() + "#";
+        lastSound.keySet().removeIf(key -> key.startsWith(prefix));
         lastDenied.remove(player.getUniqueId());
     }
 
@@ -299,7 +300,6 @@ public class ZoneService {
             default -> {
             }
         }
-        lastAmbient.put(player.getUniqueId(), System.currentTimeMillis());
     }
 
     private void discovered(Player player, Zone zone) {
@@ -319,47 +319,73 @@ public class ZoneService {
 
     // ---------- Ambiance ----------
 
+    /** Secondes écoulées (rythme des couches : every). */
+    private long second;
+
+    /** Chaque seconde : les couches de particules et les sons du lieu de chaque joueur (hors lieu : zone-defaults). */
     private void ambience() {
+        second++;
         long now = System.currentTimeMillis();
         boolean halloween = halloween();
+        boolean showParticles = settings.bool("cosmetics.zone-particles", true);
+        ThreadLocalRandom random = ThreadLocalRandom.current();
         for (Player player : Bukkit.getOnlinePlayers()) {
             String id = current.get(player.getUniqueId());
-            if (id == null) {
-                continue;
-            }
-            Zone zone = zones.get(id);
-            if (zone == null) {
-                continue;
-            }
-            if (zone.particle() != null && zone.particleCount() > 0 && settings.bool("cosmetics.zone-particles", true)) {
-                particles(player, zone.particle(), zone.particleCount(), zone.particleRadius());
+            Zone zone = id == null ? wilderness : zones.getOrDefault(id, wilderness);
+            if (showParticles) {
+                for (Zone.Effect effect : zone.particles()) {
+                    if (second % effect.every() == 0 && random.nextDouble() < effect.chance()) {
+                        particles(player, effect);
+                    }
+                }
             }
             if (zone.halloween() && halloween) {
-                particles(player, Particle.SOUL, 3, 10);
-                if (ThreadLocalRandom.current().nextInt(20) == 0) {
+                particles(player, new Zone.Effect(Particle.SOUL, 3, 10, 0, 4, 1, 1, 0));
+                if (random.nextInt(20) == 0) {
                     play(player, "minecraft:ambient.cave", 0.5f);
                 }
             }
-            if (!zone.ambientSound().isEmpty() && zone.ambientSeconds() > 0) {
-                Long last = lastAmbient.get(player.getUniqueId());
-                if (last == null || now - last >= zone.ambientSeconds() * 1000L) {
-                    lastAmbient.put(player.getUniqueId(), now);
-                    play(player, zone.ambientSound(), 0.6f);
+            List<Zone.Ambient> sounds = zone.sounds();
+            for (int i = 0; i < sounds.size(); i++) {
+                Zone.Ambient sound = sounds.get(i);
+                String key = player.getUniqueId() + "#" + zone.id() + "#" + i;
+                Long last = lastSound.get(key);
+                if (last != null && now - last < sound.every() * 1000L) {
+                    continue;
+                }
+                lastSound.put(key, now);
+                if (last != null && random.nextDouble() < sound.chance()) {
+                    ambient(player, sound);
                 }
             }
         }
     }
 
-    /** Particules vues par ce joueur seulement, autour de lui. */
-    private static void particles(Player player, Particle particle, int count, double radius) {
+    /** Particules d'une couche, vues par ce joueur seulement, autour de lui. */
+    private static void particles(Player player, Zone.Effect effect) {
         World world = player.getWorld();
         Location base = player.getLocation();
         ThreadLocalRandom random = ThreadLocalRandom.current();
-        for (int i = 0; i < count; i++) {
-            Location at = base.clone().add(random.nextDouble(-radius, radius), random.nextDouble(0, 4), random.nextDouble(-radius, radius));
-            if (at.getBlock().isPassable() && world == at.getWorld()) {
-                player.spawnParticle(particle, at, 1, 0, 0, 0, 0);
+        double radius = effect.radius();
+        double minY = Math.min(effect.minY(), effect.maxY());
+        double maxY = Math.max(effect.minY(), effect.maxY()) + 0.01;
+        for (int i = 0; i < effect.count(); i++) {
+            Location at = base.clone().add(random.nextDouble(-radius, radius), random.nextDouble(minY, maxY), random.nextDouble(-radius, radius));
+            if (world == at.getWorld() && at.getBlock().isPassable()) {
+                player.spawnParticle(effect.type(), at, 1, 0, 0, 0, effect.speed());
             }
+        }
+    }
+
+    /** Un son d'ambiance, un peu autour du joueur (il semble venir des alentours), hauteur légèrement variée. */
+    private void ambient(Player player, Zone.Ambient sound) {
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        float pitch = (float) Math.max(0.5, Math.min(2, sound.pitch() + random.nextDouble(-sound.pitchSpread(), sound.pitchSpread() + 1.0E-6)));
+        Location at = player.getLocation().add(random.nextDouble(-6, 6), random.nextDouble(0, 3), random.nextDouble(-6, 6));
+        try {
+            player.playSound(Sound.sound(Key.key(sound.sound()), Sound.Source.AMBIENT, sound.volume(), pitch), at.getX(), at.getY(), at.getZ());
+        } catch (RuntimeException e) {
+            plugin.getLogger().warning("Son d'ambiance invalide : " + sound.sound());
         }
     }
 
