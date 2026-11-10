@@ -183,9 +183,12 @@ public class ZoneCommand implements SubCommand, Listener {
         }
     }
 
-    private void define(Player player, String id) {
+    /**
+     * La surface sélectionnée par ce membre du staff (points, ou pos1 / pos2), vide s'il n'y en a pas (il est
+     * prévenu). Aussi pour les coins de pêche (/eterhub fishing add).
+     */
+    public java.util.Optional<Region> selected(Player player) {
         Selection selection = selections.get(player.getUniqueId());
-        Region region;
         if (selection != null && selection.points.size() >= 3) {
             int n = selection.points.size();
             int[] xs = new int[n];
@@ -194,20 +197,32 @@ public class ZoneCommand implements SubCommand, Listener {
                 xs[i] = selection.points.get(i)[0];
                 zs[i] = selection.points.get(i)[1];
             }
-            region = Region.polygon(selection.world, xs, zs, selection.minY == null ? Region.NO_MIN : selection.minY,
-                    selection.maxY == null ? Region.NO_MAX : selection.maxY);
-        } else if (selection != null && selection.corners[0] != null && selection.corners[1] != null) {
+            return java.util.Optional.of(Region.polygon(selection.world, xs, zs, selection.minY == null ? Region.NO_MIN : selection.minY,
+                    selection.maxY == null ? Region.NO_MAX : selection.maxY));
+        }
+        if (selection != null && selection.corners[0] != null && selection.corners[1] != null) {
             Location[] corners = selection.corners;
             if (corners[0].getWorld() != corners[1].getWorld()) {
                 messages.send(player, "editor.zone.two-worlds");
-                return;
+                return java.util.Optional.empty();
             }
-            region = Region.of(corners[0].getWorld().getName(), corners[0].getBlockX(), corners[0].getBlockY(), corners[0].getBlockZ(),
-                    corners[1].getBlockX(), corners[1].getBlockY(), corners[1].getBlockZ());
-        } else {
-            messages.send(player, "editor.zone.no-selection");
+            return java.util.Optional.of(Region.of(corners[0].getWorld().getName(), corners[0].getBlockX(), corners[0].getBlockY(),
+                    corners[0].getBlockZ(), corners[1].getBlockX(), corners[1].getBlockY(), corners[1].getBlockZ()));
+        }
+        messages.send(player, "editor.zone.no-selection");
+        return java.util.Optional.empty();
+    }
+
+    public void clearSelection(Player player) {
+        selections.remove(player.getUniqueId());
+    }
+
+    private void define(Player player, String id) {
+        java.util.Optional<Region> chosen = selected(player);
+        if (chosen.isEmpty()) {
             return;
         }
+        Region region = chosen.get();
         String author = player.getName();
         Region saved = region;
         Tasks.async(plugin, player, () -> {
@@ -263,7 +278,7 @@ public class ZoneCommand implements SubCommand, Listener {
     }
 
     /** Les limites du lieu en particules, pour ce joueur, pendant 10 s. */
-    private void show(Player player, String id, Region region) {
+    public void show(Player player, String id, Region region) {
         World world = Bukkit.getWorld(region.world());
         if (world == null) {
             messages.send(player, "editor.zone.not-drawn", "zone", id);

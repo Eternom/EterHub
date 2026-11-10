@@ -145,12 +145,19 @@ public class ZoneService {
     }
 
     public boolean allows(Player player, ZoneRule rule) {
-        return of(player).allows(rule);
+        return of(player).allows(rule) || rule == ZoneRule.FISHING && fishingSpots.test(player.getLocation());
     }
 
     public boolean allows(Location location, ZoneRule rule) {
-        return at(location).allows(rule);
+        return at(location).allows(rule) || rule == ZoneRule.FISHING && fishingSpots.test(location);
     }
+
+    /** Les coins de pêche sans nom (Fishing) : la pêche y est permise, en plus des lieux à la règle fishing. */
+    public void setFishingSpots(java.util.function.Predicate<Location> spots) {
+        this.fishingSpots = spots == null ? location -> false : spots;
+    }
+
+    private volatile java.util.function.Predicate<Location> fishingSpots = location -> false;
 
     /** Nom affiché d'une zone (lang/ zones.<id>.name, sinon l'identifiant). */
     public Component name(Player viewer, String id) {

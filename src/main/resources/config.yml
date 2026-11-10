@@ -487,19 +487,30 @@ tips:
   interval-seconds: 45
 
 # ---------- Activités ----------
-# Pêche au Lac, à la vraie canne : la ligne ne se lance que là où la règle fishing est permise. Ce qui mord devient un
-# poisson du lac tiré ci-dessous : un vrai objet (nom, rareté, poids, date ; données gardées dans l'objet pour un futur
-# PNJ qui les reprendra), que seul le pêcheur ramasse. Noms : lang/ fishing.fish.<id> ; objet : lang/ fishing.item.
+# Pêche, à la vraie canne : au Lac (et dans les lieux où la règle fishing est permise) et dans les coins de pêche sans
+# nom (/eterhub fishing add). Ce qui mord devient un poisson tiré ci-dessous : un vrai objet (nom, rareté, poids, date ;
+# données gardées dans l'objet), que seul le pêcheur ramasse. Noms : lang/ fishing.fish.<id> ; objet : lang/ fishing.item.
 fishing:
-  # Le poissonnier (action eterhub:fishmonger sur un PNJ du lac) rachète les poissons du lac, payés par EterEconomy.
-  # Prix = base + per-kg × poids, selon la rareté ; le poisson du jour (le même partout, change à minuit) × daily-bonus.
+  # Le poissonnier (action eterhub:fishmonger, au Lac) rachète les poissons, payés par EterEconomy, et vend les appâts.
+  # Prix = (base + per-kg × poids) de la rareté, × value du poisson ; le poisson du jour (le même partout) × daily-bonus.
+  # Équilibre voulu (appât simple à 9) : un poisson commun rapporte moins que l'appât (≈ 3), un peu commun le rembourse
+  # largement (≈ 16) ; en moyenne la pêche rapporte un peu plus qu'elle ne coûte (≈ 10 par prise), sans plus.
   market:
     daily-bonus: 2
     prices:
-      common: {base: 4, per-kg: 3}
-      uncommon: {base: 10, per-kg: 5}
-      rare: {base: 35, per-kg: 8}
-      legendary: {base: 150, per-kg: 15}
+      common: {base: 2, per-kg: 2}
+      uncommon: {base: 9, per-kg: 3}
+      rare: {base: 30, per-kg: 5}
+      legendary: {base: 110, per-kg: 6}
+  # Appâts (vendus par le poissonnier, les trois premiers) : un appât est pris à chaque prise (rien ne se perd si rien ne
+  # mord) ; celui en seconde main d'abord, sinon le premier de l'inventaire. luck : les raretés mordent plus souvent
+  # (s'ajoute à Chance de la mer). item-model : modèle du pack de ressources (« eterhub:appat_simple »), vide : aucun.
+  # Moyenne par prise (sans Chance de la mer) : simple ≈ 10, bon ≈ 17, rare ≈ 24.
+  bait-required: true
+  baits:
+    simple: {price: 9, luck: 0, icon: WHEAT_SEEDS, item-model: ""}
+    good: {price: 14, luck: 2, icon: RABBIT_FOOT, item-model: ""}
+    rare: {price: 20, luck: 6, icon: PRISMARINE_CRYSTALS, item-model: ""}
   # Annoncer aussi les prises rares (les légendaires le sont toujours), sur tous les lobbys.
   announce-rare: false
   # Récompenses par rareté (commandes console ou « action: ... »).
@@ -507,17 +518,26 @@ fishing:
   reward-uncommon: []
   reward-rare: []
   reward-legendary: []
-  # chance : relative ; min / max : poids en kg.
+  # chance : relative ; min / max : poids en kg (les petits poids sortent plus souvent) ; value : × le prix (1 par défaut).
   fish:
-    gardon: {rarity: common, chance: 30, icon: COD, min: 0.2, max: 1.2}
-    perche: {rarity: common, chance: 25, icon: COD, min: 0.3, max: 1.8}
-    truite: {rarity: uncommon, chance: 16, icon: SALMON, min: 0.8, max: 3.5}
-    sandre: {rarity: uncommon, chance: 12, icon: SALMON, min: 1.5, max: 6}
-    brochet: {rarity: rare, chance: 8, icon: SALMON, min: 3, max: 12}
-    poisson-lune: {rarity: rare, chance: 5, icon: TROPICAL_FISH, min: 2, max: 9}
-    carpe-doree: {rarity: legendary, chance: 2, icon: TROPICAL_FISH, min: 10, max: 25}
-    anguille-spectrale: {rarity: legendary, chance: 1, icon: PUFFERFISH, min: 4, max: 15}
-    vieille-botte: {rarity: common, chance: 1, icon: LEATHER_BOOTS, min: 0.5, max: 0.5}
+    gardon: {rarity: common, chance: 26, icon: COD, min: 0.2, max: 1.2}
+    perche: {rarity: common, chance: 22, icon: COD, min: 0.3, max: 1.8}
+    ablette: {rarity: common, chance: 14, icon: COD, min: 0.1, max: 0.5}
+    goujon: {rarity: common, chance: 10, icon: COD, min: 0.1, max: 0.4}
+    ecrevisse: {rarity: common, chance: 8, icon: RABBIT_HIDE, min: 0.1, max: 0.3}
+    vieille-botte: {rarity: common, chance: 6, icon: LEATHER_BOOTS, min: 0.5, max: 0.5, value: 0.25}
+    truite: {rarity: uncommon, chance: 9, icon: SALMON, min: 0.8, max: 3.5}
+    sandre: {rarity: uncommon, chance: 7, icon: SALMON, min: 1.5, max: 6}
+    tanche: {rarity: uncommon, chance: 6, icon: SALMON, min: 0.5, max: 2.5}
+    carpe: {rarity: uncommon, chance: 5, icon: SALMON, min: 2, max: 10}
+    brochet: {rarity: rare, chance: 2.5, icon: SALMON, min: 3, max: 12}
+    poisson-lune: {rarity: rare, chance: 1.5, icon: TROPICAL_FISH, min: 2, max: 9}
+    silure: {rarity: rare, chance: 1, icon: COD, min: 5, max: 30}
+    esturgeon: {rarity: rare, chance: 0.8, icon: SALMON, min: 4, max: 20}
+    carpe-doree: {rarity: legendary, chance: 0.4, icon: TROPICAL_FISH, min: 10, max: 25}
+    anguille-spectrale: {rarity: legendary, chance: 0.25, icon: PUFFERFISH, min: 4, max: 15}
+    koi-imperial: {rarity: legendary, chance: 0.2, icon: TROPICAL_FISH, min: 3, max: 8}
+    roi-du-lac: {rarity: legendary, chance: 0.1, icon: SALMON, min: 20, max: 50}
 
 # Récoltes des Champs (activities.farming) : dans les parcelles, casser une culture mûre la récolte (elle se replante et
 # repousse étape par étape) ; un clic droit sur les vignes cueille une grappe (les fleurs reviennent). Chaque récolte est

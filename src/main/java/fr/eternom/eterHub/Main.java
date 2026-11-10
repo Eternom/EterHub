@@ -134,10 +134,15 @@ public final class Main extends JavaPlugin {
         // Activités
         FishingStore fishingStore = new FishingStore(database);
         FishItems fishItems = new FishItems(this);
-        Fishing fishing = new Fishing(this, zones, fishingStore, fishItems, settings, stats, messages, bus,
+        fr.eternom.eterHub.module.activity.Baits baits = new fr.eternom.eterHub.module.activity.Baits(this, messages);
+        Fishing fishing = new Fishing(this, zones, fishingStore, fishItems, baits, settings, stats, messages, bus,
                 lib.backButton(getConfig().getString("menus.activities.back-command", "")));
         Fishmonger fishmonger = new Fishmonger(this, fishItems, settings, stats, messages,
-                lib.backButton(getConfig().getString("menus.activities.back-command", "")), fishing::table);
+                lib.backButton(getConfig().getString("menus.activities.back-command", "")), fishing::table, baits);
+        // Les coins de pêche sans nom (en plus des lieux à la règle fishing)
+        fr.eternom.eterHub.module.activity.FishingSpots fishingSpots = new fr.eternom.eterHub.module.activity.FishingSpots(this, database, bus);
+        zones.setFishingSpots(fishingSpots::contains);
+        Tasks.async(this, fishingSpots::reload, "Coins de pêche non lus");
         fishing.setFishOfTheDay(fishmonger::fishOfTheDay);
         archaeology = new Archaeology(this, zones, database, settings, stats, messages,
                 lib.backButton(getConfig().getString("menus.activities.back-command", "")));
@@ -204,6 +209,7 @@ public final class Main extends JavaPlugin {
         admin.add("spawn", spawnCommands);
         ZoneCommand zoneCommand = new ZoneCommand(this, zones, zoneStore, map, settings, messages);
         admin.add("zone", zoneCommand);
+        admin.add("fishing", new fr.eternom.eterHub.module.activity.FishingSpotCommand(fishingSpots, zoneCommand, settings, messages));
         getServer().getPluginManager().registerEvents(zoneCommand, this);
         admin.add("pad", pads);
         admin.add("holo", holograms);

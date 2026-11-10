@@ -220,7 +220,20 @@ rarity:
 fishing:
   daily-hint: "<info>Le poissonnier cherche aujourd'hui : <accent><fish></accent> <dark_gray>(payé double)"
   record: "<gold>Nouveau record ! <accent><fish></accent> de <accent><weight> kg</accent> <dark_gray>(avant : <old> kg)"
-  only-lake: "<info>La pêche n'est permise qu'au <accent>Lac de pêche</accent>."
+  only-lake: "<info>La pêche n'est permise qu'au <accent>Lac</accent> et aux coins de pêche."
+  no-bait: "<info>Il te faut un <accent>appât</accent> pour pêcher : Gaspard, le poissonnier du Lac, en vend."
+  bait-last: "<info>C'était ton dernier <accent><bait></accent>."
+  bait:
+    usage: "<dark_gray>Un appât par prise · en seconde main pour le choisir"
+    simple:
+      name: "<white>Appât simple"
+      lore: "<gray>Des vers de terre. Ça mord, sans plus."
+    good:
+      name: "<green>Bon appât"
+      lore: "<gray>Les poissons peu communs et rares le sentent de loin."
+    rare:
+      name: "<aqua>Appât rare"
+      lore: "<gray>La recette secrète de Gaspard : les légendes mordent plus souvent."
   closed: "<error>La pêche est fermée pour le moment."
   item:
     name-common: "<white><fish>"
@@ -255,6 +268,15 @@ fishing:
     carpe-doree: "Carpe dorée"
     anguille-spectrale: "Anguille spectrale"
     vieille-botte: "Vieille botte"
+    ablette: "Ablette"
+    goujon: "Goujon"
+    ecrevisse: "Écrevisse"
+    tanche: "Tanche"
+    carpe: "Carpe"
+    silure: "Silure"
+    esturgeon: "Esturgeon"
+    koi-imperial: "Koï impérial"
+    roi-du-lac: "Roi du Lac"
   menu:
     title: "Pêche au lac"
     journal: "<accent>Carnet de pêche"
@@ -340,6 +362,12 @@ fishmonger:
   nothing: "<error>Rien à vendre : seuls les poissons du lac sont rachetés."
   failed: "<error>Le paiement n'a pas pu être fait : tes poissons te sont rendus."
   no-economy: "<error>Le poissonnier est fermé pour le moment."
+  bait-price: "<info>Prix : <accent><amount></accent> <dark_gray>· les 16 : <stack>"
+  bait-owned: "<dark_gray>Tu en as : <count>"
+  bait-click: "<accent>Clic <info>· en acheter 1 <dark_gray>· <accent>Maj + clic <info>· 16"
+  bait-bought: "<success>Acheté : <accent><count> × <bait></accent> pour <accent><amount></accent>."
+  bait-not-enough: "<error>Il te faut <accent><amount></accent>."
+  bait-full: "<error>Fais de la place dans ton inventaire."
 
 archaeology:
   progress: "<info>Fouille... <accent><bar>"
@@ -531,6 +559,14 @@ admin:
     line: "<dark_gray>▸ <info><name> <accent><total>"
 
 editor:
+  fishing:
+    usage: "<error>/eterhub fishing add | remove [n°] | list | show <dark_gray>(add : la surface sélectionnée avec /eterhub zone point... ou pos1 / pos2)"
+    list: "<info>Coins de pêche : <accent><count></accent> <dark_gray>(en plus des lieux où la pêche est permise, comme le Lac)"
+    line: "<dark_gray> · <info><spot>"
+    added: "<success>Coin de pêche <accent>#<id></accent> ajouté : <info><region>"
+    removed: "<success>Coin de pêche <accent>#<id></accent> retiré."
+    unknown: "<error>Pas de coin de pêche <accent>#<id></accent>."
+    none-here: "<error>Aucun coin de pêche ici (ou dans ce monde)."
   zone:
     usage: "<error>/eterhub zone point | undo | clear | ymin | ymax | height off | pos1 | pos2 | set <lieu> | warp <lieu> | show <lieu> | tp <lieu> | remove <lieu> | list | here"
     point: "<info>Point <accent><count></accent> : <accent><x> <z></accent> <dark_gray>(3 points ou plus, puis /eterhub zone set <lieu>)"

@@ -213,7 +213,20 @@ rarity:
 fishing:
   daily-hint: "<info>Today the fishmonger wants: <accent><fish></accent> <dark_gray>(paid double)"
   record: "<gold>New record! <accent><fish></accent> of <accent><weight> kg</accent> <dark_gray>(before: <old> kg)"
-  only-lake: "<info>Fishing is only allowed at the <accent>Fishing Lake</accent>."
+  only-lake: "<info>Fishing is only allowed at the <accent>Lake</accent> and the fishing spots."
+  no-bait: "<info>You need <accent>bait</accent> to fish: Gaspard, the Lake fishmonger, sells some."
+  bait-last: "<info>That was your last <accent><bait></accent>."
+  bait:
+    usage: "<dark_gray>One bait per catch · in your off hand to choose it"
+    simple:
+      name: "<white>Simple bait"
+      lore: "<gray>Earthworms. They bite, nothing more."
+    good:
+      name: "<green>Good bait"
+      lore: "<gray>Uncommon and rare fish smell it from afar."
+    rare:
+      name: "<aqua>Rare bait"
+      lore: "<gray>Gaspard's secret recipe: legends bite more often."
   closed: "<error>Fishing is closed for now."
   item:
     name-common: "<white><fish>"
@@ -248,6 +261,15 @@ fishing:
     carpe-doree: "Golden carp"
     anguille-spectrale: "Spectral eel"
     vieille-botte: "Old boot"
+    ablette: "Bleak"
+    goujon: "Gudgeon"
+    ecrevisse: "Crayfish"
+    tanche: "Tench"
+    carpe: "Carp"
+    silure: "Catfish"
+    esturgeon: "Sturgeon"
+    koi-imperial: "Imperial koi"
+    roi-du-lac: "King of the Lake"
   menu:
     title: "Lake fishing"
     journal: "<accent>Fishing journal"
@@ -333,6 +355,12 @@ fishmonger:
   nothing: "<error>Nothing to sell: only lake fish are bought."
   failed: "<error>The payment failed: your fish were given back."
   no-economy: "<error>The fishmonger is closed for now."
+  bait-price: "<info>Price: <accent><amount></accent> <dark_gray>· 16 for <stack>"
+  bait-owned: "<dark_gray>You have: <count>"
+  bait-click: "<accent>Click <info>· buy 1 <dark_gray>· <accent>Shift + click <info>· 16"
+  bait-bought: "<success>Bought: <accent><count> × <bait></accent> for <accent><amount></accent>."
+  bait-not-enough: "<error>You need <accent><amount></accent>."
+  bait-full: "<error>Make some room in your inventory."
 
 archaeology:
   progress: "<info>Digging... <accent><bar>"
@@ -521,6 +549,14 @@ admin:
     line: "<dark_gray>▸ <info><name> <accent><total>"
 
 editor:
+  fishing:
+    usage: "<error>/eterhub fishing add | remove [n°] | list | show <dark_gray>(add: the area selected with /eterhub zone point... or pos1 / pos2)"
+    list: "<info>Fishing spots: <accent><count></accent> <dark_gray>(besides the places where fishing is allowed, like the Lake)"
+    line: "<dark_gray> · <info><spot>"
+    added: "<success>Fishing spot <accent>#<id></accent> added: <info><region>"
+    removed: "<success>Fishing spot <accent>#<id></accent> removed."
+    unknown: "<error>No fishing spot <accent>#<id></accent>."
+    none-here: "<error>No fishing spot here (or in this world)."
   zone:
     usage: "<error>/eterhub zone point | undo | clear | ymin | ymax | height off | pos1 | pos2 | set <place> | warp <place> | show <place> | tp <place> | remove <place> | list | here"
     point: "<info>Point <accent><count></accent>: <accent><x> <z></accent> <dark_gray>(3 points or more, then /eterhub zone set <place>)"

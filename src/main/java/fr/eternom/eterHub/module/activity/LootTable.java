@@ -30,7 +30,12 @@ public final class LootTable {
         }
     }
 
-    public record Entry(String id, Rarity rarity, double chance, Material icon, double min, double max) {
+    /** value : multiplie le prix de rachat (1 par défaut ; une vieille botte : presque rien). */
+    public record Entry(String id, Rarity rarity, double chance, Material icon, double min, double max, double value) {
+
+        public Entry(String id, Rarity rarity, double chance, Material icon, double min, double max) {
+            this(id, rarity, chance, icon, min, max, 1);
+        }
     }
 
     /** Un tirage : l'entrée et son poids (0 sans poids). */
@@ -55,7 +60,8 @@ public final class LootTable {
                 }
                 Material icon = Material.matchMaterial(entry.getString("icon", "COD"));
                 entries.add(new Entry(id, Rarity.parse(entry.getString("rarity", "common")), entry.getDouble("chance", 1),
-                        icon == null || !icon.isItem() ? Material.COD : icon, entry.getDouble("min", 0), entry.getDouble("max", 0)));
+                        icon == null || !icon.isItem() ? Material.COD : icon, entry.getDouble("min", 0), entry.getDouble("max", 0),
+                        Math.max(0, entry.getDouble("value", 1))));
             }
         }
         return new LootTable(entries);

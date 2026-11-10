@@ -36,7 +36,8 @@ import java.util.function.Supplier;
  * portent les données d'EterHub, pas les poissons ordinaires). Prix selon la rareté et le poids
  * (fishing.market.prices), × fishing.market.daily-bonus pour le poisson du jour. Clic sur un poisson : vendre cette
  * pile ; « Tout vendre ». L'objet est retiré puis le montant versé par EterEconomy ; si le versement échoue, le
- * poisson est rendu. Sans EterEconomy, le poissonnier est fermé.
+ * poisson est rendu. Il vend aussi les appâts (fishing.baits) : clic = 1, Maj + clic = 16. Sans EterEconomy, le
+ * poissonnier est fermé.
  */
 public class Fishmonger {
 
@@ -46,6 +47,8 @@ public class Fishmonger {
     private static final int DAILY = 4;
     private static final int BACK = 45;
     private static final int SELL_ALL = 49;
+    /** Les appâts à vendre (les trois premiers de config.yml). */
+    private static final int[] BAIT_SLOTS = {51, 52, 53};
 
     private final JavaPlugin plugin;
     private final FishItems fishItems;
@@ -54,9 +57,10 @@ public class Fishmonger {
     private final Messages messages;
     private final BackButton back;
     private final Supplier<LootTable> table;
+    private final Baits baits;
 
     public Fishmonger(JavaPlugin plugin, FishItems fishItems, HubSettings settings, HubStats stats, Messages messages, BackButton back,
-                      Supplier<LootTable> table) {
+                      Supplier<LootTable> table, Baits baits) {
         this.plugin = plugin;
         this.fishItems = fishItems;
         this.settings = settings;
@@ -64,6 +68,7 @@ public class Fishmonger {
         this.messages = messages;
         this.back = back;
         this.table = table;
+        this.baits = baits;
     }
 
     /** Les prix de config.yml (fishing.market). */
@@ -90,7 +95,9 @@ public class Fishmonger {
             return 0;
         }
         String daily = fishOfTheDay().orElse("");
-        return prices().price(fish.get().rarity(), fish.get().grams(), fish.get().id().equals(daily)) * stack.getAmount();
+        double value = table.get().entry(fish.get().id()).map(LootTable.Entry::value).orElse(1.0);
+        double each = Math.round(prices().price(fish.get().rarity(), fish.get().grams(), fish.get().id().equals(daily)) * value * 100) / 100.0;
+        return each * stack.getAmount();
     }
 
     public void open(Player player) {
@@ -152,6 +159,35 @@ public class Fishmonger {
         });
     }
 
+    /** Acheter des appâts : payés d'abord (EterEconomy), puis donnés ; s'ils ne tiennent pas, rien n'est acheté. */
+    private void buy(Player player, Baits.Bait bait, int amount) {
+        ItemStack stack = baits.item(player, bait, amount);
+        org.bukkit.inventory.Inventory copy = Bukkit.createInventory(null, 36);
+        copy.setContents(java.util.Arrays.copyOf(player.getInventory().getStorageContents(), 36));
+        if (!copy.addItem(stack.clone()).isEmpty()) {
+            messages.send(player, "fishmonger.bait-full");
+            Sounds.refuse(player);
+            return;
+        }
+        double price = Math.round(bait.price() * stack.getAmount() * 100) / 100.0;
+        UUID uuid = player.getUniqueId();
+        Tasks.async(plugin, player, () -> price <= 0 || EconomyLink.withdraw(uuid, price, "EterHub · appâts"), paid -> {
+            if (!paid) {
+                messages.send(player, "fishmonger.bait-not-enough", "amount", EconomyLink.format(price));
+                Sounds.refuse(player);
+                return;
+            }
+            player.getInventory().addItem(stack).values().forEach(left -> player.getWorld().dropItemNaturally(player.getLocation(), left));
+            messages.send(player, "fishmonger.bait-bought", "count", String.valueOf(stack.getAmount()),
+                    "bait", messages.plain(player, "fishing.bait." + bait.id() + ".name"), "amount", EconomyLink.format(price));
+            player.playSound(player, Sound.ENTITY_VILLAGER_YES, 0.7f, 1.2f);
+            stats.add("activity:bait-bought");
+            if (player.getOpenInventory().getTopInventory().getHolder(false) instanceof Stall) {
+                open(player);
+            }
+        }, () -> messages.send(player, "fishmonger.failed"));
+    }
+
     private static void giveBack(Player player, List<ItemStack> items) {
         if (!player.isOnline()) {
             return;
@@ -166,6 +202,7 @@ public class Fishmonger {
         private final Inventory inventory;
         private final Map<Integer, Integer> inventorySlotAt = new HashMap<>();
         private final List<Integer> allSlots = new ArrayList<>();
+        private final Map<Integer, Baits.Bait> baitAt = new HashMap<>();
 
         Stall(Player viewer) {
             inventory = Bukkit.createInventory(this, 54, messages.get(viewer, "fishmonger.title"));
@@ -204,6 +241,22 @@ public class Fishmonger {
             inventory.setItem(DAILY, Items.item(dailyEntry == null || dailyEntry.icon() == null ? Material.COD : dailyEntry.icon(),
                     messages.get(viewer, "fishmonger.daily", "fish", name(viewer, daily)),
                     List.of(messages.get(viewer, "fishmonger.daily-lore", "bonus", String.valueOf(prices().dailyBonus()).replace(".0", ""))), true));
+            List<Baits.Bait> forSale = baits.all();
+            for (int i = 0; i < BAIT_SLOTS.length && i < forSale.size(); i++) {
+                Baits.Bait bait = forSale.get(i);
+                ItemStack offer = baits.item(viewer, bait, 1);
+                offer.editMeta(meta -> {
+                    List<Component> lore = new ArrayList<>(meta.hasLore() ? meta.lore() : List.of());
+                    lore.add(Component.empty());
+                    lore.add(messages.get(viewer, "fishmonger.bait-price", "amount", EconomyLink.format(bait.price()),
+                            "stack", EconomyLink.format(bait.price() * 16)));
+                    lore.add(messages.get(viewer, "fishmonger.bait-owned", "count", String.valueOf(baits.count(viewer, bait.id()))));
+                    lore.add(messages.get(viewer, "fishmonger.bait-click"));
+                    meta.lore(lore);
+                });
+                inventory.setItem(BAIT_SLOTS[i], offer);
+                baitAt.put(BAIT_SLOTS[i], bait);
+            }
             inventory.setItem(BACK, back.item(viewer));
             inventory.setItem(SELL_ALL, Items.item(allSlots.isEmpty() ? Material.GRAY_DYE : Material.EMERALD,
                     messages.get(viewer, "fishmonger.sell-all", "amount", EconomyLink.format(Math.round(total * 100) / 100.0)),
@@ -216,6 +269,8 @@ public class Fishmonger {
                 back.click(player);
             } else if (slot == SELL_ALL) {
                 sell(player, allSlots);
+            } else if (baitAt.containsKey(slot)) {
+                buy(player, baitAt.get(slot), click.isShiftClick() ? 16 : 1);
             } else if (inventorySlotAt.containsKey(slot)) {
                 sell(player, List.of(inventorySlotAt.get(slot)));
             }

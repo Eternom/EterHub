@@ -75,16 +75,18 @@ public class Fishing implements Listener, TabExecutor {
     private final NetworkBus bus;
     private final BackButton back;
     private final FishItems fishItems;
+    private final Baits baits;
     private volatile LootTable table;
     private final Map<UUID, Long> lastRefusal = new ConcurrentHashMap<>();
     private Supplier<Optional<String>> fishOfTheDay = Optional::empty;
 
-    public Fishing(JavaPlugin plugin, ZoneService zones, FishingStore store, FishItems fishItems, HubSettings settings, HubStats stats,
+    public Fishing(JavaPlugin plugin, ZoneService zones, FishingStore store, FishItems fishItems, Baits baits, HubSettings settings, HubStats stats,
                    Messages messages, NetworkBus bus, BackButton back) {
         this.plugin = plugin;
         this.zones = zones;
         this.store = store;
         this.fishItems = fishItems;
+        this.baits = baits;
         this.settings = settings;
         this.stats = stats;
         this.messages = messages;
@@ -102,10 +104,15 @@ public class Fishing implements Listener, TabExecutor {
 
     public void reload() {
         table = LootTable.load(plugin.getConfig().getConfigurationSection("fishing.fish"));
+        baits.load(plugin.getConfig().getConfigurationSection("fishing"), plugin.getLogger());
     }
 
     public LootTable table() {
         return table;
+    }
+
+    public Baits baits() {
+        return baits;
     }
 
     /** Le poisson du jour du poissonnier (rappelé en arrivant au lac). */
@@ -140,11 +147,31 @@ public class Fishing implements Listener, TabExecutor {
         if (!event.isCancelled() || !(event.getEntity() instanceof FishHook hook) || !(hook.getShooter() instanceof Player player)) {
             return;
         }
+        if (enabled(player)) {
+            return; // refusé faute d'appât : déjà dit
+        }
         long now = System.currentTimeMillis();
         Long last = lastRefusal.get(player.getUniqueId());
         if (last == null || now - last > 3000) {
             lastRefusal.put(player.getUniqueId(), now);
             messages.actionBar(player, settings.bool("activities.fishing", true) ? "fishing.only-lake" : "fishing.closed");
+        }
+    }
+
+    /** Pas d'appât, pas de ligne (fishing.bait-required) : le poissonnier en vend au Lac. */
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onCastBait(ProjectileLaunchEvent event) {
+        if (!(event.getEntity() instanceof FishHook hook) || !(hook.getShooter() instanceof Player player) || !baits.required()
+                || !enabled(player) || baits.find(player).isPresent()) {
+            return;
+        }
+        event.setCancelled(true);
+        long now = System.currentTimeMillis();
+        Long last = lastRefusal.get(player.getUniqueId());
+        if (last == null || now - last > 3000) {
+            lastRefusal.put(player.getUniqueId(), now);
+            messages.actionBar(player, "fishing.no-bait");
+            player.playSound(player, Sound.BLOCK_NOTE_BLOCK_BASS, 0.6f, 0.8f);
         }
     }
 
@@ -160,15 +187,26 @@ public class Fishing implements Listener, TabExecutor {
             item.remove();
             return;
         }
+        // Un appât par prise (seconde main d'abord) ; sans appât, rien ne sort de l'eau
+        Baits.Bait bait = baits.consume(player).orElse(null);
+        if (bait == null && baits.required()) {
+            item.remove();
+            messages.actionBar(player, "fishing.no-bait");
+            return;
+        }
         ThreadLocalRandom random = ThreadLocalRandom.current();
-        // Chance de la mer sur la canne : les prises rares et légendaires mordent plus souvent
-        LootTable.Draw draw = table.roll(random.nextDouble(), random.nextDouble(), luck(player)).orElse(null);
+        // Chance de la mer sur la canne, et la chance de l'appât : les prises rares et légendaires mordent plus souvent
+        int luck = luck(player) + (bait == null ? 0 : bait.luck());
+        LootTable.Draw draw = table.roll(random.nextDouble(), random.nextDouble(), luck).orElse(null);
         if (draw == null) {
             return;
         }
         item.setItemStack(fishItem(player, draw));
         item.setOwner(player.getUniqueId());
-        caught(player, draw);
+        caught(player, draw, bait);
+        if (bait != null && baits.count(player, bait.id()) == 0) {
+            messages.send(player, "fishing.bait-last", "bait", messages.plain(player, "fishing.bait." + bait.id() + ".name"));
+        }
     }
 
     /** Seul le pêcheur ramasse son poisson (la protection du lobby refuse les autres ramassages). */
@@ -219,7 +257,7 @@ public class Fishing implements Listener, TabExecutor {
         return stack;
     }
 
-    private void caught(Player player, LootTable.Draw draw) {
+    private void caught(Player player, LootTable.Draw draw, Baits.Bait bait) {
         LootTable.Rarity rarity = draw.entry().rarity();
         String weight = String.format(Locale.FRANCE, "%.2f", draw.weight());
         String name = fishName(player, draw.entry().id());
@@ -261,7 +299,7 @@ public class Fishing implements Listener, TabExecutor {
         Rewards.give(plugin, player, plugin.getConfig().getStringList("fishing.reward-" + rarity.key()));
         Bukkit.getPluginManager().callEvent(new HubActivityEvent(player, "fishing", fish, rarity.ordinal(), false));
         fr.eternom.eterLib.module.quest.QuestBridge.signal(player, "eterhub:fish", java.util.Map.of("fish", fish, "rarity", rarity.key(),
-                "grams", String.valueOf(grams)), 1);
+                "grams", String.valueOf(grams), "bait", bait == null ? "" : bait.id()), 1);
     }
 
     private String fishName(Player viewer, String id) {

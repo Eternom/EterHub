@@ -26,7 +26,7 @@ l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans
 | `spawn` | `Spawn` (spawn principal + points d'arrivée), `ArrivalListener` (lecture à l'arrivée dans `AsyncPlayerSpawnLocationEvent` priorité LOW : une téléportation réseau d'EterLib passe après et l'emporte), `Tour` (visite guidée), `VoidListener` |
 | `protect` | `ProtectionListener` (tout le village figé et protégé), `BuildMode` (`/eterhub build`) |
 | `movement` | `MovementListener` (double saut), `Pads` (lanceurs, ascenseurs, vitesse, téléporteurs, trampolines), `Cosmetics` (traînées et auras par permission) |
-| `activity` | `Fishing` (pêche à la canne au lac ; poissons = vrais objets marqués `eterhub:fish`, `rarity`, `grams` ; Chance de la mer favorise les raretés ; record par espèce ; carnet), `Fishmonger` (rachat : rareté + poids, poisson du jour ×2), `FishPrices` (testé), `Archaeology` (fouilles, musée), `Parkour`, `HubEvents` (évènements, annonces), `LootTable`/`ParkourTime` (logique pure, testée) |
+| `activity` | `Fishing` (pêche à la canne au Lac et dans les coins de pêche sans nom `FishingSpots` ; appâts `Baits` vendus par le poissonnier, un par prise, leur chance s'ajoute à Chance de la mer ; poissons = vrais objets marqués `eterhub:fish`, `rarity`, `grams` ; Chance de la mer favorise les raretés ; record par espèce ; carnet), `Fishmonger` (rachat : rareté + poids, poisson du jour ×2), `FishPrices` (testé), `Archaeology` (fouilles, musée), `Parkour`, `HubEvents` (évènements, annonces), `LootTable`/`ParkourTime` (logique pure, testée) |
 | `heads` | `Hunt` (chasse principale et chasses à thème datées, testée), `HeadStore`, `HeadService` (trouver, paliers, fin avec rang et annonce, indices, scintillement, têtes cachées quand la chasse est fermée), `HeadMenus` (/heads, liste du staff), `HeadEditor`, `HeadCommand` |
 | `farm` | `Crop`, `Quality` (qualité, parcelle du jour : testés), `FarmStore` (quotas du jour sur tout le réseau, carnet), `Farming` (récolte avec repousse, vignes, objets marqués, parcelle du jour, `/harvest`), `FarmMarket` (fermier et vigneron) |
 | `display` | `Holograms` (TextDisplay non gardés dans le monde : text, players, board, progress), `Tips` |
@@ -46,6 +46,7 @@ l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans
 
 | Staff (`eterhub.admin`) | |
 |---|---|
+| `/eterhub fishing add\|remove [n°]\|list\|show` | Coins de pêche sans nom (surface sélectionnée comme un lieu) |
 | `/eterhub zone point\|undo\|clear\|ymin\|ymax\|height off\|pos1\|pos2\|set\|warp\|show\|tp\|remove\|list\|here` | Lieux : surface libre par points (hauteur facultative, pour un lieu sous un autre) ou pavé ; point d'arrivée de la carte |
 | `/eterhub spawn set\|add\|clear\|list` (`setspawn` : ancien nom) | Spawn et points d'arrivée |
 | `/eterhub pad add <launch\|elevator\|speed\|teleport> [force] [hauteur] [fixe]\|mark\|remove\|list` | Plaques (bloc où l'on est) |
