@@ -178,6 +178,10 @@ public class AdminCommand implements TabExecutor {
         if (!(sender instanceof Player player)) {
             return List.of();
         }
+        // Sans eterhub.admin : seulement build (avec eterhub.build), rien des outils du staff
+        if (!player.hasPermission("eterhub.admin")) {
+            return args.length == 1 && player.hasPermission("eterhub.build") ? SubCommand.filter(List.of("build"), args[0]) : List.of();
+        }
         if (args.length == 1) {
             List<String> options = new ArrayList<>(parts.keySet());
             options.addAll(List.of("setting", "maintenance", "log", "stats", "reload", "info", "setspawn"));
