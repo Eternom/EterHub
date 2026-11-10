@@ -149,7 +149,7 @@ public final class Baits {
     /** Combien d'appâts de ce genre le joueur a. */
     public int count(Player player, String id) {
         int count = 0;
-        List<ItemStack> all = new ArrayList<>(List.of(player.getInventory().getStorageContents()));
+        List<ItemStack> all = new ArrayList<>(java.util.Arrays.asList(player.getInventory().getStorageContents()));
         all.add(player.getInventory().getItemInOffHand());
         for (ItemStack stack : all) {
             if (read(stack).map(bait -> bait.id().equals(id)).orElse(false)) {
