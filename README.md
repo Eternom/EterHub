@@ -59,7 +59,7 @@ l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans
 
 ## Actions EterLib (PNJ, menus)
 
-`eterhub:servers`, `lobbies`, `spawn`, `server <nom>`, `zone <lieu>`, `map`, `visibility`, `fishing`, `fishmonger` (poissonnier : rachat des poissons du lac, EterEconomy), `fishing-journal`, `farmer` et `vineyard` (rachat des récoltes et des grappes), `harvest-journal`, `heads` (menu et indice du lieu où il en manque le plus), `museum`,
+`eterhub:servers`, `lobbies`, `spawn`, `server <nom>`, `zone <lieu>`, `map`, `visibility`, `fishing`, `fishmonger` (poissonnier : rachat des poissons du lac, EterEconomy), `fishing-journal`, `farmer` et `vineyard` (rachat des récoltes et des grappes), `harvest-journal`, `heads-claim [chasse]` (la grosse récompense, toutes les têtes trouvées, une fois par saison ; conditions `?eterhub:heads-complete`, `?eterhub:heads-claimed`), `heads` (menu et indice du lieu où il en manque le plus), `museum`,
 `tour [restart]`, `soon <quoi>`, `door <lieu>` (config `doors`) ; conditions `?eterhub:discovered <lieu>`,
 `?eterhub:in-zone <lieu>`. Un lieu réservé peut demander une condition d'EterLib (`access.condition`, ex :
 `?eterjob:rank mineur expert`), testée seulement si elle est fournie sur ce serveur.

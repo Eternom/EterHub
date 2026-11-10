@@ -60,6 +60,8 @@ public class HeadStore {
                 Column.of("uuid", Column.Type.UUID).primaryKey(),
                 Column.of("hunt", Column.Type.STRING).length(32).primaryKey(),
                 Column.of("finished_at", Column.Type.LONG).notNull());
+        // Depuis 2.7.0 : la grosse récompense, récupérée auprès du PNJ (une fois par saison)
+        database.addColumn(FINISHED, Column.of("claimed_at", Column.Type.LONG));
     }
 
     public List<Head> all() {
@@ -175,6 +177,20 @@ public class HeadStore {
                 + " h ON h.id = f.head WHERE COALESCE(h.hunt, 'main') = ?", hunt);
         database.execute("DELETE FROM " + database.table(FINISHED) + " WHERE hunt = ?", hunt);
         return removed;
+    }
+
+    /** Les chasses dont la récompense finale a été récupérée. */
+    public Set<String> claimed(UUID player) {
+        Set<String> hunts = new HashSet<>();
+        database.query("SELECT hunt FROM " + database.table(FINISHED) + " WHERE uuid = ? AND claimed_at IS NOT NULL", player)
+                .forEach(row -> hunts.add(row.getString("hunt")));
+        return hunts;
+    }
+
+    /** Récupère la récompense finale : true la première fois (la chasse doit être notée finie). */
+    public boolean claim(UUID player, String hunt) {
+        return database.execute("UPDATE " + database.table(FINISHED) + " SET claimed_at = ? WHERE uuid = ? AND hunt = ? AND claimed_at IS NULL",
+                System.currentTimeMillis(), player, hunt) > 0;
     }
 
     // ---------- Classements ----------

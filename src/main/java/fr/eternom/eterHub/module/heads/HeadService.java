@@ -79,6 +79,7 @@ public class HeadService implements Listener {
     private volatile Map<String, HeadStore.Head> byBlock = Map.of();
     private final Map<UUID, Map<Long, Long>> found = new ConcurrentHashMap<>();
     private final Map<UUID, Set<String>> finished = new ConcurrentHashMap<>();
+    private final Map<UUID, Set<String>> claimed = new ConcurrentHashMap<>();
     private final Map<UUID, Long> lastHint = new ConcurrentHashMap<>();
     private final Map<UUID, Long> lastClosed = new ConcurrentHashMap<>();
 
@@ -132,6 +133,8 @@ public class HeadService implements Listener {
         found.put(player, new ConcurrentHashMap<>(store.found(player)));
         finished.put(player, ConcurrentHashMap.newKeySet());
         finished.get(player).addAll(store.finished(player));
+        claimed.put(player, ConcurrentHashMap.newKeySet());
+        claimed.get(player).addAll(store.claimed(player));
     }
 
     // ---------- Lecture ----------
@@ -318,12 +321,16 @@ public class HeadService implements Listener {
             if (rank == 0) {
                 // Déjà finie avant l'ajout de nouvelles têtes : pas de deuxième récompense finale
                 messages.send(player, "heads.all-again", "hunt", huntName(player, hunt.id()));
+                if (!hasClaimed(uuid, hunt.id())) {
+                    messages.send(player, "heads.claim-hint", "hunt", huntName(player, hunt.id()));
+                }
                 return;
             }
             messages.send(player, "heads.all", "total", String.valueOf(total), "hunt", huntName(player, hunt.id()),
                     "rank", String.valueOf(rank));
             player.playSound(player, Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.7f, 1f);
-            Rewards.give(plugin, player, hunt.isMain() ? plugin.getConfig().getStringList("heads.reward-all") : hunt.rewardAll());
+            // La grosse récompense se récupère auprès du PNJ de la chasse (eterhub:heads-claim)
+            messages.send(player, "heads.claim-hint", "hunt", huntName(player, hunt.id()));
             if (settings.bool("heads.announce-complete", true)) {
                 announceHere(name, hunt.id(), rank, total);
                 JsonObject data = new JsonObject();
@@ -334,6 +341,54 @@ public class HeadService implements Listener {
                 Tasks.async(plugin, () -> bus.publish(COMPLETE, data), "Fin de chasse non annoncée");
             }
         }, () -> { });
+    }
+
+    // ---------- La grosse récompense (PNJ) ----------
+
+    /** Toutes les têtes de la chasse trouvées (et la chasse en compte au moins une). */
+    public boolean complete(UUID player, String hunt) {
+        int total = total(hunt);
+        return total > 0 && count(player, hunt) >= total;
+    }
+
+    public boolean hasClaimed(UUID player, String hunt) {
+        return claimed.getOrDefault(player, Set.of()).contains(hunt);
+    }
+
+    /**
+     * La récompense finale, auprès du PNJ de la chasse (action eterhub:heads-claim) : seulement avec toutes les têtes, et une
+     * seule fois par saison (jusqu'à /eterhub head reset). Thread principal ; base en tâche de fond.
+     */
+    public void claim(Player player, String huntId) {
+        Hunt hunt = hunts.get(huntId);
+        if (hunt == null || !isOpen(huntId) || total(huntId) == 0) {
+            messages.send(player, "heads.none");
+            return;
+        }
+        UUID uuid = player.getUniqueId();
+        if (hasClaimed(uuid, huntId)) {
+            messages.send(player, "heads.claim-already", "hunt", huntName(player, huntId));
+            return;
+        }
+        int missing = total(huntId) - count(uuid, huntId);
+        if (missing > 0) {
+            messages.send(player, "heads.claim-missing", "count", String.valueOf(missing), "hunt", huntName(player, huntId));
+            return;
+        }
+        Tasks.async(plugin, player, () -> {
+            store.finish(uuid, huntId);
+            return store.claim(uuid, huntId);
+        }, done -> {
+            claimed.computeIfAbsent(uuid, key -> ConcurrentHashMap.newKeySet()).add(huntId);
+            if (!done) {
+                messages.send(player, "heads.claim-already", "hunt", huntName(player, huntId));
+                return;
+            }
+            messages.send(player, "heads.claimed", "hunt", huntName(player, huntId));
+            player.playSound(player, Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.8f, 1.2f);
+            Rewards.give(plugin, player, hunt.isMain() ? plugin.getConfig().getStringList("heads.reward-all") : hunt.rewardAll());
+            Bukkit.getPluginManager().callEvent(new HubActivityEvent(player, "heads-claim", huntId, total(huntId), false));
+        }, () -> messages.send(player, "error.generic"));
     }
 
     private void announceHere(String name, String hunt, int rank, int total) {
@@ -366,6 +421,7 @@ public class HeadService implements Listener {
         UUID uuid = event.getPlayer().getUniqueId();
         found.remove(uuid);
         finished.remove(uuid);
+        claimed.remove(uuid);
         lastHint.remove(uuid);
         lastClosed.remove(uuid);
     }
@@ -544,6 +600,30 @@ public class HeadService implements Listener {
         }, () -> messages.send(player, "error.generic"));
     }
 
+    /** Le staff casse une tête de la chasse (mode construction) : elle est retirée de la chasse toute seule. */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onBreakHead(org.bukkit.event.block.BlockBreakEvent event) {
+        HeadStore.Head head = at(event.getBlock());
+        if (head == null) {
+            return;
+        }
+        Player player = event.getPlayer();
+        String author = player.getName();
+        Tasks.async(plugin, player, () -> {
+            boolean removed = store.remove(head.id());
+            if (removed) {
+                settings.log("head", head.hunt() + " " + head.x() + "," + head.y() + "," + head.z() + " (cassée)", null, author);
+            }
+            return removed;
+        }, removed -> {
+            if (removed) {
+                messages.send(player, "editor.head.auto-removed", "hunt", huntName(player, head.hunt()),
+                        "total", String.valueOf(Math.max(0, total(head.hunt()) - 1)));
+                changed();
+            }
+        }, () -> messages.send(player, "error.generic"));
+    }
+
     /** Une tête donnée par /eterhub head give, posée en mode construction : ajoutée tout de suite à sa chasse. */
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlace(BlockPlaceEvent event) {
@@ -571,6 +651,19 @@ public class HeadService implements Listener {
             meta.getPersistentDataContainer().set(placeKey, PersistentDataType.STRING, hunt);
             meta.lore(List.of(messages.get(Bukkit.getConsoleSender(), "editor.head.item-lore", "hunt", hunt)));
         });
+        return item;
+    }
+
+    /** Une tête pour un menu, avec la vraie texture de cette tête (gardée à l'ajout), sinon la tête par défaut. */
+    ItemStack display(HeadStore.Head head, net.kyori.adventure.text.Component name, List<net.kyori.adventure.text.Component> lore, boolean glint) {
+        ItemStack item = fr.eternom.eterLib.helper.gui.Items.item(Material.PLAYER_HEAD, name, lore, glint);
+        if (head.texture() != null) {
+            item.editMeta(SkullMeta.class, meta -> {
+                PlayerProfile profile = Bukkit.createProfile(UUID.nameUUIDFromBytes(head.texture().getBytes()), "");
+                profile.setProperty(new ProfileProperty("textures", head.texture(), head.signature()));
+                meta.setPlayerProfile(profile);
+            });
+        }
         return item;
     }
 

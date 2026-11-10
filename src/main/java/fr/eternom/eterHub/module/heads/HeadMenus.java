@@ -207,7 +207,7 @@ public class HeadMenus {
                 }
                 if (at != null) {
                     lore.add(messages.get(viewer, "heads.menu.found-on", "date", date(at)));
-                    inventory.setItem(SLOTS[i], Items.item(Material.PLAYER_HEAD, messages.get(viewer, "heads.menu.head", "name", name), lore, head.rare()));
+                    inventory.setItem(SLOTS[i], service.display(head, messages.get(viewer, "heads.menu.head", "name", name), lore, head.rare()));
                 } else {
                     lore.add(messages.get(viewer, "heads.menu.missing-lore"));
                     inventory.setItem(SLOTS[i], Items.item(Material.GRAY_DYE, messages.get(viewer, "heads.menu.missing"), lore));
@@ -271,7 +271,7 @@ public class HeadMenus {
                 HeadStore.Head head = heads.get(index);
                 int foundBy = counts.getOrDefault(head.id(), 0);
                 headAt.put(SLOTS[i], head);
-                inventory.setItem(SLOTS[i], Items.item(head.rare() ? Material.WITHER_SKELETON_SKULL : Material.PLAYER_HEAD,
+                inventory.setItem(SLOTS[i], service.display(head,
                         messages.get(viewer, "editor.head.list-name", "id", String.valueOf(head.id()),
                                 "name", head.name() == null ? "-" : head.name()),
                         List.of(messages.get(viewer, "editor.head.list-hunt", "hunt", service.huntName(viewer, head.hunt())),
@@ -279,7 +279,7 @@ public class HeadMenus {
                                 messages.get(viewer, "editor.head.list-found", "count", String.valueOf(foundBy), "hunters", String.valueOf(hunters)),
                                 messages.get(viewer, "editor.head.list-at", "x", String.valueOf(head.x()), "y", String.valueOf(head.y()),
                                         "z", String.valueOf(head.z())),
-                                Component.empty(), messages.get(viewer, "editor.head.list-tp"))));
+                                Component.empty(), messages.get(viewer, "editor.head.list-tp")), head.rare()));
             }
             if (this.page > 0) {
                 inventory.setItem(PREVIOUS, Items.item(Material.ARROW, messages.get(viewer, "heads.menu.previous"), List.of()));

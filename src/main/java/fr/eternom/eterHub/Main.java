@@ -223,6 +223,15 @@ public final class Main extends JavaPlugin {
         lib.getActions().register(this, "eterhub:vineyard", "Le vigneron : rachète les grappes des vignes", List.of(),
                 (player, args) -> farmMarket.open(player, "vineyard"));
         lib.getActions().register(this, "eterhub:harvest-journal", "Le carnet des récoltes", List.of(), (player, args) -> farming.openJournal(player));
+        // La grosse récompense de la chasse aux têtes, auprès d'un PNJ (une fois par saison), et ses conditions
+        fr.eternom.eterLib.module.action.Actions.Argument huntArgument = new fr.eternom.eterLib.module.action.Actions.Argument("chasse", false,
+                typed -> new java.util.ArrayList<>(heads.hunts().keySet()));
+        lib.getActions().register(this, "eterhub:heads-claim", "Récompense de la chasse aux têtes (toutes trouvées, une fois par saison)",
+                List.of(huntArgument), (player, args) -> heads.claim(player, args.isEmpty() ? "main" : args.getFirst().toLowerCase(Locale.ROOT)));
+        lib.getActions().registerCondition(this, "eterhub:heads-complete", "Le joueur a trouvé toutes les têtes de la chasse",
+                List.of(huntArgument), (player, args) -> heads.complete(player.getUniqueId(), args.isEmpty() ? "main" : args.getFirst().toLowerCase(Locale.ROOT)));
+        lib.getActions().registerCondition(this, "eterhub:heads-claimed", "Le joueur a déjà récupéré la récompense de la chasse",
+                List.of(huntArgument), (player, args) -> heads.hasClaimed(player.getUniqueId(), args.isEmpty() ? "main" : args.getFirst().toLowerCase(Locale.ROOT)));
         // Le chasseur de têtes (PNJ) : le menu, et le lieu où il manque le plus de têtes au joueur
         lib.getActions().register(this, "eterhub:heads", "La chasse aux têtes (menu et indice)", List.of(), (player, args) -> {
             headMenus.open(player);
