@@ -34,7 +34,7 @@ zones:
     subtitle: "<info>Ceux qui entrent ne reviennent pas tous"
   crypte:
     name: "<dark_gray>La Crypte"
-    subtitle: "<gray>Ici, tu es seul"
+    subtitle: "<gray>Le repos des anciens"
   egouts:
     name: "<dark_gray>Les Égouts"
     subtitle: "<gray>Ça sent le renfermé..."

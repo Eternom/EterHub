@@ -218,9 +218,14 @@ public class ZoneService {
 
     /**
      * Le joueur va en to (changement de bloc, téléportation, arrivée). false = entrée refusée (zone réservée) : l'appelant
-     * annule le mouvement. from : d'où il vient (null à l'arrivée).
+     * annule le mouvement. from : d'où il vient (null à l'arrivée). Ici : à pied.
      */
     public boolean update(Player player, Location to, Location from) {
+        return update(player, to, from, false);
+    }
+
+    /** teleport : le titre du lieu d'arrivée s'affiche toujours (même parcelle -> parent, même sortie de la Crypte). */
+    public boolean update(Player player, Location to, Location from, boolean teleport) {
         UUID uuid = player.getUniqueId();
         String before = current.getOrDefault(uuid, "");
         String after = index.at(to.getWorld().getName(), to.getBlockX(), to.getBlockY(), to.getBlockZ())
@@ -256,8 +261,10 @@ public class ZoneService {
         Zone old = before.isEmpty() ? wilderness : zones.getOrDefault(before, wilderness);
         leave(player, old, zone);
         scene(player, old, zone);
-        // D'une parcelle à son lieu parent (ou l'inverse) : pas de nouveau titre ni de son d'entrée
-        boolean sameFamily = !before.isEmpty() && !after.isEmpty() && old.root().equals(zone.root());
+        // À pied, d'une parcelle à son lieu parent (ou l'inverse), ou en ressortant d'un lieu vers celui qui l'entoure
+        // (inside : la Crypte -> le Cimetière) : pas de nouveau titre ni de son d'entrée
+        boolean sameFamily = !teleport && !before.isEmpty() && !after.isEmpty()
+                && (old.root().equals(zone.root()) || old.inside().contains(after));
         boolean first = false;
         if (!after.isEmpty()) {
             stats.add("zone:" + after);

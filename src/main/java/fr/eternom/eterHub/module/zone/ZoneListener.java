@@ -53,7 +53,7 @@ public class ZoneListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onTeleport(PlayerTeleportEvent event) {
-        if (!zones.update(event.getPlayer(), event.getTo(), event.getFrom())) {
+        if (!zones.update(event.getPlayer(), event.getTo(), event.getFrom(), true)) {
             event.setCancelled(true);
         }
     }

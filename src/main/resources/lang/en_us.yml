@@ -31,7 +31,7 @@ zones:
     subtitle: "<info>Not everyone who enters comes back"
   crypte:
     name: "<dark_gray>The Crypt"
-    subtitle: "<gray>Here, you are alone"
+    subtitle: "<gray>Where the elders rest"
   egouts:
     name: "<dark_gray>The Sewers"
     subtitle: "<gray>It smells musty..."

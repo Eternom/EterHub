@@ -144,17 +144,16 @@ zones:
     particles:
       - {type: DRIPPING_DRIPSTONE_WATER, count: 3, radius: 8, min-y: 3, max-y: 6, every: 2, chance: 0.7}
       - {type: ASH, count: 6, radius: 8, min-y: 0, max-y: 4, every: 1, chance: 0.8}
-  # Le chemin de la salle secrète, sous le Cimetière (hauteur min / max au tracé) : la Crypte (seul au monde, pas de
-  # téléportation, obscurité par vagues), puis les Égouts, puis la salle (donjon-secret). Même permission pour les trois.
-  #   isolation    : on n'y voit personne et personne ne nous voit (sauf le staff)
-  #   no-teleport  : aucune téléportation pour en sortir (/spawn, carte, plaques, commandes...), sauf le staff
-  #   effects      : effets par vagues (type d'effet Minecraft, every, chance, seconds, amplifier), retirés en sortant
-  #   on-enter / on-leave : actions d'EterLib en entrant / en sortant (message, titre, son... plus tard EterQuest)
-#   passage      : la mise en scène suit le joueur sorti du lieu, jusqu'à un lieu de until (keep : lieux du chemin)
+  # Le chemin de la salle secrète, sous le Cimetière (hauteur min / max au tracé) : la Crypte (le petit bâtiment), puis
+  # les Égouts, puis la salle (donjon-secret). Même permission pour les trois.
+  #   inside : les lieux qui entourent celui-ci ; en ressortir à pied vers l'un d'eux n'affiche pas son titre (on y
+  #            était déjà : la Crypte -> le Cimetière). Une téléportation l'affiche toujours.
+  # (Possibles aussi sur un lieu, non utilisés ici : isolation, no-teleport, effects, on-enter / on-leave, passage.)
   crypte:
     icon: SOUL_LANTERN
     sound: "minecraft:block.iron_door.close"
     discoverable: false
+    inside: [cimetiere]
     rules:
       double-jump: false
       sit: false
@@ -162,30 +161,17 @@ zones:
     access:
       permission: "eterhub.zone.donjon-secret"
       condition: ""
-    isolation: true
-    no-teleport: true
-    effects:
-      - {type: darkness, every: 10, chance: 0.6, seconds: 4}
-    # Le couloir sinueux jusqu'aux Égouts n'est pas tracé : la mise en scène suit le joueur sorti de la Crypte, tant qu'il
-    # reste dans le Cimetière (ou hors lieu), jusqu'aux Égouts ; elle s'arrête ailleurs, ou après timeout secondes.
-    passage:
-      until: [egouts, donjon-secret]
-      keep: [cimetiere]
-      timeout: 300
     ambient:
-      - {sound: "minecraft:entity.warden.heartbeat", every: 3, chance: 0.9, volume: 0.35, pitch-spread: 0.05}
-      - {sound: "minecraft:entity.warden.ambient", every: 20, chance: 0.5, volume: 0.1, pitch: 0.6}
       - {sound: "minecraft:block.stone.step", every: 12, chance: 0.4, volume: 0.25, pitch: 0.8, pitch-spread: 0.1}
       - {sound: "minecraft:block.pointed_dripstone.drip_water", every: 5, chance: 0.6, volume: 0.35, pitch-spread: 0.2}
     particles:
       - {type: ASH, count: 6, radius: 6, min-y: 0, max-y: 3, every: 1, chance: 0.9}
       - {type: SCULK_SOUL, count: 1, radius: 4, min-y: 0, max-y: 2, every: 5, chance: 0.4}
-    on-enter:
-      - 'eterlib:message "<dark_gray><i>Le silence t''enveloppe... tu n''entends plus que ton cœur."'
   egouts:
     icon: IRON_BARS
     sound: "minecraft:block.water.ambient"
     discoverable: false
+    inside: [cimetiere]
     rules:
       double-jump: false
       sit: false
@@ -204,6 +190,7 @@ zones:
   donjon-secret:
     icon: WITHER_SKELETON_SKULL
     sound: "minecraft:block.end_portal.spawn"
+    inside: [egouts, cimetiere]
     rules:
       double-jump: false
       sit: false

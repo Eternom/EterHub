@@ -19,10 +19,12 @@ import java.util.logging.Logger;
  * Ambiance : des couches de particules (particles) et des sons (ambient), chacun avec sa fréquence (every, en secondes)
  * et sa probabilité (chance) : certains toujours là, d'autres rares ; vus et entendus par le joueur seulement.
  * Hors de tout lieu : celles de zone-defaults.
+ * inside : les lieux qui entourent celui-ci (la Crypte dans le Cimetière) ; en ressortir à pied vers l'un d'eux n'affiche
+ * pas son titre (on y était déjà). Une téléportation, elle, l'affiche toujours.
  */
 public record Zone(String id, Material icon, Map<ZoneRule, Boolean> rules, String enterSound, List<Effect> particles,
                    List<Ambient> sounds, long time, String weather, String permission, String condition, boolean discoverable,
-                   boolean title, boolean halloween, String parent, Scene scene) {
+                   boolean title, boolean halloween, String parent, List<String> inside, Scene scene) {
 
     /**
      * Une couche de particules : count particules dans un rayon autour du joueur, entre minY et maxY au-dessus de ses
@@ -61,7 +63,7 @@ public record Zone(String id, Material icon, Map<ZoneRule, Boolean> rules, Strin
     public static Zone wilderness(ConfigurationSection config, Logger logger) {
         ConfigurationSection defaults = config.getConfigurationSection("zone-defaults");
         return new Zone("", Material.GRASS_BLOCK, defaults(config), "", particles(defaults, "zone-defaults", logger),
-                sounds(defaults, "zone-defaults", logger), -1, "", "", "", false, false, false, "", Scene.NONE);
+                sounds(defaults, "zone-defaults", logger), -1, "", "", "", false, false, false, "", List.of(), Scene.NONE);
     }
 
     public boolean allows(ZoneRule rule) {
@@ -93,7 +95,7 @@ public record Zone(String id, Material icon, Map<ZoneRule, Boolean> rules, Strin
                     zone.getLong("time", -1), zone.getString("weather", "").toLowerCase(Locale.ROOT),
                     zone.getString("access.permission", ""), zone.getString("access.condition", ""),
                     zone.getBoolean("discoverable", true), zone.getBoolean("title", true), zone.getBoolean("halloween", false),
-                    zone.getString("parent", ""), scene(zone, "zones." + id, logger)));
+                    zone.getString("parent", ""), zone.getStringList("inside"), scene(zone, "zones." + id, logger)));
         }
         return inherit(zones, section, defaults, logger);
     }
@@ -120,7 +122,7 @@ public record Zone(String id, Material icon, Map<ZoneRule, Boolean> rules, Strin
                     zone.sounds().isEmpty() ? parent.sounds() : zone.sounds(),
                     zone.time() >= 0 ? zone.time() : parent.time(), zone.weather().isEmpty() ? parent.weather() : zone.weather(),
                     zone.permission(), zone.condition(), zone.discoverable(), zone.title(), zone.halloween() || parent.halloween(),
-                    zone.parent(), zone.scene()));
+                    zone.parent(), zone.inside(), zone.scene()));
         }
         return resolved;
     }
