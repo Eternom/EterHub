@@ -25,7 +25,7 @@ l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans
 | `spawn` | `Spawn` (spawn principal + points d'arrivée), `ArrivalListener` (lecture à l'arrivée dans `AsyncPlayerSpawnLocationEvent` priorité LOW : une téléportation réseau d'EterLib passe après et l'emporte), `Tour` (visite guidée), `VoidListener` |
 | `protect` | `ProtectionListener` (tout le village figé et protégé), `BuildMode` (`/eterhub build`) |
 | `movement` | `MovementListener` (double saut), `Pads` (lanceurs, ascenseurs, vitesse, téléporteurs, trampolines), `Cosmetics` (traînées et auras par permission) |
-| `activity` | `Fishing` (pêche sans canne, trophées), `Archaeology` (fouilles, musée), `Parkour`, `Heads`, `HubEvents` (évènements, annonces), `LootTable`/`ParkourTime` (logique pure, testée) |
+| `activity` | `Fishing` (pêche à la canne au lac ; poissons = vrais objets marqués `eterhub:fish`, `rarity`, `grams`), `Archaeology` (fouilles, musée), `Parkour`, `Heads`, `HubEvents` (évènements, annonces), `LootTable`/`ParkourTime` (logique pure, testée) |
 | `display` | `Holograms` (TextDisplay non gardés dans le monde : text, players, board, progress), `Tips` |
 | `network` | `NetworkGui` (sélecteur, lobbys, maintenance, Reprendre), `ServerMenu`, `LobbyMenu`, `PortalListener` |
 | `social` | `Visibility` (4 modes), `Seats`, `Profiles`, `FriendsView` (EterFriend / EterClan isolés dans `FriendLink` / `ClanLink`) |

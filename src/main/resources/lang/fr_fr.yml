@@ -58,7 +58,7 @@ zones:
     subtitle: "<info>Les terres du village"
   lac:
     name: "<accent>Le Lac de pêche"
-    subtitle: "<info>Accroupis-toi face à l'eau pour pêcher"
+    subtitle: "<info>Sors ta canne à pêche"
   cimetiere:
     name: "<accent>Le Cimetière"
     subtitle: "<info>Ici reposent les anciens"
@@ -195,10 +195,15 @@ rarity:
   legendary: "<gold>Légendaire"
 
 fishing:
-  cast: "<info>Ligne lancée... <accent>garde Maj enfoncé"
-  bite: "<accent><bold>Ça mord ! Lâche Maj !"
-  reeled: "<info>Ligne rentrée trop tôt."
-  escaped: "<error>Le poisson s'est échappé..."
+  only-lake: "<info>La pêche n'est permise qu'au <accent>Lac de pêche</accent>."
+  closed: "<error>La pêche est fermée pour le moment."
+  item:
+    name-common: "<white><fish>"
+    name-uncommon: "<green><fish>"
+    name-rare: "<aqua><fish>"
+    name-legendary: "<gold><bold><fish>"
+    weight: "<gray>Poids : <white><weight> kg"
+    caught: "<dark_gray>Pêché au lac par <player>, le <date>"
   caught-common: "<info>Tu pêches un(e) <accent><fish></accent> de <accent><weight> kg</accent>."
   caught-uncommon: "<success>Joli ! Un(e) <accent><fish></accent> de <accent><weight> kg</accent>."
   caught-rare: "<aqua>Prise rare ! <accent><fish></accent> de <accent><weight> kg</accent> !"
@@ -223,9 +228,9 @@ fishing:
     day: "<accent>Plus belles prises du jour"
     month: "<accent>Plus belles prises du mois"
     how: "<accent>Comment pêcher"
-    how-1: "<info>Au Lac, accroupis-toi face à l'eau."
-    how-2: "<info>Garde Maj enfoncé, attends que ça morde,"
-    how-3: "<info>puis lâche Maj dans la seconde !"
+    how-1: "<info>Au Lac de pêche seulement :"
+    how-2: "<info>lance ta canne et attends que ça morde."
+    how-3: "<info>Tes poissons sont à toi : rares, légendaires..."
     best: "<info>Ta plus belle prise : <accent><weight> kg"
     species: "<info>Espèces pêchées : <accent><count>/<total>"
     empty: "<dark_gray>Personne encore"
@@ -328,7 +333,7 @@ tips:
     - "<info>Astuce : clic droit sur un banc pour t'asseoir."
     - "<info>Astuce : des têtes sont cachées dans tout le village..."
   lac:
-    - "<info>Astuce : accroupis-toi face à l'eau, lâche Maj quand ça mord."
+    - "<info>Astuce : sors ta canne, les poissons rares sont annoncés à tous !"
     - "<info>Astuce : <accent>/fishing</accent> pour les plus belles prises."
   archeologie:
     - "<info>Astuce : clique plusieurs fois sur le sable suspect pour fouiller."

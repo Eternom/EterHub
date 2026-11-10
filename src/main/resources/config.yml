@@ -270,12 +270,10 @@ tips:
   interval-seconds: 45
 
 # ---------- Activités ----------
-# Pêche au Lac (règle fishing) : sans canne, s'accroupir en regardant l'eau, garder Maj, lâcher quand ça mord.
-# Les prises sont des trophées (rien dans l'inventaire). Noms : lang/ fishing.fish.<id>.
+# Pêche au Lac, à la vraie canne : la ligne ne se lance que là où la règle fishing est permise. Ce qui mord devient un
+# poisson du lac tiré ci-dessous : un vrai objet (nom, rareté, poids, date ; données gardées dans l'objet pour un futur
+# PNJ qui les reprendra), que seul le pêcheur ramasse. Noms : lang/ fishing.fish.<id> ; objet : lang/ fishing.item.
 fishing:
-  wait-min-seconds: 4
-  wait-max-seconds: 12
-  bite-window-seconds: 1.2
   # Annoncer aussi les prises rares (les légendaires le sont toujours), sur tous les lobbys.
   announce-rare: false
   # Récompenses par rareté (commandes console ou « action: ... »).

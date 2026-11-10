@@ -159,7 +159,7 @@ public final class Main extends JavaPlugin {
         Function<Player, List<Component>> progress = player -> progress(player, zones, heads, archaeology);
         holograms = new Holograms(this, database, settings, messages, bus, progress);
         Tips tips = new Tips(this, zones, settings, messages);
-        tips.setBusy(player -> parkour.running(player) || fishing.fishing(player));
+        tips.setBusy(parkour::running);
 
         // Navigation et social
         network = new NetworkGui(this, lib, database, messages, settings, players, friends);
@@ -216,7 +216,6 @@ public final class Main extends JavaPlugin {
         tour.start();
         pads.reload();
         cosmetics.start();
-        fishing.start();
         parkour.start();
         heads.reload();
         events.start();

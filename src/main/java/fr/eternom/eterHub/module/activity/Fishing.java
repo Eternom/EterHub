@@ -16,30 +16,34 @@ import fr.eternom.eterLib.helper.gui.Menu;
 import fr.eternom.eterLib.helper.message.Messages;
 import fr.eternom.eterLib.helper.task.Tasks;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
-import org.bukkit.FluidCollisionMode;
-import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.Particle;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
-import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
+import org.bukkit.entity.FishHook;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityPickupItemEvent;
+import org.bukkit.event.entity.ProjectileLaunchEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.time.Duration;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -49,30 +53,17 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * La pêche au Lac (zones où la règle fishing est permise, activities.fishing). Rien n'entre dans l'inventaire (EterSync
- * peut le synchroniser) : les prises sont des trophées, gardées en base (eterhub_catches).
- * - Sans canne : s'accroupir en regardant l'eau (8 blocs) lance la ligne ; garder Maj enfoncé ; « Ça mord ! » : lâcher
- *   Maj dans la seconde ferre le poisson. Lâcher trop tôt rentre la ligne.
- * - Avec une canne : le poisson pris devient un trophée (l'objet est retiré).
- * Prise : poisson tiré dans fishing.fish (rareté, poids), titre pour les rares, annonce sur tous les lobbys pour les
- * légendaires (et les rares si fishing.announce-rare), classement du jour et du mois (/fishing, « hub_fishing »).
+ * La pêche au Lac, à la vraie canne de Minecraft : lancer la ligne n'est possible que dans les lieux où la règle
+ * fishing est permise (activities.fishing). Ce qui mord est remplacé par un poisson du lac tiré dans fishing.fish
+ * (rareté, poids) : un vrai objet, nommé, avec sa rareté, son poids et la date dans sa description, et ses données
+ * gardées dans l'objet (eterhub:fish, rarity, grams : pour un PNJ qui les reprendra plus tard). Seul le pêcheur peut le
+ * ramasser. Titre pour les rares, annonce sur tous les lobbys pour les légendaires (et les rares si
+ * fishing.announce-rare), classement du jour et du mois (/fishing, « hub_fishing »).
  */
 public class Fishing implements Listener, TabExecutor {
 
     private static final String CAUGHT = "fishing-catch";
-
-    private enum Phase { WAITING, BITE }
-
-    private static final class Line {
-        final Location water;
-        Phase phase = Phase.WAITING;
-        long next;
-
-        Line(Location water, long next) {
-            this.water = water;
-            this.next = next;
-        }
-    }
+    private static final DateTimeFormatter DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
     private final JavaPlugin plugin;
     private final ZoneService zones;
@@ -82,8 +73,11 @@ public class Fishing implements Listener, TabExecutor {
     private final Messages messages;
     private final NetworkBus bus;
     private final BackButton back;
+    private final NamespacedKey fishKey;
+    private final NamespacedKey rarityKey;
+    private final NamespacedKey gramsKey;
     private volatile LootTable table;
-    private final Map<UUID, Line> lines = new ConcurrentHashMap<>();
+    private final Map<UUID, Long> lastRefusal = new ConcurrentHashMap<>();
 
     public Fishing(JavaPlugin plugin, ZoneService zones, FishingStore store, HubSettings settings, HubStats stats,
                    Messages messages, NetworkBus bus, BackButton back) {
@@ -95,6 +89,9 @@ public class Fishing implements Listener, TabExecutor {
         this.messages = messages;
         this.bus = bus;
         this.back = back;
+        this.fishKey = new NamespacedKey(plugin, "fish");
+        this.rarityKey = new NamespacedKey(plugin, "rarity");
+        this.gramsKey = new NamespacedKey(plugin, "grams");
         reload();
         bus.on(CAUGHT, data -> {
             String key = "fishing.announce-" + data.get("rarity").getAsString();
@@ -109,117 +106,91 @@ public class Fishing implements Listener, TabExecutor {
         table = LootTable.load(plugin.getConfig().getConfigurationSection("fishing.fish"));
     }
 
-    public void start() {
-        Bukkit.getScheduler().runTaskTimer(plugin, this::tick, 5, 5);
-    }
-
-    public boolean fishing(Player player) {
-        return lines.containsKey(player.getUniqueId());
-    }
-
     private boolean enabled(Player player) {
         return settings.bool("activities.fishing", true) && zones.allows(player, ZoneRule.FISHING);
     }
 
-    // ---------- Sans canne ----------
+    // ---------- La canne ----------
 
-    @EventHandler(ignoreCancelled = true)
-    public void onSneak(PlayerToggleSneakEvent event) {
-        Player player = event.getPlayer();
-        UUID uuid = player.getUniqueId();
-        Line line = lines.get(uuid);
-        if (!event.isSneaking()) {
-            if (line == null) {
-                return;
-            }
-            lines.remove(uuid);
-            if (line.phase == Phase.BITE) {
-                Location water = line.water;
-                player.getWorld().spawnParticle(Particle.SPLASH, water, 30, 0.3, 0.1, 0.3, 0.1);
-                player.playSound(player, Sound.ENTITY_FISHING_BOBBER_RETRIEVE, 0.8f, 1f);
-                caught(player);
-            } else {
-                messages.actionBar(player, "fishing.reeled");
-            }
+    /** La ligne lancée hors du lac est retenue par la protection : on dit pourquoi (une fois toutes les 3 s). */
+    @EventHandler(priority = EventPriority.MONITOR)
+    public void onCast(ProjectileLaunchEvent event) {
+        if (!event.isCancelled() || !(event.getEntity() instanceof FishHook hook) || !(hook.getShooter() instanceof Player player)) {
             return;
         }
-        if (line != null || !enabled(player) || player.getInventory().getItemInMainHand().getType() == Material.FISHING_ROD) {
-            return;
-        }
-        Block target = player.getTargetBlockExact(8, FluidCollisionMode.ALWAYS);
-        if (target == null || target.getType() != Material.WATER) {
-            return;
-        }
-        Location water = target.getLocation().add(0.5, 1.0, 0.5);
-        lines.put(uuid, new Line(water, System.currentTimeMillis() + waitMillis()));
-        player.playSound(player, Sound.ENTITY_FISHING_BOBBER_THROW, 0.7f, 1f);
-        player.spawnParticle(Particle.SPLASH, water, 15, 0.2, 0.05, 0.2, 0.05);
-        messages.actionBar(player, "fishing.cast");
-    }
-
-    private long waitMillis() {
-        long min = (long) (settings.number("fishing.wait-min-seconds", 4) * 1000);
-        long max = Math.max(min + 1, (long) (settings.number("fishing.wait-max-seconds", 12) * 1000));
-        return ThreadLocalRandom.current().nextLong(min, max);
-    }
-
-    private void tick() {
         long now = System.currentTimeMillis();
-        for (Map.Entry<UUID, Line> entry : lines.entrySet()) {
-            Player player = Bukkit.getPlayer(entry.getKey());
-            Line line = entry.getValue();
-            if (player == null || !player.isSneaking() || !enabled(player)
-                    || player.getLocation().distanceSquared(line.water) > 15 * 15) {
-                lines.remove(entry.getKey());
-                continue;
-            }
-            if (line.phase == Phase.WAITING) {
-                player.spawnParticle(Particle.FISHING, line.water, 2, 0.1, 0, 0.1, 0);
-                if (now >= line.next) {
-                    line.phase = Phase.BITE;
-                    line.next = now + (long) (settings.number("fishing.bite-window-seconds", 1.2) * 1000);
-                    player.showTitle(Title.title(Component.empty(), messages.get(player, "fishing.bite"),
-                            Title.Times.times(Duration.ZERO, Duration.ofMillis(900), Duration.ofMillis(200))));
-                    player.playSound(player, Sound.ENTITY_FISHING_BOBBER_SPLASH, 1f, 1f);
-                    player.spawnParticle(Particle.SPLASH, line.water, 25, 0.2, 0.1, 0.2, 0.1);
-                }
-            } else if (now > line.next) {
-                lines.remove(entry.getKey());
-                messages.actionBar(player, "fishing.escaped");
-                player.playSound(player, Sound.ENTITY_FISH_SWIM, 0.7f, 1f);
-            }
+        Long last = lastRefusal.get(player.getUniqueId());
+        if (last == null || now - last > 3000) {
+            lastRefusal.put(player.getUniqueId(), now);
+            messages.actionBar(player, settings.bool("activities.fishing", true) ? "fishing.only-lake" : "fishing.closed");
         }
     }
 
-    // ---------- Avec une canne ----------
-
+    /** Une prise : l'objet qui sort de l'eau devient un poisson du lac. */
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onFish(PlayerFishEvent event) {
-        if (event.getState() != PlayerFishEvent.State.CAUGHT_FISH) {
+        if (event.getState() != PlayerFishEvent.State.CAUGHT_FISH || !(event.getCaught() instanceof Item item)) {
             return;
         }
+        Player player = event.getPlayer();
         event.setExpToDrop(0);
-        if (event.getCaught() instanceof Item item) {
+        if (!enabled(player)) {
             item.remove();
+            return;
         }
-        if (enabled(event.getPlayer())) {
-            caught(event.getPlayer());
-        }
-    }
-
-    @EventHandler
-    public void onQuit(PlayerQuitEvent event) {
-        lines.remove(event.getPlayer().getUniqueId());
-    }
-
-    // ---------- Prise ----------
-
-    private void caught(Player player) {
         ThreadLocalRandom random = ThreadLocalRandom.current();
         LootTable.Draw draw = table.roll(random.nextDouble(), random.nextDouble()).orElse(null);
         if (draw == null) {
             return;
         }
+        item.setItemStack(fishItem(player, draw));
+        item.setOwner(player.getUniqueId());
+        caught(player, draw);
+    }
+
+    /** Seul le pêcheur ramasse son poisson (la protection du lobby refuse les autres ramassages). */
+    @EventHandler(priority = EventPriority.HIGH)
+    public void onPickup(EntityPickupItemEvent event) {
+        if (event.getEntity() instanceof Player player && isFish(event.getItem().getItemStack())
+                && player.getUniqueId().equals(event.getItem().getOwner())) {
+            event.setCancelled(false);
+        }
+    }
+
+    @EventHandler
+    public void onQuit(PlayerQuitEvent event) {
+        lastRefusal.remove(event.getPlayer().getUniqueId());
+    }
+
+    private boolean isFish(ItemStack stack) {
+        return stack != null && stack.hasItemMeta() && stack.getItemMeta().getPersistentDataContainer().has(fishKey);
+    }
+
+    /** Le poisson : nom selon la rareté, rareté, poids, date ; ses données dans l'objet. */
+    private ItemStack fishItem(Player player, LootTable.Draw draw) {
+        LootTable.Entry entry = draw.entry();
+        String weight = String.format(Locale.FRANCE, "%.2f", draw.weight());
+        ItemStack stack = ItemStack.of(entry.icon() == null ? Material.COD : entry.icon());
+        stack.editMeta(meta -> {
+            meta.customName(messages.get(player, "fishing.item.name-" + entry.rarity().key(), "fish", fishName(player, entry.id()))
+                    .decoration(TextDecoration.ITALIC, false));
+            meta.lore(List.of(
+                    messages.get(player, "rarity." + entry.rarity().key()).decoration(TextDecoration.ITALIC, false),
+                    messages.get(player, "fishing.item.weight", "weight", weight).decoration(TextDecoration.ITALIC, false),
+                    messages.get(player, "fishing.item.caught", "player", player.getName(), "date", DATE.format(LocalDate.now()))
+                            .decoration(TextDecoration.ITALIC, false)));
+            PersistentDataContainer data = meta.getPersistentDataContainer();
+            data.set(fishKey, PersistentDataType.STRING, entry.id());
+            data.set(rarityKey, PersistentDataType.STRING, entry.rarity().key());
+            data.set(gramsKey, PersistentDataType.LONG, Math.round(draw.weight() * 1000));
+            if (entry.rarity() == LootTable.Rarity.LEGENDARY) {
+                meta.setEnchantmentGlintOverride(true);
+            }
+        });
+        return stack;
+    }
+
+    private void caught(Player player, LootTable.Draw draw) {
         LootTable.Rarity rarity = draw.entry().rarity();
         String weight = String.format(Locale.FRANCE, "%.2f", draw.weight());
         String name = fishName(player, draw.entry().id());
@@ -228,8 +199,6 @@ public class Fishing implements Listener, TabExecutor {
             player.showTitle(Title.title(messages.get(player, "fishing.title-" + rarity.key()),
                     messages.get(player, "fishing.subtitle", "fish", name, "weight", weight)));
             player.playSound(player, Sound.UI_TOAST_CHALLENGE_COMPLETE, 0.6f, 1.2f);
-        } else {
-            player.playSound(player, Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 0.7f, 1.4f);
         }
         stats.add("activity:fishing");
         long grams = Math.round(draw.weight() * 1000);

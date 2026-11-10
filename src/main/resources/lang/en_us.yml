@@ -55,7 +55,7 @@ zones:
     subtitle: "<info>The village farmland"
   lac:
     name: "<accent>The Fishing Lake"
-    subtitle: "<info>Crouch facing the water to fish"
+    subtitle: "<info>Grab your fishing rod"
   cimetiere:
     name: "<accent>The Graveyard"
     subtitle: "<info>Here rest the elders"
@@ -188,10 +188,15 @@ rarity:
   legendary: "<gold>Legendary"
 
 fishing:
-  cast: "<info>Line cast... <accent>keep Shift held"
-  bite: "<accent><bold>A bite! Release Shift!"
-  reeled: "<info>Line reeled in too early."
-  escaped: "<error>The fish got away..."
+  only-lake: "<info>Fishing is only allowed at the <accent>Fishing Lake</accent>."
+  closed: "<error>Fishing is closed for now."
+  item:
+    name-common: "<white><fish>"
+    name-uncommon: "<green><fish>"
+    name-rare: "<aqua><fish>"
+    name-legendary: "<gold><bold><fish>"
+    weight: "<gray>Weight: <white><weight> kg"
+    caught: "<dark_gray>Caught at the lake by <player>, on <date>"
   caught-common: "<info>You caught a <accent><fish></accent> of <accent><weight> kg</accent>."
   caught-uncommon: "<success>Nice! A <accent><fish></accent> of <accent><weight> kg</accent>."
   caught-rare: "<aqua>Rare catch! <accent><fish></accent> of <accent><weight> kg</accent>!"
@@ -216,9 +221,9 @@ fishing:
     day: "<accent>Best catches of the day"
     month: "<accent>Best catches of the month"
     how: "<accent>How to fish"
-    how-1: "<info>At the Lake, crouch facing the water."
-    how-2: "<info>Keep Shift held, wait for a bite,"
-    how-3: "<info>then release Shift within a second!"
+    how-1: "<info>At the Fishing Lake only:"
+    how-2: "<info>cast your rod and wait for a bite."
+    how-3: "<info>Your fish are yours: rare, legendary..."
     best: "<info>Your best catch: <accent><weight> kg"
     species: "<info>Species caught: <accent><count>/<total>"
     empty: "<dark_gray>Nobody yet"
@@ -319,7 +324,7 @@ tips:
     - "<info>Tip: right-click a bench to sit down."
     - "<info>Tip: heads are hidden all over the village..."
   lac:
-    - "<info>Tip: crouch facing the water, release Shift when it bites."
+    - "<info>Tip: grab your rod, rare catches are announced to everyone!"
     - "<info>Tip: <accent>/fishing</accent> for the best catches."
   archeologie:
     - "<info>Tip: click the suspicious sand several times to dig."
