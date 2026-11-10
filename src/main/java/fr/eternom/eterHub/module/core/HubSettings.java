@@ -28,7 +28,7 @@ public class HubSettings {
 
     /** Sections de config.yml dont les réglages simples se changent en jeu. */
     public static final List<String> EDITABLE = List.of("activities", "arrival", "double-jump", "launch-pads", "world",
-            "tips", "cosmetics", "social", "fishing", "archaeology", "parkour", "heads", "tour", "discovery", "spawn-command");
+            "tips", "cosmetics", "social", "fishing", "farming", "archaeology", "parkour", "heads", "tour", "discovery", "spawn-command");
 
     private static final String TABLE = "settings";
     private static final String LOG = "settings_log";

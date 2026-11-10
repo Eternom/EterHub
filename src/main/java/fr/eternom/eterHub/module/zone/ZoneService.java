@@ -251,11 +251,14 @@ public class ZoneService {
         } else {
             current.put(uuid, after);
         }
-        leave(player, before.isEmpty() ? wilderness : zones.getOrDefault(before, wilderness), zone);
+        Zone old = before.isEmpty() ? wilderness : zones.getOrDefault(before, wilderness);
+        leave(player, old, zone);
+        // D'une parcelle à son lieu parent (ou l'inverse) : pas de nouveau titre ni de son d'entrée
+        boolean sameFamily = !before.isEmpty() && !after.isEmpty() && old.root().equals(zone.root());
         boolean first = false;
         if (!after.isEmpty()) {
             stats.add("zone:" + after);
-            enter(player, zone);
+            enter(player, zone, !sameFamily);
             if (zone.discoverable() && settings.bool("activities.discovery", true) && discoveries.isLoaded(uuid)) {
                 first = discoveries.discover(uuid, after);
                 if (first) {
@@ -283,14 +286,16 @@ public class ZoneService {
         }
     }
 
-    private void enter(Player player, Zone zone) {
-        if (zone.title()) {
+    private void enter(Player player, Zone zone, boolean announce) {
+        if (zone.title() && announce) {
             String subtitle = messages.raw(player, "zones." + zone.id() + ".subtitle");
             player.showTitle(Title.title(name(player, zone.id()),
                     subtitle != null ? messages.get(player, "zones." + zone.id() + ".subtitle") : Component.empty(),
                     Title.Times.times(Duration.ofMillis(300), Duration.ofMillis(1800), Duration.ofMillis(600))));
         }
-        play(player, zone.enterSound(), 0.8f);
+        if (announce) {
+            play(player, zone.enterSound(), 0.8f);
+        }
         if (zone.time() >= 0) {
             player.setPlayerTime(zone.time(), false);
         }

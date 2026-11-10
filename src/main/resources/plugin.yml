@@ -54,6 +54,10 @@ commands:
     description: La chasse aux têtes (menu par lieu, indice chaud / froid).
     usage: /heads [hint]
     permission: eterhub.play
+  harvest:
+    description: Le carnet des récoltes des Champs (quotas du jour, parcelle du jour).
+    usage: /harvest
+    permission: eterhub.play
   eterhub:
     description: Administration des lobbys (staff).
     usage: /eterhub <zone|spawn|pad|holo|parkour|head|event|announce|build|setting|maintenance|log|stats|reload|info>

@@ -27,6 +27,7 @@ l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans
 | `movement` | `MovementListener` (double saut), `Pads` (lanceurs, ascenseurs, vitesse, téléporteurs, trampolines), `Cosmetics` (traînées et auras par permission) |
 | `activity` | `Fishing` (pêche à la canne au lac ; poissons = vrais objets marqués `eterhub:fish`, `rarity`, `grams` ; Chance de la mer favorise les raretés ; record par espèce ; carnet), `Fishmonger` (rachat : rareté + poids, poisson du jour ×2), `FishPrices` (testé), `Archaeology` (fouilles, musée), `Parkour`, `HubEvents` (évènements, annonces), `LootTable`/`ParkourTime` (logique pure, testée) |
 | `heads` | `Hunt` (chasse principale et chasses à thème datées, testée), `HeadStore`, `HeadService` (trouver, paliers, fin avec rang et annonce, indices, scintillement, têtes cachées quand la chasse est fermée), `HeadMenus` (/heads, liste du staff), `HeadEditor`, `HeadCommand` |
+| `farm` | `Crop`, `Quality` (qualité, parcelle du jour : testés), `FarmStore` (quotas du jour sur tout le réseau, carnet), `Farming` (récolte avec repousse, vignes, objets marqués, parcelle du jour, `/harvest`), `FarmMarket` (fermier et vigneron) |
 | `display` | `Holograms` (TextDisplay non gardés dans le monde : text, players, board, progress), `Tips` |
 | `network` | `NetworkGui` (sélecteur, lobbys, maintenance, Reprendre), `ServerMenu`, `LobbyMenu`, `PortalListener` |
 | `social` | `Visibility` (4 modes), `Seats`, `Profiles`, `FriendsView` (EterFriend / EterClan isolés dans `FriendLink` / `ClanLink`) |
@@ -40,6 +41,7 @@ l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans
 | `/visibility [all\|friends\|staff\|none]` | Qui l'on voit |
 | `/fishing` · `/museum` · `/parkour [<parcours>\|top <parcours>\|quit\|back]` | Activités |
 | `/heads [hint]` | Chasse aux têtes : menu par lieu, indice chaud / froid |
+| `/harvest` | Carnet des récoltes : quotas du jour, parcelle du jour |
 
 | Staff (`eterhub.admin`) | |
 |---|---|
@@ -56,7 +58,7 @@ l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans
 
 ## Actions EterLib (PNJ, menus)
 
-`eterhub:servers`, `lobbies`, `spawn`, `server <nom>`, `zone <lieu>`, `map`, `visibility`, `fishing`, `fishmonger` (poissonnier : rachat des poissons du lac, EterEconomy), `fishing-journal`, `heads` (menu et indice du lieu où il en manque le plus), `museum`,
+`eterhub:servers`, `lobbies`, `spawn`, `server <nom>`, `zone <lieu>`, `map`, `visibility`, `fishing`, `fishmonger` (poissonnier : rachat des poissons du lac, EterEconomy), `fishing-journal`, `farmer` et `vineyard` (rachat des récoltes et des grappes), `harvest-journal`, `heads` (menu et indice du lieu où il en manque le plus), `museum`,
 `tour [restart]`, `soon <quoi>`, `door <lieu>` (config `doors`) ; conditions `?eterhub:discovered <lieu>`,
 `?eterhub:in-zone <lieu>`. Un lieu réservé peut demander une condition d'EterLib (`access.condition`, ex :
 `?eterjob:rank mineur expert`), testée seulement si elle est fournie sur ce serveur.

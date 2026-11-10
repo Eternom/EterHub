@@ -56,6 +56,20 @@ zones:
   champs:
     name: "<accent>Les Champs"
     subtitle: "<info>Les terres du village"
+  champs-ble-ouest:
+    name: "<accent>Blés de l'Ouest"
+  champs-ble-sud:
+    name: "<accent>Blés du Sud"
+  champs-ble-est:
+    name: "<accent>Grand champ de blé"
+  champs-carottes:
+    name: "<accent>Champ de carottes"
+  champs-patates:
+    name: "<accent>Champ de patates"
+  champs-betteraves:
+    name: "<accent>Carré de betteraves"
+  vignes:
+    name: "<accent>Les Vignes"
   lac:
     name: "<accent>Le Lac de pêche"
     subtitle: "<info>Sors ta canne à pêche"
@@ -248,6 +262,61 @@ fishing:
     empty: "<dark_gray>Personne encore"
     line: "<accent><rank>. <info><player> <dark_gray>· <info><fish> <accent><weight> kg"
 
+farming:
+  closed: "<error>Les récoltes sont fermées pour le moment."
+  parcel: "<info>Parcelle : <accent><parcel>"
+  parcel-daily: "<gold>★ Parcelle du jour : <accent><parcel></accent> <dark_gray>(récoltes ×2)"
+  daily-hint: "<info>Parcelle du jour : <accent><parcel></accent> <dark_gray>(récoltes ×2)"
+  not-ripe: "<info>Pas encore mûr..."
+  cap-reached: "<error>Tu as assez récolté de <accent><crop></accent> aujourd'hui <dark_gray>(<cap>/<cap>) · <info>reviens demain !"
+  cap-now: "<info>Quota du jour atteint pour <accent><crop></accent> <dark_gray>(<cap>) · <info>reviens demain !"
+  harvested-normal: "<info>+1 <accent><crop></accent> <dark_gray>(<count>/<cap>)"
+  harvested-fine: "<success>+1 belle <accent><crop></accent> ! <dark_gray>(<count>/<cap>)"
+  harvested-golden: "<gold>+1 <crop> dorée !! <dark_gray>(<count>/<cap>)"
+  golden-title: "<gold>✦ <crop> dorée ✦"
+  crops:
+    wheat: "Gerbe de blé"
+    carrot: "Carotte"
+    potato: "Patate"
+    beetroot: "Betterave"
+    grape: "Grappe de raisin"
+  quality:
+    normal: "<gray>Qualité ordinaire"
+    fine: "<green>Belle qualité"
+    golden: "<gold>✦ Dorée"
+  item:
+    name-normal: "<white><crop> du village"
+    name-fine: "<green><crop> du village"
+    name-golden: "<gold><bold><crop> dorée"
+    bonus: "<yellow>★ Parcelle du jour"
+    origin: "<dark_gray>Récoltée aux Champs"
+  journal:
+    title: "Carnet des récoltes"
+    crop: "<accent><crop>"
+    today: "<info>Aujourd'hui : <accent><count>/<cap>"
+    today-full: "<success>Aujourd'hui : <count>/<cap> <dark_gray>(complet)"
+    total: "<info>Depuis toujours : <accent><count>"
+    fine: "<dark_gray>· <green>belles : <count>"
+    golden: "<dark_gray>· <gold>dorées : <count>"
+    daily: "<gold>Parcelle du jour : <accent><parcel>"
+    daily-lore: "<info>Ses récoltes valent double et sont plus souvent dorées."
+  market:
+    title-farmer: "Le fermier"
+    title-vineyard: "Le vigneron"
+    price: "<info>Prix : <accent><amount>"
+    click: "<accent>Clic <info>· vendre"
+    empty-farmer: "<info>Pas de récolte des champs"
+    empty-vineyard: "<info>Pas de grappe des vignes"
+    empty-lore: "<dark_gray>Récolte dans les parcelles, puis reviens."
+    daily: "<gold>Parcelle du jour : <accent><parcel>"
+    daily-lore: "<info>Ses récoltes sont payées <accent>×<bonus></accent>."
+    sell-all: "<success>Tout vendre : <accent><amount>"
+    sell-all-lore: "<info><count> pile(s)"
+    sold: "<success>Vendu ! <accent><count></accent> récolte(s) pour <accent><amount></accent>."
+    nothing: "<error>Rien à vendre ici."
+    failed: "<error>Le paiement n'a pas pu être fait : tes récoltes te sont rendues."
+    no-economy: "<error>Fermé pour le moment."
+
 fishmonger:
   title: "Le poissonnier"
   price: "<info>Prix : <accent><amount>"
@@ -411,6 +480,9 @@ tips:
   lac:
     - "<info>Astuce : sors ta canne, les poissons rares sont annoncés à tous !"
     - "<info>Astuce : <accent>/fishing</accent> pour les plus belles prises."
+  champs:
+    - "<info>Astuce : récolte les cultures mûres dans les parcelles, elles repoussent !"
+    - "<info>Astuce : <accent>/harvest</accent> montre la parcelle du jour, payée double."
   archeologie:
     - "<info>Astuce : clique plusieurs fois sur le sable suspect pour fouiller."
     - "<info>Astuce : <accent>/museum</accent> pour voir tes trouvailles."

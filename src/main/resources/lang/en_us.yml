@@ -53,6 +53,20 @@ zones:
   champs:
     name: "<accent>The Fields"
     subtitle: "<info>The village farmland"
+  champs-ble-ouest:
+    name: "<accent>West wheat fields"
+  champs-ble-sud:
+    name: "<accent>South wheat fields"
+  champs-ble-est:
+    name: "<accent>Great wheat field"
+  champs-carottes:
+    name: "<accent>Carrot field"
+  champs-patates:
+    name: "<accent>Potato field"
+  champs-betteraves:
+    name: "<accent>Beetroot patch"
+  vignes:
+    name: "<accent>The Vineyard"
   lac:
     name: "<accent>The Fishing Lake"
     subtitle: "<info>Grab your fishing rod"
@@ -241,6 +255,61 @@ fishing:
     empty: "<dark_gray>Nobody yet"
     line: "<accent><rank>. <info><player> <dark_gray>· <info><fish> <accent><weight> kg"
 
+farming:
+  closed: "<error>Harvesting is closed for now."
+  parcel: "<info>Plot: <accent><parcel>"
+  parcel-daily: "<gold>★ Plot of the day: <accent><parcel></accent> <dark_gray>(harvests ×2)"
+  daily-hint: "<info>Plot of the day: <accent><parcel></accent> <dark_gray>(harvests ×2)"
+  not-ripe: "<info>Not ripe yet..."
+  cap-reached: "<error>You harvested enough <accent><crop></accent> today <dark_gray>(<cap>/<cap>) · <info>come back tomorrow!"
+  cap-now: "<info>Daily quota reached for <accent><crop></accent> <dark_gray>(<cap>) · <info>come back tomorrow!"
+  harvested-normal: "<info>+1 <accent><crop></accent> <dark_gray>(<count>/<cap>)"
+  harvested-fine: "<success>+1 fine <accent><crop></accent>! <dark_gray>(<count>/<cap>)"
+  harvested-golden: "<gold>+1 golden <crop>!! <dark_gray>(<count>/<cap>)"
+  golden-title: "<gold>✦ Golden <crop> ✦"
+  crops:
+    wheat: "Wheat sheaf"
+    carrot: "Carrot"
+    potato: "Potato"
+    beetroot: "Beetroot"
+    grape: "Grape bunch"
+  quality:
+    normal: "<gray>Ordinary quality"
+    fine: "<green>Fine quality"
+    golden: "<gold>✦ Golden"
+  item:
+    name-normal: "<white>Village <crop>"
+    name-fine: "<green>Village <crop>"
+    name-golden: "<gold><bold>Golden <crop>"
+    bonus: "<yellow>★ Plot of the day"
+    origin: "<dark_gray>Harvested in the Fields"
+  journal:
+    title: "Harvest journal"
+    crop: "<accent><crop>"
+    today: "<info>Today: <accent><count>/<cap>"
+    today-full: "<success>Today: <count>/<cap> <dark_gray>(full)"
+    total: "<info>All time: <accent><count>"
+    fine: "<dark_gray>· <green>fine: <count>"
+    golden: "<dark_gray>· <gold>golden: <count>"
+    daily: "<gold>Plot of the day: <accent><parcel>"
+    daily-lore: "<info>Its harvests are worth double and more often golden."
+  market:
+    title-farmer: "The farmer"
+    title-vineyard: "The winegrower"
+    price: "<info>Price: <accent><amount>"
+    click: "<accent>Click <info>· sell"
+    empty-farmer: "<info>No field harvest"
+    empty-vineyard: "<info>No grape bunch"
+    empty-lore: "<dark_gray>Harvest in the plots, then come back."
+    daily: "<gold>Plot of the day: <accent><parcel>"
+    daily-lore: "<info>Its harvests are paid <accent>×<bonus></accent>."
+    sell-all: "<success>Sell all: <accent><amount>"
+    sell-all-lore: "<info><count> stack(s)"
+    sold: "<success>Sold! <accent><count></accent> harvest(s) for <accent><amount></accent>."
+    nothing: "<error>Nothing to sell here."
+    failed: "<error>The payment failed: your harvests were given back."
+    no-economy: "<error>Closed for now."
+
 fishmonger:
   title: "The fishmonger"
   price: "<info>Price: <accent><amount>"
@@ -402,6 +471,9 @@ tips:
   lac:
     - "<info>Tip: grab your rod, rare catches are announced to everyone!"
     - "<info>Tip: <accent>/fishing</accent> for the best catches."
+  champs:
+    - "<info>Tip: harvest ripe crops in the plots, they grow back!"
+    - "<info>Tip: <accent>/harvest</accent> shows the plot of the day, paid double."
   archeologie:
     - "<info>Tip: click the suspicious sand several times to dig."
     - "<info>Tip: <accent>/museum</accent> to see your finds."

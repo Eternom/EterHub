@@ -23,6 +23,7 @@ activities:
   archaeology: true
   parkour: true
   heads: true
+  farming: true
 
 # ---------- Lieux du village ----------
 # Chaque lieu : son nom et son sous-titre sont dans lang/ (zones.<id>), ses limites se tracent en jeu :
@@ -245,6 +246,63 @@ zones:
     particles:
       - {type: FALLING_NECTAR, count: 3, radius: 9, min-y: 0, max-y: 3, every: 2, chance: 0.7}
       - {type: WHITE_ASH, count: 2, radius: 10, min-y: 1, max-y: 4, every: 3, chance: 0.4}
+  # Parcelles des Champs : la récolte y est permise (règle harvest). Elles reprennent l'ambiance des Champs (parent),
+  # ne comptent pas dans la découverte et n'affichent pas de titre. À tracer en jeu (/eterhub zone point... set <parcelle>).
+  champs-ble-ouest:
+    icon: WHEAT
+    parent: champs
+    discoverable: false
+    title: false
+    rules:
+      harvest: true
+  champs-ble-sud:
+    icon: WHEAT
+    parent: champs
+    discoverable: false
+    title: false
+    rules:
+      harvest: true
+  champs-ble-est:
+    icon: WHEAT
+    parent: champs
+    discoverable: false
+    title: false
+    rules:
+      harvest: true
+  champs-carottes:
+    icon: CARROT
+    parent: champs
+    discoverable: false
+    title: false
+    rules:
+      harvest: true
+  champs-patates:
+    icon: POTATO
+    parent: champs
+    discoverable: false
+    title: false
+    rules:
+      harvest: true
+  champs-betteraves:
+    icon: BEETROOT
+    parent: champs
+    discoverable: false
+    title: false
+    rules:
+      harvest: true
+  vignes:
+    icon: SWEET_BERRIES
+    parent: champs
+    discoverable: false
+    title: false
+    rules:
+      harvest: true
+    ambient:
+      - {sound: "minecraft:entity.bee.pollinate", every: 12, chance: 0.5, volume: 0.25, pitch-spread: 0.2}
+      - {sound: "minecraft:block.azalea_leaves.step", every: 15, chance: 0.4, volume: 0.25}
+    particles:
+      - {type: SPORE_BLOSSOM_AIR, count: 4, radius: 7, min-y: 0, max-y: 3, every: 1, chance: 0.8}
+      - {type: FALLING_NECTAR, count: 2, radius: 6, min-y: 1, max-y: 3, every: 2, chance: 0.6}
   lac:
     icon: FISHING_ROD
     sound: "minecraft:ambient.underwater.enter"
@@ -414,6 +472,30 @@ fishing:
     carpe-doree: {rarity: legendary, chance: 2, icon: TROPICAL_FISH, min: 10, max: 25}
     anguille-spectrale: {rarity: legendary, chance: 1, icon: PUFFERFISH, min: 4, max: 15}
     vieille-botte: {rarity: common, chance: 1, icon: LEATHER_BOOTS, min: 0.5, max: 0.5}
+
+# Récoltes des Champs (activities.farming) : dans les parcelles, casser une culture mûre la récolte (elle se replante et
+# repousse étape par étape) ; un clic droit sur les vignes cueille une grappe (les fleurs reviennent). Chaque récolte est
+# un vrai objet, de qualité normale, belle ou dorée ; le fermier (action eterhub:farmer) et le vigneron
+# (eterhub:vineyard) les rachètent. daily-cap : récoltes par jour et par joueur, sur TOUT le réseau (en base).
+# La parcelle du jour (la même partout, change à minuit) : récoltes payées daily-bonus fois, dorées plus souvent.
+# /harvest : le carnet des récoltes. Noms : lang/ farming.crops.<id>.
+farming:
+  regrow-seconds: 180
+  daily-bonus: 2
+  daily-golden-multiplier: 2
+  quality:
+    fine:
+      chance: 0.15
+      multiplier: 2
+    golden:
+      chance: 0.02
+      multiplier: 8
+  crops:
+    wheat: {block: WHEAT, item: WHEAT, price: 0.3, daily-cap: 64, buyer: farmer}
+    carrot: {block: CARROTS, item: CARROT, price: 0.6, daily-cap: 32, buyer: farmer}
+    potato: {block: POTATOES, item: POTATO, price: 0.6, daily-cap: 32, buyer: farmer}
+    beetroot: {block: BEETROOTS, item: BEETROOT, price: 1.2, daily-cap: 16, buyer: farmer}
+    grape: {block: FLOWERING_AZALEA_LEAVES, picked: AZALEA_LEAVES, item: SWEET_BERRIES, price: 1.2, daily-cap: 16, buyer: vineyard, regrow-seconds: 300}
 
 # Fouilles du site d'Archéologie (règle dig) : cliquer plusieurs fois sur le sable / gravier suspect.
 # Les trouvailles vont au musée personnel (/museum). Noms et textes : lang/ archaeology.finds.<id>.

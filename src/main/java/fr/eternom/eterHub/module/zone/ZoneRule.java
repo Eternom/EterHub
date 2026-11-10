@@ -15,7 +15,9 @@ public enum ZoneRule {
     /** Poser bateaux et chariots. */
     BOATS,
     /** S'asseoir sur les bancs, escaliers et dalles. */
-    SIT;
+    SIT,
+    /** Récolter les cultures mûres et cueillir les vignes (parcelles des Champs). */
+    HARVEST;
 
     public String key() {
         return name().toLowerCase(Locale.ROOT).replace('_', '-');

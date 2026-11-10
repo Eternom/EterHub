@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  */
 public record Zone(String id, Material icon, Map<ZoneRule, Boolean> rules, String enterSound, List<Effect> particles,
                    List<Ambient> sounds, long time, String weather, String permission, String condition, boolean discoverable,
-                   boolean title, boolean halloween) {
+                   boolean title, boolean halloween, String parent) {
 
     /**
      * Une couche de particules : count particules dans un rayon autour du joueur, entre minY et maxY au-dessus de ses
@@ -39,7 +39,7 @@ public record Zone(String id, Material icon, Map<ZoneRule, Boolean> rules, Strin
     public static Zone wilderness(ConfigurationSection config, Logger logger) {
         ConfigurationSection defaults = config.getConfigurationSection("zone-defaults");
         return new Zone("", Material.GRASS_BLOCK, defaults(config), "", particles(defaults, "zone-defaults", logger),
-                sounds(defaults, "zone-defaults", logger), -1, "", "", "", false, false, false);
+                sounds(defaults, "zone-defaults", logger), -1, "", "", "", false, false, false, "");
     }
 
     public boolean allows(ZoneRule rule) {
@@ -70,9 +70,42 @@ public record Zone(String id, Material icon, Map<ZoneRule, Boolean> rules, Strin
                     particles(zone, "zones." + id, logger), sounds(zone, "zones." + id, logger),
                     zone.getLong("time", -1), zone.getString("weather", "").toLowerCase(Locale.ROOT),
                     zone.getString("access.permission", ""), zone.getString("access.condition", ""),
-                    zone.getBoolean("discoverable", true), zone.getBoolean("title", true), zone.getBoolean("halloween", false)));
+                    zone.getBoolean("discoverable", true), zone.getBoolean("title", true), zone.getBoolean("halloween", false),
+                    zone.getString("parent", "")));
         }
-        return zones;
+        return inherit(zones, section, defaults, logger);
+    }
+
+    /**
+     * Un lieu dans un autre (parent : une parcelle dans les Champs) reprend son ambiance (particules, sons, heure, météo)
+     * s'il n'a pas la sienne, et ses règles comme base (les siennes par-dessus).
+     */
+    private static Map<String, Zone> inherit(Map<String, Zone> zones, ConfigurationSection section, Map<ZoneRule, Boolean> defaults,
+                                             Logger logger) {
+        Map<String, Zone> resolved = new LinkedHashMap<>();
+        for (Zone zone : zones.values()) {
+            Zone parent = zone.parent().isEmpty() ? null : zones.get(zone.parent());
+            if (parent == null) {
+                if (!zone.parent().isEmpty()) {
+                    logger.warning("zones." + zone.id() + ".parent : lieu inconnu " + zone.parent());
+                }
+                resolved.put(zone.id(), zone);
+                continue;
+            }
+            Map<ZoneRule, Boolean> rules = rules(section.getConfigurationSection(zone.id() + ".rules"), parent.rules());
+            resolved.put(zone.id(), new Zone(zone.id(), zone.icon(), rules, zone.enterSound(),
+                    zone.particles().isEmpty() ? parent.particles() : zone.particles(),
+                    zone.sounds().isEmpty() ? parent.sounds() : zone.sounds(),
+                    zone.time() >= 0 ? zone.time() : parent.time(), zone.weather().isEmpty() ? parent.weather() : zone.weather(),
+                    zone.permission(), zone.condition(), zone.discoverable(), zone.title(), zone.halloween() || parent.halloween(),
+                    zone.parent()));
+        }
+        return resolved;
+    }
+
+    /** Le lieu « racine » : lui-même, ou son parent. */
+    public String root() {
+        return parent.isEmpty() ? id : parent;
     }
 
     public static Map<ZoneRule, Boolean> defaults(ConfigurationSection config) {

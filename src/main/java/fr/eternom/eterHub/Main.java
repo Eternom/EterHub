@@ -6,6 +6,9 @@ import fr.eternom.eterHub.module.activity.Fishing;
 import fr.eternom.eterHub.module.activity.FishingStore;
 import fr.eternom.eterHub.module.activity.FishItems;
 import fr.eternom.eterHub.module.activity.Fishmonger;
+import fr.eternom.eterHub.module.farm.FarmMarket;
+import fr.eternom.eterHub.module.farm.FarmStore;
+import fr.eternom.eterHub.module.farm.Farming;
 import fr.eternom.eterHub.module.heads.HeadCommand;
 import fr.eternom.eterHub.module.heads.HeadEditor;
 import fr.eternom.eterHub.module.heads.HeadMenus;
@@ -86,6 +89,7 @@ public final class Main extends JavaPlugin {
     private NetworkGui network;
     private Holograms holograms;
     private Archaeology archaeology;
+    private Farming farming;
     private Seats seats;
     private boolean started;
 
@@ -140,6 +144,9 @@ public final class Main extends JavaPlugin {
         Parkour parkour = new Parkour(this, new ParkourStore(database), settings, stats, messages, bus);
         HeadService heads = new HeadService(this, new HeadStore(database), zones, settings, stats, messages, bus);
         HeadMenus headMenus = new HeadMenus(heads, lib.backButton(getConfig().getString("menus.activities.back-command", "")));
+        farming = new Farming(this, zones, new FarmStore(database), settings, stats, messages,
+                lib.backButton(getConfig().getString("menus.activities.back-command", "")));
+        FarmMarket farmMarket = new FarmMarket(farming, lib.backButton(getConfig().getString("menus.activities.back-command", "")));
         HubEvents events = new HubEvents(this, settings, messages, bus);
 
         // Arrivée
@@ -147,7 +154,7 @@ public final class Main extends JavaPlugin {
         SpawnCommands spawnCommands = new SpawnCommands(spawn, settings, messages);
         Tour tour = new Tour(this, players, zones, settings, stats, messages);
         ArrivalListener arrival = new ArrivalListener(this, players, spawn, zones, tour, settings, stats, messages,
-                List.of(discoveries::load, heads::load, archaeology::load));
+                List.of(discoveries::load, heads::load, archaeology::load, farming::load));
         VoidListener voidListener = new VoidListener(this, spawn, settings);
         voidListener.setInterceptor(player -> {
             if (parkour.running(player)) {
@@ -201,6 +208,7 @@ public final class Main extends JavaPlugin {
         admin.add("parkour", parkour);
         admin.add("head", new HeadEditor(heads, headMenus, settings));
         register("heads", new HeadCommand(heads, headMenus));
+        register("harvest", farming);
         admin.add("event", events);
         admin.add("announce", events.announcer());
         admin.add("build", build);
@@ -209,6 +217,12 @@ public final class Main extends JavaPlugin {
         this.reloadLocal = () -> reloadLocal(settings, zones, fishing, protection);
 
         HubActions.register(this, messages, network, spawnCommands, zones, map, visibility, fishing, fishmonger, archaeology, tour);
+        // Les acheteurs des Champs (PNJ) et le carnet des récoltes
+        lib.getActions().register(this, "eterhub:farmer", "Le fermier : rachète les récoltes des champs", List.of(),
+                (player, args) -> farmMarket.open(player, "farmer"));
+        lib.getActions().register(this, "eterhub:vineyard", "Le vigneron : rachète les grappes des vignes", List.of(),
+                (player, args) -> farmMarket.open(player, "vineyard"));
+        lib.getActions().register(this, "eterhub:harvest-journal", "Le carnet des récoltes", List.of(), (player, args) -> farming.openJournal(player));
         // Le chasseur de têtes (PNJ) : le menu, et le lieu où il manque le plus de têtes au joueur
         lib.getActions().register(this, "eterhub:heads", "La chasse aux têtes (menu et indice)", List.of(), (player, args) -> {
             headMenus.open(player);
@@ -223,7 +237,7 @@ public final class Main extends JavaPlugin {
 
         // Écouteurs
         for (Listener listener : List.of(arrival, voidListener, new ZoneListener(zones), protection, build, movement, pads,
-                fishing, archaeology, parkour, heads, events, tour, holograms, visibility, seats, profiles)) {
+                fishing, archaeology, parkour, heads, events, tour, holograms, visibility, seats, profiles, farming)) {
             getServer().getPluginManager().registerEvents(listener, this);
         }
         if (getConfig().getBoolean("portals.open-selector", true)) {
@@ -238,6 +252,7 @@ public final class Main extends JavaPlugin {
         cosmetics.start();
         parkour.start();
         heads.start();
+        farming.start();
         events.start();
         holograms.start();
         tips.start();
@@ -260,6 +275,7 @@ public final class Main extends JavaPlugin {
         zones.reload();
         fishing.reload();
         archaeology.reload();
+        farming.reload();
         network.reloadConfig();
         protection.applyWorldRules();
         Tasks.async(this, settings::load, "Réglages non relus");
@@ -301,6 +317,7 @@ public final class Main extends JavaPlugin {
         }
         holograms.stop();
         archaeology.restoreAll();
+        farming.restoreAll();
         seats.standAll();
         network.stop();
         stats.flush();

@@ -10,22 +10,22 @@ import java.util.UUID;
  * EterEconomy vu d'EterHub (facultatif) : l'API n'est touchée que si le plugin tourne ici. Sans lui, le poissonnier
  * reste fermé.
  */
-final class EconomyLink {
+public final class EconomyLink {
 
     private EconomyLink() {
     }
 
-    static boolean available() {
+    public static boolean available() {
         return Bukkit.getPluginManager().isPluginEnabled("EterEconomy") && Api.present();
     }
 
     /** Versement. Bloquant (base). */
-    static boolean deposit(UUID player, double amount, String source) {
+    public static boolean deposit(UUID player, double amount, String source) {
         return Api.deposit(player, amount, source);
     }
 
     /** « 1 234 Heloks », ou le nombre seul sans EterEconomy. */
-    static String format(double amount) {
+    public static String format(double amount) {
         return available() ? Api.format(amount) : String.format(Locale.FRANCE, "%.2f", amount);
     }
 
