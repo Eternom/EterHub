@@ -399,6 +399,8 @@ heads:
       - "action: eterlib:title \"<gold>Légende du village\" \"<info>200 têtes trouvées !\""
   # Annonce sur tous les lobbys quand quelqu'un trouve toutes les têtes d'une chasse (avec son rang d'arrivée).
   announce-complete: true
+  # Annoncer la nouvelle saison à tous quand le staff remet une chasse à zéro (/eterhub head reset).
+  announce-reset: true
   # /heads hint : chaud / froid vers la tête non trouvée la plus proche ; seulement s'il en manque au plus max-missing
   # (0 = toujours), une fois toutes les cooldown-seconds.
   hint:

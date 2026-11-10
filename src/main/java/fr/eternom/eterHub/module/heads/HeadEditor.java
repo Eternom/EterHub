@@ -27,11 +27,12 @@ import java.util.Locale;
  *   list                       toutes les têtes, les moins trouvées d'abord (clic : y aller)
  *   check [fix]                les têtes enregistrées dont le bloc a disparu (fix : les retirer)
  *   count                      combien par chasse
+ *   reset <chasse|all> confirm  nouvelle saison : trouvailles et classements effacés, têtes gardées
  * </pre>
  */
 public class HeadEditor implements SubCommand {
 
-    private static final List<String> SUBS = List.of("add", "remove", "name", "rare", "hunt", "give", "list", "check", "count");
+    private static final List<String> SUBS = List.of("add", "remove", "name", "rare", "hunt", "give", "list", "check", "count", "reset");
 
     private final HeadService service;
     private final HeadMenus menus;
@@ -54,6 +55,7 @@ public class HeadEditor implements SubCommand {
                     "state", messages.plain(player, service.isOpen(hunt) ? "editor.head.open" : "editor.head.closed")));
             case "list" -> menus.openStaffList(player);
             case "check" -> check(player, args.length > 1 && args[1].equalsIgnoreCase("fix"));
+            case "reset" -> reset(player, args);
             case "give" -> give(player, args);
             default -> targeted(player, sub, args);
         }
@@ -135,6 +137,22 @@ public class HeadEditor implements SubCommand {
         }
     }
 
+    /** Nouvelle saison : /eterhub head reset <chasse|all> confirm (trouvailles et classements effacés, têtes gardées). */
+    private void reset(Player player, String[] args) {
+        String target = args.length > 1 ? args[1].toLowerCase(Locale.ROOT) : "";
+        boolean all = target.equals("all");
+        if (!all && !service.hunts().containsKey(target)) {
+            messages.send(player, "editor.head.reset-usage", "hunts", String.join(", ", service.hunts().keySet()));
+            return;
+        }
+        String label = all ? messages.plain(player, "editor.head.all-hunts") : service.huntName(player, target);
+        if (args.length < 3 || !args[2].equalsIgnoreCase("confirm")) {
+            messages.send(player, "editor.head.reset-warning", "hunt", label, "command", "/eterhub head reset " + target + " confirm");
+            return;
+        }
+        service.reset(player, all ? null : target);
+    }
+
     /** Une tête prête à poser : texture de heads.textures, sinon le skin d'un joueur (sinon le sien). */
     private void give(Player player, String[] args) {
         String source = args.length > 1 ? args[1] : player.getName();
@@ -198,6 +216,14 @@ public class HeadEditor implements SubCommand {
         List<String> hunts = new ArrayList<>(service.hunts().keySet());
         if (args.length == 2 && (sub.equals("add") || sub.equals("hunt"))) {
             return SubCommand.filter(hunts, args[1]);
+        }
+        if (args.length == 2 && sub.equals("reset")) {
+            List<String> options = new ArrayList<>(hunts);
+            options.add("all");
+            return SubCommand.filter(options, args[1]);
+        }
+        if (args.length == 3 && sub.equals("reset")) {
+            return SubCommand.filter(List.of("confirm"), args[2]);
         }
         if (args.length == 2 && sub.equals("check")) {
             return SubCommand.filter(List.of("fix"), args[1]);

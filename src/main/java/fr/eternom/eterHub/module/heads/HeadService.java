@@ -63,6 +63,7 @@ public class HeadService implements Listener {
 
     private static final String CHANGED = "heads";
     private static final String COMPLETE = "heads-complete";
+    private static final String RESET = "heads-reset";
     private static final ZoneId ZONE = ZoneId.of("Europe/Paris");
 
     private final JavaPlugin plugin;
@@ -93,6 +94,7 @@ public class HeadService implements Listener {
         this.placeKey = new NamespacedKey(plugin, "head-hunt");
         loadHunts();
         bus.on(CHANGED, data -> reload());
+        bus.on(RESET, data -> resetHere(data.has("hunt") ? data.get("hunt").getAsString() : null));
         bus.on(COMPLETE, data -> announceHere(data.get("player").getAsString(), data.get("hunt").getAsString(),
                 data.get("rank").getAsInt(), data.get("total").getAsInt()));
     }
@@ -366,6 +368,39 @@ public class HeadService implements Listener {
         finished.remove(uuid);
         lastHint.remove(uuid);
         lastClosed.remove(uuid);
+    }
+
+    // ---------- Remise à zéro ----------
+
+    /** Nouvelle saison : trouvailles et fins effacées (une chasse, ou toutes si hunt est null), têtes gardées. */
+    void reset(Player player, String hunt) {
+        String author = player.getName();
+        Tasks.async(plugin, player, () -> {
+            int removed = store.reset(hunt);
+            settings.log("heads-reset", hunt == null ? "toutes les chasses" : hunt, removed + " trouvailles effacées", author);
+            return removed;
+        }, removed -> {
+            messages.send(player, "editor.head.reset-done", "count", String.valueOf(removed),
+                    "hunt", hunt == null ? messages.plain(player, "editor.head.all-hunts") : huntName(player, hunt));
+            resetHere(hunt);
+            JsonObject data = new JsonObject();
+            if (hunt != null) {
+                data.addProperty("hunt", hunt);
+            }
+            Tasks.async(plugin, () -> bus.publish(RESET, data), "Remise à zéro non annoncée");
+        }, () -> messages.send(player, "error.generic"));
+    }
+
+    /** Ici : les joueurs connectés relisent leurs trouvailles, et la nouvelle saison est annoncée. */
+    private void resetHere(String hunt) {
+        for (Player online : Bukkit.getOnlinePlayers()) {
+            UUID uuid = online.getUniqueId();
+            Tasks.async(plugin, () -> load(uuid), "Têtes non relues");
+            if (settings.bool("heads.announce-reset", true)) {
+                messages.send(online, "heads.new-season", "hunt", hunt == null
+                        ? messages.plain(online, "heads.hunts.main") : huntName(online, hunt));
+            }
+        }
     }
 
     // ---------- Indices ----------

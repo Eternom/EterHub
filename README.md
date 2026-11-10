@@ -48,7 +48,7 @@ l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans
 | `/eterhub pad add <launch\|elevator\|speed\|teleport> [force] [hauteur] [fixe]\|mark\|remove\|list` | Plaques (bloc où l'on est) |
 | `/eterhub holo list\|create\|addline\|setline\|removeline\|move\|delete` | Hologrammes |
 | `/eterhub parkour list\|start\|checkpoint\|undo\|finish\|delete <parcours>` | Parcours |
-| `/eterhub head add [chasse]\|remove\|name <texte>\|rare\|hunt <chasse>\|give [texture\|pseudo] [chasse]\|list\|check [fix]\|count` | Chasse aux têtes (en visant la tête ; give : une tête prête, ajoutée en la posant en mode construction) |
+| `/eterhub head add [chasse]\|remove\|name <texte>\|rare\|hunt <chasse>\|give [texture\|pseudo] [chasse]\|list\|check [fix]\|count\|reset <chasse\|all> confirm` | Chasse aux têtes (en visant la tête ; give : une tête prête, ajoutée en la posant en mode construction ; reset : nouvelle saison, trouvailles et classements effacés, têtes gardées) |
 | `/eterhub event start <minutes> <nom>\|stop` · `/eterhub announce <texte>` | Évènements, annonces (tous les lobbys) |
 | `/eterhub setting [<chemin> [valeur]\|reset <chemin>]` | Réglages communs, en base |
 | `/eterhub maintenance <serveur> on\|off` · `log [n]` · `stats [jours] [préfixe]` · `reload` · `info` | Staff |

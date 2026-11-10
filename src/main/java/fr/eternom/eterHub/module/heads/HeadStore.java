@@ -159,6 +159,24 @@ public class HeadStore {
                 .getFirst().getInt("total");
     }
 
+    // ---------- Remise à zéro ----------
+
+    /**
+     * Efface les trouvailles et les fins d'une chasse (hunt), ou de toutes (null) : les têtes posées restent. Renvoie
+     * le nombre de trouvailles effacées.
+     */
+    public int reset(String hunt) {
+        if (hunt == null) {
+            int removed = database.execute("DELETE FROM " + database.table(FOUND));
+            database.execute("DELETE FROM " + database.table(FINISHED));
+            return removed;
+        }
+        int removed = database.execute("DELETE f FROM " + database.table(FOUND) + " f JOIN " + database.table(HEADS)
+                + " h ON h.id = f.head WHERE COALESCE(h.hunt, 'main') = ?", hunt);
+        database.execute("DELETE FROM " + database.table(FINISHED) + " WHERE hunt = ?", hunt);
+        return removed;
+    }
+
     // ---------- Classements ----------
 
     /** Ceux qui ont trouvé le plus de têtes (encore là) d'une chasse. */
