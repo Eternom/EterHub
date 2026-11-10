@@ -182,6 +182,7 @@ public final class Main extends JavaPlugin {
         // Navigation et social
         network = new NetworkGui(this, lib, database, messages, settings, players, friends);
         Visibility visibility = new Visibility(this, database, messages, friends);
+        visibility.setIsolated(zones::isolated);
         seats = new Seats(this, zones, settings);
         Profiles profiles = new Profiles(this, settings, messages, friends, progress);
 
@@ -245,7 +246,7 @@ public final class Main extends JavaPlugin {
         getServer().getServicesManager().register(RankingSource.class, fishingStore.monthly(), this, ServicePriority.Normal);
 
         // Écouteurs
-        for (Listener listener : List.of(arrival, voidListener, new ZoneListener(zones), protection, build, movement, pads,
+        for (Listener listener : List.of(arrival, voidListener, new ZoneListener(zones, messages), protection, build, movement, pads,
                 fishing, archaeology, parkour, heads, events, tour, holograms, visibility, seats, profiles, farming)) {
             getServer().getPluginManager().registerEvents(listener, this);
         }

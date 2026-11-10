@@ -29,6 +29,12 @@ zones:
   donjon:
     name: "<accent>The Dungeon"
     subtitle: "<info>Not everyone who enters comes back"
+  crypte:
+    name: "<dark_gray>The Crypt"
+    subtitle: "<gray>Here, you are alone"
+  egouts:
+    name: "<dark_gray>The Sewers"
+    subtitle: "<gray>It smells musty..."
   donjon-secret:
     name: "<accent>The Secret Dungeon"
     subtitle: "<info>It must be earned"
@@ -79,6 +85,7 @@ zones:
 
 zone:
   denied: "<error><accent><zone></accent> is closed to you for now."
+  no-teleport: "<dark_gray><i>Something holds you here... you will have to walk back."
   discovered: "<success>Place discovered: <accent><zone></accent> <dark_gray>(<count>/<total>)"
   all-discovered: "<success>You discovered all <accent><total></accent> places of the village!"
   unknown: "<error>Unknown place: <accent><zone></accent>."

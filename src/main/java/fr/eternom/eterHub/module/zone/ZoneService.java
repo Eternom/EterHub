@@ -253,6 +253,7 @@ public class ZoneService {
         }
         Zone old = before.isEmpty() ? wilderness : zones.getOrDefault(before, wilderness);
         leave(player, old, zone);
+        scene(player, old, zone);
         // D'une parcelle à son lieu parent (ou l'inverse) : pas de nouveau titre ni de son d'entrée
         boolean sameFamily = !before.isEmpty() && !after.isEmpty() && old.root().equals(zone.root());
         boolean first = false;
@@ -344,6 +345,11 @@ public class ZoneService {
                     }
                 }
             }
+            for (Zone.Status status : zone.scene().effects()) {
+                if (second % status.every() == 0 && random.nextDouble() < status.chance()) {
+                    player.addPotionEffect(new org.bukkit.potion.PotionEffect(status.type(), status.seconds() * 20, status.amplifier(), true, false, false));
+                }
+            }
             if (zone.halloween() && halloween) {
                 particles(player, new Zone.Effect(Particle.SOUL, 3, 10, 0, 4, 1, 1, 0));
                 if (random.nextInt(20) == 0) {
@@ -392,6 +398,39 @@ public class ZoneService {
         } catch (RuntimeException e) {
             plugin.getLogger().warning("Son d'ambiance invalide : " + sound.sound());
         }
+    }
+
+    /** Mise en scène : actions de sortie de l'ancien lieu, effets retirés, actions d'entrée du nouveau. */
+    private void scene(Player player, Zone old, Zone next) {
+        if (old == next) {
+            return;
+        }
+        if (!old.scene().onLeave().isEmpty()) {
+            EterLib.get().getActions().run(player, old.scene().onLeave());
+        }
+        for (Zone.Status status : old.scene().effects()) {
+            if (next.scene().effects().stream().noneMatch(kept -> kept.type().equals(status.type()))) {
+                player.removePotionEffect(status.type());
+            }
+        }
+        if (!next.scene().onEnter().isEmpty()) {
+            EterLib.get().getActions().run(player, next.scene().onEnter());
+        }
+    }
+
+    /** Le joueur est dans un lieu isolé (il ne voit personne, personne ne le voit). */
+    public boolean isolated(Player player) {
+        return of(player).scene().isolation();
+    }
+
+    /** Le joueur est dans un lieu d'où l'on ne peut pas se téléporter. */
+    public boolean blocksTeleport(Player player) {
+        return of(player).scene().noTeleport();
+    }
+
+    /** Départ : les effets du lieu sont retirés avant qu'EterSync ne garde le joueur. */
+    public void clearEffects(Player player) {
+        of(player).scene().effects().forEach(status -> player.removePotionEffect(status.type()));
     }
 
     /** Du 20 octobre au 2 novembre. */

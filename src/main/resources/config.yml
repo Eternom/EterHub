@@ -144,6 +144,56 @@ zones:
     particles:
       - {type: DRIPPING_DRIPSTONE_WATER, count: 3, radius: 8, min-y: 3, max-y: 6, every: 2, chance: 0.7}
       - {type: ASH, count: 6, radius: 8, min-y: 0, max-y: 4, every: 1, chance: 0.8}
+  # Le chemin de la salle secrète, sous le Cimetière (hauteur min / max au tracé) : la Crypte (seul au monde, pas de
+  # téléportation, obscurité par vagues), puis les Égouts, puis la salle (donjon-secret). Même permission pour les trois.
+  #   isolation    : on n'y voit personne et personne ne nous voit (sauf le staff)
+  #   no-teleport  : aucune téléportation pour en sortir (/spawn, carte, plaques, commandes...), sauf le staff
+  #   effects      : effets par vagues (type d'effet Minecraft, every, chance, seconds, amplifier), retirés en sortant
+  #   on-enter / on-leave : actions d'EterLib en entrant / en sortant (message, titre, son... plus tard EterQuest)
+  crypte:
+    icon: SOUL_LANTERN
+    sound: "minecraft:block.iron_door.close"
+    discoverable: false
+    rules:
+      double-jump: false
+      sit: false
+    time: 18000
+    access:
+      permission: "eterhub.zone.donjon-secret"
+      condition: ""
+    isolation: true
+    no-teleport: true
+    effects:
+      - {type: darkness, every: 10, chance: 0.6, seconds: 4}
+    ambient:
+      - {sound: "minecraft:entity.warden.heartbeat", every: 3, chance: 0.9, volume: 0.35, pitch-spread: 0.05}
+      - {sound: "minecraft:entity.warden.ambient", every: 20, chance: 0.5, volume: 0.1, pitch: 0.6}
+      - {sound: "minecraft:block.stone.step", every: 12, chance: 0.4, volume: 0.25, pitch: 0.8, pitch-spread: 0.1}
+      - {sound: "minecraft:block.pointed_dripstone.drip_water", every: 5, chance: 0.6, volume: 0.35, pitch-spread: 0.2}
+    particles:
+      - {type: ASH, count: 6, radius: 6, min-y: 0, max-y: 3, every: 1, chance: 0.9}
+      - {type: SCULK_SOUL, count: 1, radius: 4, min-y: 0, max-y: 2, every: 5, chance: 0.4}
+    on-enter:
+      - 'eterlib:message "<dark_gray><i>Le silence t''enveloppe... tu n''entends plus que ton cœur."'
+  egouts:
+    icon: IRON_BARS
+    sound: "minecraft:block.water.ambient"
+    discoverable: false
+    rules:
+      double-jump: false
+      sit: false
+    time: 18000
+    access:
+      permission: "eterhub.zone.donjon-secret"
+      condition: ""
+    ambient:
+      - {sound: "minecraft:block.water.ambient", every: 6, chance: 0.7, volume: 0.4}
+      - {sound: "minecraft:block.pointed_dripstone.drip_water", every: 4, chance: 0.7, volume: 0.35, pitch-spread: 0.2}
+      - {sound: "minecraft:entity.silverfish.ambient", every: 15, chance: 0.4, volume: 0.2, pitch-spread: 0.2}
+      - {sound: "minecraft:block.chain.step", every: 25, chance: 0.3, volume: 0.25, pitch: 0.7}
+    particles:
+      - {type: DRIPPING_DRIPSTONE_WATER, count: 4, radius: 7, min-y: 2, max-y: 5, every: 1, chance: 0.8}
+      - {type: MYCELIUM, count: 3, radius: 6, min-y: 0, max-y: 2, every: 2, chance: 0.6}
   donjon-secret:
     icon: WITHER_SKELETON_SKULL
     sound: "minecraft:block.end_portal.spawn"

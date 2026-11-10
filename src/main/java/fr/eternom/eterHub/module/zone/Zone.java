@@ -22,7 +22,7 @@ import java.util.logging.Logger;
  */
 public record Zone(String id, Material icon, Map<ZoneRule, Boolean> rules, String enterSound, List<Effect> particles,
                    List<Ambient> sounds, long time, String weather, String permission, String condition, boolean discoverable,
-                   boolean title, boolean halloween, String parent) {
+                   boolean title, boolean halloween, String parent, Scene scene) {
 
     /**
      * Une couche de particules : count particules dans un rayon autour du joueur, entre minY et maxY au-dessus de ses
@@ -35,11 +35,24 @@ public record Zone(String id, Material icon, Map<ZoneRule, Boolean> rules, Strin
     public record Ambient(String sound, int every, double chance, float volume, float pitch, float pitchSpread) {
     }
 
+    /**
+     * La mise en scène d'un lieu : isolation (on n'y voit personne et personne ne nous voit, sauf le staff), no-teleport
+     * (aucune téléportation pour en sortir), effects (effets par vagues, ex. l'obscurité, retirés en sortant), on-enter /
+     * on-leave (actions d'EterLib en entrant et en sortant : messages, sons, titres, plus tard EterQuest).
+     */
+    public record Scene(boolean isolation, boolean noTeleport, List<Status> effects, List<String> onEnter, List<String> onLeave) {
+        public static final Scene NONE = new Scene(false, false, List.of(), List.of(), List.of());
+    }
+
+    /** Un effet par vagues : toutes les every secondes, avec la probabilité chance, pendant seconds secondes. */
+    public record Status(org.bukkit.potion.PotionEffectType type, int every, double chance, int seconds, int amplifier) {
+    }
+
     /** Hors de tout lieu : les règles et l'ambiance par défaut. */
     public static Zone wilderness(ConfigurationSection config, Logger logger) {
         ConfigurationSection defaults = config.getConfigurationSection("zone-defaults");
         return new Zone("", Material.GRASS_BLOCK, defaults(config), "", particles(defaults, "zone-defaults", logger),
-                sounds(defaults, "zone-defaults", logger), -1, "", "", "", false, false, false, "");
+                sounds(defaults, "zone-defaults", logger), -1, "", "", "", false, false, false, "", Scene.NONE);
     }
 
     public boolean allows(ZoneRule rule) {
@@ -71,7 +84,7 @@ public record Zone(String id, Material icon, Map<ZoneRule, Boolean> rules, Strin
                     zone.getLong("time", -1), zone.getString("weather", "").toLowerCase(Locale.ROOT),
                     zone.getString("access.permission", ""), zone.getString("access.condition", ""),
                     zone.getBoolean("discoverable", true), zone.getBoolean("title", true), zone.getBoolean("halloween", false),
-                    zone.getString("parent", "")));
+                    zone.getString("parent", ""), scene(zone, "zones." + id, logger)));
         }
         return inherit(zones, section, defaults, logger);
     }
@@ -98,7 +111,7 @@ public record Zone(String id, Material icon, Map<ZoneRule, Boolean> rules, Strin
                     zone.sounds().isEmpty() ? parent.sounds() : zone.sounds(),
                     zone.time() >= 0 ? zone.time() : parent.time(), zone.weather().isEmpty() ? parent.weather() : zone.weather(),
                     zone.permission(), zone.condition(), zone.discoverable(), zone.title(), zone.halloween() || parent.halloween(),
-                    zone.parent()));
+                    zone.parent(), zone.scene()));
         }
         return resolved;
     }
@@ -156,6 +169,25 @@ public record Zone(String id, Material icon, Map<ZoneRule, Boolean> rules, Strin
                     Math.max(0, number(entry, "speed", 0).doubleValue())));
         }
         return List.copyOf(effects);
+    }
+
+    /** isolation, no-teleport, effects, on-enter, on-leave. */
+    private static Scene scene(ConfigurationSection zone, String path, Logger logger) {
+        List<Status> effects = new ArrayList<>();
+        for (Map<?, ?> entry : zone.getMapList("effects")) {
+            String name = String.valueOf(entry.get("type")).toLowerCase(Locale.ROOT);
+            org.bukkit.potion.PotionEffectType type = org.bukkit.Registry.MOB_EFFECT.get(org.bukkit.NamespacedKey.minecraft(name));
+            if (type == null) {
+                logger.warning(path + ".effects : effet inconnu " + name);
+                continue;
+            }
+            effects.add(new Status(type, Math.max(1, number(entry, "every", 10).intValue()), Math.clamp(number(entry, "chance", 1).doubleValue(), 0, 1),
+                    Math.max(1, number(entry, "seconds", 3).intValue()), Math.max(0, number(entry, "amplifier", 0).intValue())));
+        }
+        boolean any = zone.getBoolean("isolation", false) || zone.getBoolean("no-teleport", false) || !effects.isEmpty()
+                || !zone.getStringList("on-enter").isEmpty() || !zone.getStringList("on-leave").isEmpty();
+        return any ? new Scene(zone.getBoolean("isolation", false), zone.getBoolean("no-teleport", false), List.copyOf(effects),
+                List.copyOf(zone.getStringList("on-enter")), List.copyOf(zone.getStringList("on-leave"))) : Scene.NONE;
     }
 
     /** ambient : une liste de sons, ou (ancien format) { sound, every }. */

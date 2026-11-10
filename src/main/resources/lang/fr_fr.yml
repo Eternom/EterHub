@@ -32,6 +32,12 @@ zones:
   donjon:
     name: "<accent>Le Donjon"
     subtitle: "<info>Ceux qui entrent ne reviennent pas tous"
+  crypte:
+    name: "<dark_gray>La Crypte"
+    subtitle: "<gray>Ici, tu es seul"
+  egouts:
+    name: "<dark_gray>Les Égouts"
+    subtitle: "<gray>Ça sent le renfermé..."
   donjon-secret:
     name: "<accent>Le Donjon secret"
     subtitle: "<info>Il se mérite"
@@ -82,6 +88,7 @@ zones:
 
 zone:
   denied: "<error>L'accès à <accent><zone></accent> t'est fermé pour le moment."
+  no-teleport: "<dark_gray><i>Une force te retient ici... il faudra repartir à pied."
   discovered: "<success>Lieu découvert : <accent><zone></accent> <dark_gray>(<count>/<total>)"
   all-discovered: "<success>Tu as découvert les <accent><total></accent> lieux du village !"
   unknown: "<error>Lieu inconnu : <accent><zone></accent>."

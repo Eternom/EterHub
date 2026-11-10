@@ -51,6 +51,8 @@ public class Visibility implements Listener, TabExecutor {
     private final FriendsView friends;
     private final Map<UUID, Mode> modes = new ConcurrentHashMap<>();
     private final Map<UUID, Set<UUID>> clans = new ConcurrentHashMap<>();
+    /** Un joueur dans un lieu isolé (la Crypte) : il ne voit personne, personne ne le voit (sauf le staff). */
+    private java.util.function.Predicate<Player> isolated = player -> false;
 
     public Visibility(JavaPlugin plugin, Database database, Messages messages, FriendsView friends) {
         this.plugin = plugin;
@@ -67,6 +69,22 @@ public class Visibility implements Listener, TabExecutor {
         Bukkit.getScheduler().runTaskTimer(plugin, this::applyAll, 200, 600);
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, () -> Bukkit.getOnlinePlayers()
                 .forEach(player -> clans.put(player.getUniqueId(), friends.clanMates(player.getUniqueId()))), 400, 20 * 60);
+    }
+
+    public void setIsolated(java.util.function.Predicate<Player> isolated) {
+        this.isolated = isolated;
+    }
+
+    /** Le joueur change de lieu : ce qu'il voit et qui le voit sont remis à jour (lieux isolés). */
+    @EventHandler
+    public void onZone(fr.eternom.eterHub.api.HubZoneEnterEvent event) {
+        Player player = event.getPlayer();
+        for (Player other : Bukkit.getOnlinePlayers()) {
+            if (other != player) {
+                show(player, other, sees(player, other));
+                show(other, player, sees(other, player));
+            }
+        }
     }
 
     public Mode mode(Player player) {
@@ -151,6 +169,9 @@ public class Visibility implements Listener, TabExecutor {
 
     /** Ce que voit viewer de other, selon son mode. */
     private boolean sees(Player viewer, Player other) {
+        if (!viewer.hasPermission(STAFF) && (isolated.test(viewer) || isolated.test(other))) {
+            return false;
+        }
         return switch (mode(viewer)) {
             case ALL -> true;
             case NONE -> false;
