@@ -72,6 +72,20 @@ public class FishingStore {
         return new long[]{best, species};
     }
 
+    /** Carnet de pêche : espèce -> {prises, plus beau poids en grammes}. Bloquant. */
+    public java.util.Map<String, long[]> species(UUID player) {
+        java.util.Map<String, long[]> species = new java.util.HashMap<>();
+        database.query("SELECT fish, COUNT(*) AS caught, MAX(grams) AS best FROM " + database.table(TABLE) + " WHERE uuid = ? GROUP BY fish", player)
+                .forEach(row -> species.put(row.getString("fish"), new long[]{row.getLong("caught"), row.getLong("best")}));
+        return species;
+    }
+
+    /** Son plus beau poids pour une espèce (0 si jamais prise). Bloquant. */
+    public long best(UUID player, String fish) {
+        return database.query("SELECT COALESCE(MAX(grams), 0) AS best FROM " + database.table(TABLE) + " WHERE uuid = ? AND fish = ?", player, fish)
+                .getFirst().getLong("best");
+    }
+
     /** Classement du mois pour EterLib (« hub_fishing ») : la plus belle prise en grammes. */
     public RankingSource monthly() {
         return new RankingSource() {

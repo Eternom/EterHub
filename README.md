@@ -25,7 +25,7 @@ l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans
 | `spawn` | `Spawn` (spawn principal + points d'arrivée), `ArrivalListener` (lecture à l'arrivée dans `AsyncPlayerSpawnLocationEvent` priorité LOW : une téléportation réseau d'EterLib passe après et l'emporte), `Tour` (visite guidée), `VoidListener` |
 | `protect` | `ProtectionListener` (tout le village figé et protégé), `BuildMode` (`/eterhub build`) |
 | `movement` | `MovementListener` (double saut), `Pads` (lanceurs, ascenseurs, vitesse, téléporteurs, trampolines), `Cosmetics` (traînées et auras par permission) |
-| `activity` | `Fishing` (pêche à la canne au lac ; poissons = vrais objets marqués `eterhub:fish`, `rarity`, `grams`), `Archaeology` (fouilles, musée), `Parkour`, `Heads`, `HubEvents` (évènements, annonces), `LootTable`/`ParkourTime` (logique pure, testée) |
+| `activity` | `Fishing` (pêche à la canne au lac ; poissons = vrais objets marqués `eterhub:fish`, `rarity`, `grams` ; Chance de la mer favorise les raretés ; record par espèce ; carnet), `Fishmonger` (rachat : rareté + poids, poisson du jour ×2), `FishPrices` (testé), `Archaeology` (fouilles, musée), `Parkour`, `Heads`, `HubEvents` (évènements, annonces), `LootTable`/`ParkourTime` (logique pure, testée) |
 | `display` | `Holograms` (TextDisplay non gardés dans le monde : text, players, board, progress), `Tips` |
 | `network` | `NetworkGui` (sélecteur, lobbys, maintenance, Reprendre), `ServerMenu`, `LobbyMenu`, `PortalListener` |
 | `social` | `Visibility` (4 modes), `Seats`, `Profiles`, `FriendsView` (EterFriend / EterClan isolés dans `FriendLink` / `ClanLink`) |
@@ -54,7 +54,7 @@ l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans
 
 ## Actions EterLib (PNJ, menus)
 
-`eterhub:servers`, `lobbies`, `spawn`, `server <nom>`, `zone <lieu>`, `map`, `visibility`, `fishing`, `museum`,
+`eterhub:servers`, `lobbies`, `spawn`, `server <nom>`, `zone <lieu>`, `map`, `visibility`, `fishing`, `fishmonger` (poissonnier : rachat des poissons du lac, EterEconomy), `fishing-journal`, `museum`,
 `tour [restart]`, `soon <quoi>`, `door <lieu>` (config `doors`) ; conditions `?eterhub:discovered <lieu>`,
 `?eterhub:in-zone <lieu>`. Un lieu réservé peut demander une condition d'EterLib (`access.condition`, ex :
 `?eterjob:rank mineur expert`), testée seulement si elle est fournie sur ce serveur.

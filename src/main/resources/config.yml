@@ -274,6 +274,15 @@ tips:
 # poisson du lac tiré ci-dessous : un vrai objet (nom, rareté, poids, date ; données gardées dans l'objet pour un futur
 # PNJ qui les reprendra), que seul le pêcheur ramasse. Noms : lang/ fishing.fish.<id> ; objet : lang/ fishing.item.
 fishing:
+  # Le poissonnier (action eterhub:fishmonger sur un PNJ du lac) rachète les poissons du lac, payés par EterEconomy.
+  # Prix = base + per-kg × poids, selon la rareté ; le poisson du jour (le même partout, change à minuit) × daily-bonus.
+  market:
+    daily-bonus: 2
+    prices:
+      common: {base: 4, per-kg: 3}
+      uncommon: {base: 10, per-kg: 5}
+      rare: {base: 35, per-kg: 8}
+      legendary: {base: 150, per-kg: 15}
   # Annoncer aussi les prises rares (les légendaires le sont toujours), sur tous les lobbys.
   announce-rare: false
   # Récompenses par rareté (commandes console ou « action: ... »).

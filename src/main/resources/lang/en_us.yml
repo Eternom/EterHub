@@ -188,6 +188,8 @@ rarity:
   legendary: "<gold>Legendary"
 
 fishing:
+  daily-hint: "<info>Today the fishmonger wants: <accent><fish></accent> <dark_gray>(paid double)"
+  record: "<gold>New record! <accent><fish></accent> of <accent><weight> kg</accent> <dark_gray>(before: <old> kg)"
   only-lake: "<info>Fishing is only allowed at the <accent>Fishing Lake</accent>."
   closed: "<error>Fishing is closed for now."
   item:
@@ -206,6 +208,13 @@ fishing:
   subtitle: "<accent><fish></accent> <info>· <weight> kg"
   announce-rare: "<aqua>🎣 <accent><player></accent> <info>caught a <accent><fish></accent> of <accent><weight> kg</accent> at the lake!"
   announce-legendary: "<gold>🎣 <accent><player></accent> <info>caught a <gold><fish></gold> of <accent><weight> kg</accent> at the lake!"
+  journal:
+    title: "Fishing journal <dark_gray>(<count>/<total>)"
+    unknown: "<dark_gray>???"
+    caught: "<info>Caught: <accent><count>"
+    best: "<info>Best: <accent><weight> kg"
+    range: "<dark_gray>From <min> to <max> kg"
+    back: "<accent>« Fishing"
   fish:
     gardon: "Roach"
     perche: "Perch"
@@ -218,6 +227,8 @@ fishing:
     vieille-botte: "Old boot"
   menu:
     title: "Lake fishing"
+    journal: "<accent>Fishing journal"
+    journal-lore: "<info>The lake species you have caught."
     day: "<accent>Best catches of the day"
     month: "<accent>Best catches of the month"
     how: "<accent>How to fish"
@@ -228,6 +239,21 @@ fishing:
     species: "<info>Species caught: <accent><count>/<total>"
     empty: "<dark_gray>Nobody yet"
     line: "<accent><rank>. <info><player> <dark_gray>· <info><fish> <accent><weight> kg"
+
+fishmonger:
+  title: "The fishmonger"
+  price: "<info>Price: <accent><amount>"
+  click: "<accent>Click <info>· sell"
+  empty: "<info>No lake fish"
+  empty-lore: "<dark_gray>Fish at the lake with your rod, then come back."
+  daily: "<gold>Fish of the day: <accent><fish>"
+  daily-lore: "<info>Paid <accent>×<bonus></accent> today."
+  sell-all: "<success>Sell all: <accent><amount>"
+  sell-all-lore: "<info><count> stack(s) of fish"
+  sold: "<success>Sold! <accent><count></accent> fish for <accent><amount></accent>."
+  nothing: "<error>Nothing to sell: only lake fish are bought."
+  failed: "<error>The payment failed: your fish were given back."
+  no-economy: "<error>The fishmonger is closed for now."
 
 archaeology:
   progress: "<info>Digging... <accent><bar>"

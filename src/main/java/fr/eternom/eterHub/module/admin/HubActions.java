@@ -2,6 +2,7 @@ package fr.eternom.eterHub.module.admin;
 
 import fr.eternom.eterHub.module.activity.Archaeology;
 import fr.eternom.eterHub.module.activity.Fishing;
+import fr.eternom.eterHub.module.activity.Fishmonger;
 import fr.eternom.eterHub.module.network.NetworkGui;
 import fr.eternom.eterHub.module.social.Visibility;
 import fr.eternom.eterHub.module.spawn.SpawnCommands;
@@ -29,6 +30,8 @@ import java.util.List;
  *   eterhub:map                la carte du village
  *   eterhub:visibility         changer qui l'on voit
  *   eterhub:fishing            pêche : classements et règles (/fishing)
+ *   eterhub:fishmonger         le poissonnier du lac (rachète les poissons)
+ *   eterhub:fishing-journal    le carnet de pêche
  *   eterhub:museum             le musée des fouilles (/museum)
  *   eterhub:tour [restart]     la visite guidée
  *   eterhub:soon <quoi>        « bientôt » (Étals, Maisons et boutiques...)
@@ -43,7 +46,8 @@ public final class HubActions {
     }
 
     public static void register(JavaPlugin plugin, Messages messages, NetworkGui network, SpawnCommands spawn, ZoneService zones,
-                                VillageMap map, Visibility visibility, Fishing fishing, Archaeology archaeology, Tour tour) {
+                                VillageMap map, Visibility visibility, Fishing fishing, Fishmonger fishmonger, Archaeology archaeology,
+                                Tour tour) {
         Actions actions = EterLib.get().getActions();
         Argument zone = Argument.required("lieu", typed -> new ArrayList<>(zones.zones().keySet()));
         actions.register(plugin, "eterhub:servers", "Le sélecteur de serveurs", List.of(), (player, args) -> network.openServers(player));
@@ -56,6 +60,9 @@ public final class HubActions {
         actions.register(plugin, "eterhub:map", "La carte du village", List.of(), (player, args) -> map.open(player));
         actions.register(plugin, "eterhub:visibility", "Changer qui l'on voit au lobby", List.of(), (player, args) -> visibility.cycle(player));
         actions.register(plugin, "eterhub:fishing", "La pêche : classements et règles", List.of(), (player, args) -> fishing.openMenu(player));
+        actions.register(plugin, "eterhub:fishmonger", "Le poissonnier du lac : il rachète les poissons", List.of(),
+                (player, args) -> fishmonger.open(player));
+        actions.register(plugin, "eterhub:fishing-journal", "Le carnet de pêche", List.of(), (player, args) -> fishing.openJournal(player));
         actions.register(plugin, "eterhub:museum", "Le musée des fouilles", List.of(), (player, args) -> archaeology.openMuseum(player));
         actions.register(plugin, "eterhub:tour", "La visite guidée du village", List.of(Argument.optional("restart")),
                 (player, args) -> tour.begin(player, !args.isEmpty()));

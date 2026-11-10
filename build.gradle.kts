@@ -28,6 +28,8 @@ dependencies {
     // Facultatifs sur un lobby (softdepend) : amis (visibilité, amis en ligne), clans (visibilité « amis et clan »)
     compileOnly("com.github.Eternom:EterFriend:1.0.0")
     compileOnly("com.github.Eternom:EterClan:1.7.0")
+    // Facultatif : le poissonnier paie en monnaie du réseau
+    compileOnly("com.github.Eternom:EterEconomy:2.3.2")
 
     testImplementation("io.papermc.paper:paper-api:26.2.build.129-stable")
     testImplementation(platform("org.junit:junit-bom:5.11.4"))

@@ -71,14 +71,23 @@ public final class LootTable {
 
     /** pick et size dans [0, 1[ : l'entrée tirée, et son poids (arrondi à 10 g). Vide si la table est vide. */
     public Optional<Draw> roll(double pick, double size) {
+        return roll(pick, size, 0);
+    }
+
+    /**
+     * Avec de la chance (ex : niveau de Chance de la mer) : la chance de chaque entrée est multipliée par
+     * 1 + 0,35 × chance × rang de rareté (commun 0, peu commun 1, rare 2, légendaire 3). Sans chance : le tirage normal.
+     */
+    public Optional<Draw> roll(double pick, double size, int luck) {
         if (entries.isEmpty()) {
             return Optional.empty();
         }
-        double target = pick * total;
+        double boostedTotal = entries.stream().mapToDouble(entry -> boosted(entry, luck)).sum();
+        double target = pick * boostedTotal;
         double sum = 0;
         Entry chosen = entries.getLast();
         for (Entry entry : entries) {
-            sum += entry.chance();
+            sum += boosted(entry, luck);
             if (target < sum) {
                 chosen = entry;
                 break;
@@ -86,5 +95,9 @@ public final class LootTable {
         }
         double weight = chosen.max() > chosen.min() ? chosen.min() + (chosen.max() - chosen.min()) * size * size : chosen.min();
         return Optional.of(new Draw(chosen, Math.round(weight * 100) / 100.0));
+    }
+
+    private static double boosted(Entry entry, int luck) {
+        return entry.chance() * (1 + 0.35 * Math.max(0, luck) * entry.rarity().ordinal());
     }
 }

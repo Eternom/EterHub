@@ -8,7 +8,7 @@ authors: [ NadTum ]
 description: "Le village des lobbys : lieux, découverte, activités, protection, navigation."
 depend: [EterLib]
 # EterFriend : amis (visibilité, amis en ligne) ; EterClan : clan (visibilité, profil) ; EterNpc : PNJ des lieux
-softdepend: [EterFriend, EterClan, EterNpc, EterSuccess, EterReward]
+softdepend: [EterFriend, EterClan, EterNpc, EterSuccess, EterReward, EterEconomy]
 
 # /lobby et /hub sont des commandes du proxy (EterVelocityLobby) : l'administration d'EterHub est donc /eterhub.
 commands:

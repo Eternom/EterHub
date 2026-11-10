@@ -4,6 +4,8 @@ import fr.eternom.eterHub.api.HubApi;
 import fr.eternom.eterHub.module.activity.Archaeology;
 import fr.eternom.eterHub.module.activity.Fishing;
 import fr.eternom.eterHub.module.activity.FishingStore;
+import fr.eternom.eterHub.module.activity.FishItems;
+import fr.eternom.eterHub.module.activity.Fishmonger;
 import fr.eternom.eterHub.module.activity.Heads;
 import fr.eternom.eterHub.module.activity.HubEvents;
 import fr.eternom.eterHub.module.activity.Parkour;
@@ -123,8 +125,12 @@ public final class Main extends JavaPlugin {
 
         // Activités
         FishingStore fishingStore = new FishingStore(database);
-        Fishing fishing = new Fishing(this, zones, fishingStore, settings, stats, messages, bus,
+        FishItems fishItems = new FishItems(this);
+        Fishing fishing = new Fishing(this, zones, fishingStore, fishItems, settings, stats, messages, bus,
                 lib.backButton(getConfig().getString("menus.activities.back-command", "")));
+        Fishmonger fishmonger = new Fishmonger(this, fishItems, settings, stats, messages,
+                lib.backButton(getConfig().getString("menus.activities.back-command", "")), fishing::table);
+        fishing.setFishOfTheDay(fishmonger::fishOfTheDay);
         archaeology = new Archaeology(this, zones, database, settings, stats, messages,
                 lib.backButton(getConfig().getString("menus.activities.back-command", "")));
         Parkour parkour = new Parkour(this, new ParkourStore(database), settings, stats, messages, bus);
@@ -196,7 +202,7 @@ public final class Main extends JavaPlugin {
         bus.on("reload", data -> reloadLocal(settings, zones, fishing, protection));
         this.reloadLocal = () -> reloadLocal(settings, zones, fishing, protection);
 
-        HubActions.register(this, messages, network, spawnCommands, zones, map, visibility, fishing, archaeology, tour);
+        HubActions.register(this, messages, network, spawnCommands, zones, map, visibility, fishing, fishmonger, archaeology, tour);
         getServer().getServicesManager().register(HubApi.class,
                 new HubApiService(spawn, network, zones, map, heads, parkour, tour), this, ServicePriority.Normal);
         getServer().getServicesManager().register(RankingSource.class, fishingStore.monthly(), this, ServicePriority.Normal);

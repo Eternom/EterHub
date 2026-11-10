@@ -2,6 +2,7 @@ package fr.eternom.eterHub.module.activity;
 
 import com.google.gson.JsonObject;
 import fr.eternom.eterHub.api.HubActivityEvent;
+import fr.eternom.eterHub.api.HubZoneEnterEvent;
 import fr.eternom.eterHub.module.core.HubSettings;
 import fr.eternom.eterHub.module.core.HubStats;
 import fr.eternom.eterHub.module.core.Rewards;
@@ -20,7 +21,7 @@ import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -38,8 +39,6 @@ import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.persistence.PersistentDataContainer;
-import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.time.LocalDate;
@@ -48,9 +47,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.function.Supplier;
 
 /**
  * La pêche au Lac, à la vraie canne de Minecraft : lancer la ligne n'est possible que dans les lieux où la règle
@@ -73,25 +74,22 @@ public class Fishing implements Listener, TabExecutor {
     private final Messages messages;
     private final NetworkBus bus;
     private final BackButton back;
-    private final NamespacedKey fishKey;
-    private final NamespacedKey rarityKey;
-    private final NamespacedKey gramsKey;
+    private final FishItems fishItems;
     private volatile LootTable table;
     private final Map<UUID, Long> lastRefusal = new ConcurrentHashMap<>();
+    private Supplier<Optional<String>> fishOfTheDay = Optional::empty;
 
-    public Fishing(JavaPlugin plugin, ZoneService zones, FishingStore store, HubSettings settings, HubStats stats,
+    public Fishing(JavaPlugin plugin, ZoneService zones, FishingStore store, FishItems fishItems, HubSettings settings, HubStats stats,
                    Messages messages, NetworkBus bus, BackButton back) {
         this.plugin = plugin;
         this.zones = zones;
         this.store = store;
+        this.fishItems = fishItems;
         this.settings = settings;
         this.stats = stats;
         this.messages = messages;
         this.bus = bus;
         this.back = back;
-        this.fishKey = new NamespacedKey(plugin, "fish");
-        this.rarityKey = new NamespacedKey(plugin, "rarity");
-        this.gramsKey = new NamespacedKey(plugin, "grams");
         reload();
         bus.on(CAUGHT, data -> {
             String key = "fishing.announce-" + data.get("rarity").getAsString();
@@ -104,6 +102,30 @@ public class Fishing implements Listener, TabExecutor {
 
     public void reload() {
         table = LootTable.load(plugin.getConfig().getConfigurationSection("fishing.fish"));
+    }
+
+    public LootTable table() {
+        return table;
+    }
+
+    /** Le poisson du jour du poissonnier (rappelé en arrivant au lac). */
+    public void setFishOfTheDay(Supplier<Optional<String>> fishOfTheDay) {
+        this.fishOfTheDay = fishOfTheDay;
+    }
+
+    /** En arrivant au lac : le poisson du jour, dans la barre d'action. */
+    @EventHandler
+    public void onZone(HubZoneEnterEvent event) {
+        if (event.getZone().isEmpty() || !settings.bool("activities.fishing", true)
+                || !zones.zone(event.getZone()).map(zone -> zone.allows(ZoneRule.FISHING)).orElse(false)) {
+            return;
+        }
+        Player player = event.getPlayer();
+        fishOfTheDay.get().ifPresent(fish -> Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (player.isOnline()) {
+                messages.actionBar(player, "fishing.daily-hint", "fish", fishName(player, fish));
+            }
+        }, 50));
     }
 
     private boolean enabled(Player player) {
@@ -139,7 +161,8 @@ public class Fishing implements Listener, TabExecutor {
             return;
         }
         ThreadLocalRandom random = ThreadLocalRandom.current();
-        LootTable.Draw draw = table.roll(random.nextDouble(), random.nextDouble()).orElse(null);
+        // Chance de la mer sur la canne : les prises rares et légendaires mordent plus souvent
+        LootTable.Draw draw = table.roll(random.nextDouble(), random.nextDouble(), luck(player)).orElse(null);
         if (draw == null) {
             return;
         }
@@ -163,7 +186,16 @@ public class Fishing implements Listener, TabExecutor {
     }
 
     private boolean isFish(ItemStack stack) {
-        return stack != null && stack.hasItemMeta() && stack.getItemMeta().getPersistentDataContainer().has(fishKey);
+        return fishItems.isFish(stack);
+    }
+
+    /** Niveau de Chance de la mer de la canne tenue (main, sinon seconde main). */
+    private static int luck(Player player) {
+        ItemStack rod = player.getInventory().getItemInMainHand();
+        if (rod.getType() != Material.FISHING_ROD) {
+            rod = player.getInventory().getItemInOffHand();
+        }
+        return rod.getType() == Material.FISHING_ROD ? rod.getEnchantmentLevel(Enchantment.LUCK_OF_THE_SEA) : 0;
     }
 
     /** Le poisson : nom selon la rareté, rareté, poids, date ; ses données dans l'objet. */
@@ -179,10 +211,7 @@ public class Fishing implements Listener, TabExecutor {
                     messages.get(player, "fishing.item.weight", "weight", weight).decoration(TextDecoration.ITALIC, false),
                     messages.get(player, "fishing.item.caught", "player", player.getName(), "date", DATE.format(LocalDate.now()))
                             .decoration(TextDecoration.ITALIC, false)));
-            PersistentDataContainer data = meta.getPersistentDataContainer();
-            data.set(fishKey, PersistentDataType.STRING, entry.id());
-            data.set(rarityKey, PersistentDataType.STRING, entry.rarity().key());
-            data.set(gramsKey, PersistentDataType.LONG, Math.round(draw.weight() * 1000));
+            fishItems.write(meta, entry.id(), entry.rarity(), Math.round(draw.weight() * 1000));
             if (entry.rarity() == LootTable.Rarity.LEGENDARY) {
                 meta.setEnchantmentGlintOverride(true);
             }
@@ -204,7 +233,18 @@ public class Fishing implements Listener, TabExecutor {
         long grams = Math.round(draw.weight() * 1000);
         UUID uuid = player.getUniqueId();
         String fish = draw.entry().id();
-        Tasks.async(plugin, () -> store.add(uuid, fish, rarity.key(), grams), "Prise non gardée");
+        // Record personnel pour cette espèce : le plus beau poids avant cette prise
+        Tasks.async(plugin, player, () -> {
+            long best = store.best(uuid, fish);
+            store.add(uuid, fish, rarity.key(), grams);
+            return best;
+        }, best -> {
+            if (best > 0 && grams > best) {
+                messages.send(player, "fishing.record", "fish", name, "weight", weight,
+                        "old", String.format(Locale.FRANCE, "%.2f", best / 1000.0));
+                player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 0.5f, 1.6f);
+            }
+        }, () -> { });
         boolean announce = rarity == LootTable.Rarity.LEGENDARY
                 || rarity == LootTable.Rarity.RARE && settings.bool("fishing.announce-rare", false);
         if (announce) {
@@ -270,6 +310,8 @@ public class Fishing implements Listener, TabExecutor {
                             messages.get(viewer, "fishing.menu.species", "count", String.valueOf(personal[1]),
                                     "total", String.valueOf(table.entries().size())))));
             inventory.setItem(15, Items.item(Material.GOLD_INGOT, messages.get(viewer, "fishing.menu.month"), lines(viewer, month)));
+            inventory.setItem(JOURNAL, Items.item(Material.WRITABLE_BOOK, messages.get(viewer, "fishing.menu.journal"),
+                    List.of(messages.get(viewer, "fishing.menu.journal-lore"))));
             inventory.setItem(22, back.item(viewer));
         }
 
@@ -291,6 +333,66 @@ public class Fishing implements Listener, TabExecutor {
         public void onClick(Player player, int slot, ClickType click) {
             if (slot == 22) {
                 back.click(player);
+            } else if (slot == JOURNAL) {
+                fr.eternom.eterLib.helper.gui.Sounds.page(player);
+                openJournal(player);
+            }
+        }
+
+        @Override
+        public Inventory getInventory() {
+            return inventory;
+        }
+    }
+
+    private static final int JOURNAL = 23;
+
+    /** Carnet de pêche : chaque espèce du lac, prise (combien, la plus belle) ou encore inconnue. */
+    public void openJournal(Player player) {
+        UUID uuid = player.getUniqueId();
+        Tasks.async(plugin, player, () -> store.species(uuid),
+                species -> player.openInventory(new Journal(player, species).getInventory()), () -> messages.send(player, "error.generic"));
+    }
+
+    private final class Journal implements Menu {
+
+        private static final int[] SLOTS = {10, 11, 12, 13, 14, 15, 16, 19, 20, 21, 22, 23, 24, 25, 28, 29, 30, 31, 32, 33, 34};
+        private static final int BACK = 40;
+        private final Inventory inventory;
+
+        Journal(Player viewer, Map<String, long[]> species) {
+            long known = table.entries().stream().filter(entry -> species.containsKey(entry.id())).count();
+            inventory = Bukkit.createInventory(this, 45, messages.get(viewer, "fishing.journal.title", "count", String.valueOf(known),
+                    "total", String.valueOf(table.entries().size())));
+            Frame.draw(inventory, Material.LIGHT_BLUE_STAINED_GLASS_PANE);
+            int i = 0;
+            for (LootTable.Entry entry : table.entries()) {
+                if (i >= SLOTS.length) {
+                    break;
+                }
+                long[] stats = species.get(entry.id());
+                if (stats == null) {
+                    inventory.setItem(SLOTS[i++], Items.item(Material.GRAY_DYE, messages.get(viewer, "fishing.journal.unknown"),
+                            List.of(messages.get(viewer, "rarity." + entry.rarity().key()))));
+                    continue;
+                }
+                inventory.setItem(SLOTS[i++], Items.item(entry.icon() == null ? Material.COD : entry.icon(),
+                        messages.get(viewer, "fishing.item.name-" + entry.rarity().key(), "fish", fishName(viewer, entry.id())),
+                        List.of(messages.get(viewer, "rarity." + entry.rarity().key()),
+                                messages.get(viewer, "fishing.journal.caught", "count", String.valueOf(stats[0])),
+                                messages.get(viewer, "fishing.journal.best", "weight", String.format(Locale.FRANCE, "%.2f", stats[1] / 1000.0)),
+                                messages.get(viewer, "fishing.journal.range", "min", String.format(Locale.FRANCE, "%.1f", entry.min()),
+                                        "max", String.format(Locale.FRANCE, "%.1f", entry.max()))),
+                        entry.rarity() == LootTable.Rarity.LEGENDARY));
+            }
+            inventory.setItem(BACK, Items.item(Material.ARROW, messages.get(viewer, "fishing.journal.back"), List.of()));
+        }
+
+        @Override
+        public void onClick(Player player, int slot, ClickType click) {
+            if (slot == BACK) {
+                fr.eternom.eterLib.helper.gui.Sounds.page(player);
+                openMenu(player);
             }
         }
 

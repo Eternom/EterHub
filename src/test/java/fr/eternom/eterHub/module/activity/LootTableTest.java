@@ -39,6 +39,15 @@ class LootTableTest {
     }
 
     @Test
+    void luckFavoursRareCatches() {
+        // Sans chance : 70 % de gardons ; avec Chance de la mer III, les rares et légendaires prennent plus de place
+        assertEquals("gardon", table.roll(0.69, 0, 0).orElseThrow().entry().id());
+        assertEquals("brochet", table.roll(0.69, 0, 3).orElseThrow().entry().id());
+        assertEquals("carpe-doree", table.roll(0.95, 0, 3).orElseThrow().entry().id());
+        assertEquals("gardon", table.roll(0.0, 0, 3).orElseThrow().entry().id());
+    }
+
+    @Test
     void emptyTable() {
         assertTrue(new LootTable(List.of()).roll(0.5, 0.5).isEmpty());
         assertEquals(LootTable.Rarity.COMMON, LootTable.Rarity.parse("n'importe"));

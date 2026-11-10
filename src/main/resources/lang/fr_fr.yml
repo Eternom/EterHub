@@ -195,6 +195,8 @@ rarity:
   legendary: "<gold>Légendaire"
 
 fishing:
+  daily-hint: "<info>Le poissonnier cherche aujourd'hui : <accent><fish></accent> <dark_gray>(payé double)"
+  record: "<gold>Nouveau record ! <accent><fish></accent> de <accent><weight> kg</accent> <dark_gray>(avant : <old> kg)"
   only-lake: "<info>La pêche n'est permise qu'au <accent>Lac de pêche</accent>."
   closed: "<error>La pêche est fermée pour le moment."
   item:
@@ -213,6 +215,13 @@ fishing:
   subtitle: "<accent><fish></accent> <info>· <weight> kg"
   announce-rare: "<aqua>🎣 <accent><player></accent> <info>a pêché un(e) <accent><fish></accent> de <accent><weight> kg</accent> au lac !"
   announce-legendary: "<gold>🎣 <accent><player></accent> <info>a pêché un(e) <gold><fish></gold> de <accent><weight> kg</accent> au lac !"
+  journal:
+    title: "Carnet de pêche <dark_gray>(<count>/<total>)"
+    unknown: "<dark_gray>???"
+    caught: "<info>Prises : <accent><count>"
+    best: "<info>Plus belle : <accent><weight> kg"
+    range: "<dark_gray>De <min> à <max> kg"
+    back: "<accent>« Pêche"
   fish:
     gardon: "Gardon"
     perche: "Perche"
@@ -225,6 +234,8 @@ fishing:
     vieille-botte: "Vieille botte"
   menu:
     title: "Pêche au lac"
+    journal: "<accent>Carnet de pêche"
+    journal-lore: "<info>Les espèces du lac que tu as prises."
     day: "<accent>Plus belles prises du jour"
     month: "<accent>Plus belles prises du mois"
     how: "<accent>Comment pêcher"
@@ -235,6 +246,21 @@ fishing:
     species: "<info>Espèces pêchées : <accent><count>/<total>"
     empty: "<dark_gray>Personne encore"
     line: "<accent><rank>. <info><player> <dark_gray>· <info><fish> <accent><weight> kg"
+
+fishmonger:
+  title: "Le poissonnier"
+  price: "<info>Prix : <accent><amount>"
+  click: "<accent>Clic <info>· vendre"
+  empty: "<info>Pas de poisson du lac"
+  empty-lore: "<dark_gray>Pêche au lac avec ta canne, puis reviens."
+  daily: "<gold>Poisson du jour : <accent><fish>"
+  daily-lore: "<info>Payé <accent>×<bonus></accent> aujourd'hui."
+  sell-all: "<success>Tout vendre : <accent><amount>"
+  sell-all-lore: "<info><count> pile(s) de poissons"
+  sold: "<success>Vendu ! <accent><count></accent> poisson(s) pour <accent><amount></accent>."
+  nothing: "<error>Rien à vendre : seuls les poissons du lac sont rachetés."
+  failed: "<error>Le paiement n'a pas pu être fait : tes poissons te sont rendus."
+  no-economy: "<error>Le poissonnier est fermé pour le moment."
 
 archaeology:
   progress: "<info>Fouille... <accent><bar>"
