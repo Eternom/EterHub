@@ -220,7 +220,8 @@ public class ZoneCommand implements SubCommand, Listener {
             selections.remove(player.getUniqueId());
             messages.send(player, "editor.zone.saved", "zone", id, "region", saved.describe(), "volume", String.valueOf(saved.volume()));
             show(player, id, saved);
-            if (zones.warp(id).isEmpty()) {
+            // Le point d'arrivée ne sert qu'aux lieux de la carte (pas aux parcelles, qui n'y sont pas)
+            if (zones.warp(id).isEmpty() && zones.zone(id).map(Zone::discoverable).orElse(false)) {
                 messages.send(player, "editor.zone.warp-hint", "zone", id);
             }
         }, () -> messages.send(player, "error.generic"));
