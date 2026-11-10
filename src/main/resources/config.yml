@@ -333,14 +333,70 @@ parkour:
 # [texture|pseudo] [chasse] puis la poser en mode construction (ajoutée toute seule). /heads : le menu des joueurs.
 # Récompenses : commandes console ({player}) ou « action: ... ». Chasse principale ici ; chasses à thème : hunts.
 heads:
-  reward-each: []
-  reward-rare: []
-  reward-all: []
-  # Paliers de la chasse principale : nombre de têtes -> récompenses.
+  # Récompenses de la chasse principale (pensées jusqu'à 200 têtes) : argent (eco give, EterEssential) et XP du pass
+  # (eterreward pass xp, EterReward ; un palier du pass = 1 200 XP).
+  reward-each:
+    - "eco give {player} 5"
+  reward-rare:
+    - "eco give {player} 50"
+    - "eterreward pass xp {player} 300 event"
+  reward-all:
+    - "eco give {player} 2000"
+    - "eterreward pass xp {player} 2400 event"
+    - "action: eterlib:title \"<gold>Chasseur de têtes\" \"<info>Toutes les têtes du village !\""
+  # Paliers : nombre de têtes trouvées -> récompenses (un palier égal au total laisse la place à reward-all).
   milestones:
-    "5": []
-    "10": []
-    "20": []
+    "5":
+      - "eco give {player} 50"
+    "10":
+      - "eco give {player} 100"
+      - "eterreward pass xp {player} 300 event"
+    "15":
+      - "eco give {player} 150"
+    "20":
+      - "eco give {player} 200"
+      - "eterreward pass xp {player} 500 event"
+    "25":
+      - "eco give {player} 250"
+      - "action: eterlib:title \"<gold>Fureteur\" \"<info>25 têtes trouvées !\""
+    "30":
+      - "eco give {player} 300"
+      - "eterreward pass xp {player} 600 event"
+    "40":
+      - "eco give {player} 400"
+      - "eterreward pass xp {player} 800 event"
+    "50":
+      - "eco give {player} 750"
+      - "eterreward pass xp {player} 1200 event"
+      - "action: eterlib:title \"<gold>Pisteur\" \"<info>50 têtes trouvées !\""
+    "60":
+      - "eco give {player} 600"
+      - "eterreward pass xp {player} 800 event"
+    "75":
+      - "eco give {player} 1000"
+      - "eterreward pass xp {player} 1500 event"
+      - "action: eterlib:title \"<gold>Limier\" \"<info>75 têtes trouvées !\""
+    "90":
+      - "eco give {player} 900"
+      - "eterreward pass xp {player} 1200 event"
+    "100":
+      - "eco give {player} 1500"
+      - "eterreward pass xp {player} 2400 event"
+      - "action: eterlib:title \"<gold>Grand pisteur\" \"<info>100 têtes trouvées !\""
+    "125":
+      - "eco give {player} 1500"
+      - "eterreward pass xp {player} 1800 event"
+    "150":
+      - "eco give {player} 2000"
+      - "eterreward pass xp {player} 3000 event"
+      - "action: eterlib:title \"<gold>Œil de lynx\" \"<info>150 têtes trouvées !\""
+    "175":
+      - "eco give {player} 2000"
+      - "eterreward pass xp {player} 2400 event"
+    "200":
+      - "eco give {player} 3000"
+      - "eterreward pass xp {player} 4800 event"
+      - "action: eterlib:title \"<gold>Légende du village\" \"<info>200 têtes trouvées !\""
   # Annonce sur tous les lobbys quand quelqu'un trouve toutes les têtes d'une chasse (avec son rang d'arrivée).
   announce-complete: true
   # /heads hint : chaud / froid vers la tête non trouvée la plus proche ; seulement s'il en manque au plus max-missing
@@ -363,18 +419,50 @@ heads:
       start: "10-20"
       end: "11-02"
       hide-when-closed: true
-      reward-each: []
-      reward-rare: []
-      reward-all: []
-      milestones: {}
+      reward-each:
+        - "eco give {player} 10"
+      reward-rare:
+        - "eco give {player} 75"
+        - "eterreward pass xp {player} 300 event"
+      reward-all:
+        - "eco give {player} 1000"
+        - "eterreward pass xp {player} 1200 event"
+      milestones:
+        "5":
+          - "eco give {player} 75"
+        "10":
+          - "eco give {player} 150"
+          - "eterreward pass xp {player} 400 event"
+        "20":
+          - "eco give {player} 300"
+          - "eterreward pass xp {player} 600 event"
+        "30":
+          - "eco give {player} 450"
+          - "eterreward pass xp {player} 800 event"
     noel:
       start: "12-15"
       end: "01-05"
       hide-when-closed: true
-      reward-each: []
-      reward-rare: []
-      reward-all: []
-      milestones: {}
+      reward-each:
+        - "eco give {player} 10"
+      reward-rare:
+        - "eco give {player} 75"
+        - "eterreward pass xp {player} 300 event"
+      reward-all:
+        - "eco give {player} 1000"
+        - "eterreward pass xp {player} 1200 event"
+      milestones:
+        "5":
+          - "eco give {player} 75"
+        "10":
+          - "eco give {player} 150"
+          - "eterreward pass xp {player} 400 event"
+        "20":
+          - "eco give {player} 300"
+          - "eterreward pass xp {player} 600 event"
+        "30":
+          - "eco give {player} 450"
+          - "eterreward pass xp {player} 800 event"
 
 # Hologrammes : /eterhub holo create <id> <text|players|board|progress> [argument]
 #   players <serveur> · board <classement> [time|grams|minutes] (success, playtime_total, monthly_general, clans,
