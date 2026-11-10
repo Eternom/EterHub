@@ -150,6 +150,7 @@ zones:
   #   no-teleport  : aucune téléportation pour en sortir (/spawn, carte, plaques, commandes...), sauf le staff
   #   effects      : effets par vagues (type d'effet Minecraft, every, chance, seconds, amplifier), retirés en sortant
   #   on-enter / on-leave : actions d'EterLib en entrant / en sortant (message, titre, son... plus tard EterQuest)
+#   passage      : la mise en scène suit le joueur sorti du lieu, jusqu'à un lieu de until (keep : lieux du chemin)
   crypte:
     icon: SOUL_LANTERN
     sound: "minecraft:block.iron_door.close"
@@ -165,6 +166,12 @@ zones:
     no-teleport: true
     effects:
       - {type: darkness, every: 10, chance: 0.6, seconds: 4}
+    # Le couloir sinueux jusqu'aux Égouts n'est pas tracé : la mise en scène suit le joueur sorti de la Crypte, tant qu'il
+    # reste dans le Cimetière (ou hors lieu), jusqu'aux Égouts ; elle s'arrête ailleurs, ou après timeout secondes.
+    passage:
+      until: [egouts, donjon-secret]
+      keep: [cimetiere]
+      timeout: 300
     ambient:
       - {sound: "minecraft:entity.warden.heartbeat", every: 3, chance: 0.9, volume: 0.35, pitch-spread: 0.05}
       - {sound: "minecraft:entity.warden.ambient", every: 20, chance: 0.5, volume: 0.1, pitch: 0.6}

@@ -40,8 +40,17 @@ public record Zone(String id, Material icon, Map<ZoneRule, Boolean> rules, Strin
      * (aucune téléportation pour en sortir), effects (effets par vagues, ex. l'obscurité, retirés en sortant), on-enter /
      * on-leave (actions d'EterLib en entrant et en sortant : messages, sons, titres, plus tard EterQuest).
      */
-    public record Scene(boolean isolation, boolean noTeleport, List<Status> effects, List<String> onEnter, List<String> onLeave) {
-        public static final Scene NONE = new Scene(false, false, List.of(), List.of(), List.of());
+    public record Scene(boolean isolation, boolean noTeleport, List<Status> effects, List<String> onEnter, List<String> onLeave,
+                        Passage passage) {
+        public static final Scene NONE = new Scene(false, false, List.of(), List.of(), List.of(), null);
+    }
+
+    /**
+     * Un passage : la mise en scène du lieu colle au joueur après en être sorti (un couloir qu'on ne peut pas tracer),
+     * jusqu'à un lieu de until (l'arrivée) ; elle s'arrête aussi s'il va dans un lieu ni de keep ni de until, après
+     * timeout secondes, ou à la déconnexion.
+     */
+    public record Passage(List<String> until, List<String> keep, int timeout) {
     }
 
     /** Un effet par vagues : toutes les every secondes, avec la probabilité chance, pendant seconds secondes. */
@@ -184,10 +193,12 @@ public record Zone(String id, Material icon, Map<ZoneRule, Boolean> rules, Strin
             effects.add(new Status(type, Math.max(1, number(entry, "every", 10).intValue()), Math.clamp(number(entry, "chance", 1).doubleValue(), 0, 1),
                     Math.max(1, number(entry, "seconds", 3).intValue()), Math.max(0, number(entry, "amplifier", 0).intValue())));
         }
+        Passage passage = zone.isConfigurationSection("passage") ? new Passage(List.copyOf(zone.getStringList("passage.until")),
+                List.copyOf(zone.getStringList("passage.keep")), Math.max(10, zone.getInt("passage.timeout", 300))) : null;
         boolean any = zone.getBoolean("isolation", false) || zone.getBoolean("no-teleport", false) || !effects.isEmpty()
-                || !zone.getStringList("on-enter").isEmpty() || !zone.getStringList("on-leave").isEmpty();
+                || !zone.getStringList("on-enter").isEmpty() || !zone.getStringList("on-leave").isEmpty() || passage != null;
         return any ? new Scene(zone.getBoolean("isolation", false), zone.getBoolean("no-teleport", false), List.copyOf(effects),
-                List.copyOf(zone.getStringList("on-enter")), List.copyOf(zone.getStringList("on-leave"))) : Scene.NONE;
+                List.copyOf(zone.getStringList("on-enter")), List.copyOf(zone.getStringList("on-leave")), passage) : Scene.NONE;
     }
 
     /** ambient : une liste de sons, ou (ancien format) { sound, every }. */

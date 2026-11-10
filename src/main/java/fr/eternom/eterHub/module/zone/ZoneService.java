@@ -58,6 +58,8 @@ public class ZoneService {
     private volatile Map<String, ZoneStore.Warp> warps = Map.of();
     private final Map<UUID, String> current = new ConcurrentHashMap<>();
     private final Map<String, Long> lastSound = new ConcurrentHashMap<>();
+    private final Map<UUID, Active> passages = new ConcurrentHashMap<>();
+    private java.util.function.Consumer<Player> sceneChanged = player -> { };
     private final Map<UUID, Long> lastDenied = new ConcurrentHashMap<>();
     /** Accès accordé par la condition d'EterLib, le temps d'une vérification. */
     private final Map<UUID, String> granted = new ConcurrentHashMap<>();
@@ -337,7 +339,13 @@ public class ZoneService {
         ThreadLocalRandom random = ThreadLocalRandom.current();
         for (Player player : Bukkit.getOnlinePlayers()) {
             String id = current.get(player.getUniqueId());
-            Zone zone = id == null ? wilderness : zones.getOrDefault(id, wilderness);
+            Active active = passages.get(player.getUniqueId());
+            if (active != null && now - active.started() > active.source().scene().passage().timeout() * 1000L) {
+                endPassage(player, "zone.passage-timeout");
+                active = null;
+            }
+            // Pendant un passage : l'ambiance et la mise en scène du lieu de départ (la Crypte) suivent le joueur
+            Zone zone = active != null ? active.source() : id == null ? wilderness : zones.getOrDefault(id, wilderness);
             if (showParticles) {
                 for (Zone.Effect effect : zone.particles()) {
                     if (second % effect.every() == 0 && random.nextDouble() < effect.chance()) {
@@ -405,6 +413,26 @@ public class ZoneService {
         if (old == next) {
             return;
         }
+        UUID uuid = player.getUniqueId();
+        Active active = passages.get(uuid);
+        if (active != null) {
+            Zone.Passage passage = active.source().scene().passage();
+            if (next.id().equals(active.source().id()) || next.id().isEmpty() || passage.keep().contains(next.id())) {
+                return; // toujours sur le chemin : la mise en scène continue
+            }
+            // L'arrivée (until) ou un autre lieu : le passage s'arrête
+            endPassage(player, null);
+            if (!next.scene().onEnter().isEmpty()) {
+                EterLib.get().getActions().run(player, next.scene().onEnter());
+            }
+            return;
+        }
+        Zone.Passage passage = old.scene().passage();
+        if (passage != null && (next.id().isEmpty() || passage.keep().contains(next.id()))) {
+            // Sortie de la Crypte par le couloir : la mise en scène colle au joueur jusqu'à l'arrivée
+            passages.put(uuid, new Active(old, System.currentTimeMillis()));
+            return;
+        }
         if (!old.scene().onLeave().isEmpty()) {
             EterLib.get().getActions().run(player, old.scene().onLeave());
         }
@@ -418,19 +446,51 @@ public class ZoneService {
         }
     }
 
+    /** Un passage en cours : la mise en scène du lieu de départ, et quand il a commencé. */
+    private record Active(Zone source, long started) {
+    }
+
+    /** Fin d'un passage : effets retirés, actions de sortie du lieu de départ, visibilité remise à jour. */
+    private void endPassage(Player player, String messageKey) {
+        Active active = passages.remove(player.getUniqueId());
+        if (active == null) {
+            return;
+        }
+        active.source().scene().effects().forEach(status -> player.removePotionEffect(status.type()));
+        if (!active.source().scene().onLeave().isEmpty()) {
+            EterLib.get().getActions().run(player, active.source().scene().onLeave());
+        }
+        if (messageKey != null) {
+            messages.send(player, messageKey);
+        }
+        sceneChanged.accept(player);
+    }
+
+    /** La mise en scène qui s'applique au joueur : celle de son passage en cours, sinon celle de son lieu. */
+    private Zone.Scene sceneOf(Player player) {
+        Active active = passages.get(player.getUniqueId());
+        return active != null ? active.source().scene() : of(player).scene();
+    }
+
+    /** Appelé quand la mise en scène d'un joueur change hors d'un changement de lieu (fin de passage) : la visibilité. */
+    public void setSceneChanged(java.util.function.Consumer<Player> listener) {
+        this.sceneChanged = listener;
+    }
+
     /** Le joueur est dans un lieu isolé (il ne voit personne, personne ne le voit). */
     public boolean isolated(Player player) {
-        return of(player).scene().isolation();
+        return sceneOf(player).isolation();
     }
 
     /** Le joueur est dans un lieu d'où l'on ne peut pas se téléporter. */
     public boolean blocksTeleport(Player player) {
-        return of(player).scene().noTeleport();
+        return sceneOf(player).noTeleport();
     }
 
     /** Départ : les effets du lieu sont retirés avant qu'EterSync ne garde le joueur. */
     public void clearEffects(Player player) {
-        of(player).scene().effects().forEach(status -> player.removePotionEffect(status.type()));
+        sceneOf(player).effects().forEach(status -> player.removePotionEffect(status.type()));
+        passages.remove(player.getUniqueId());
     }
 
     /** Du 20 octobre au 2 novembre. */

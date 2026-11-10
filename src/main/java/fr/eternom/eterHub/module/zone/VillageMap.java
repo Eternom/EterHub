@@ -104,7 +104,8 @@ public class VillageMap {
                 if (i >= SLOTS.length) {
                     break;
                 }
-                if (!zone.discoverable() && !staff) {
+                // Seulement les lieux du village (pas les parcelles ni le chemin secret), pour tout le monde
+                if (!zone.discoverable()) {
                     continue;
                 }
                 boolean known = found.contains(zone.id()) || staff;

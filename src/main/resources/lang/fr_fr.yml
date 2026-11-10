@@ -89,6 +89,7 @@ zones:
 zone:
   denied: "<error>L'accès à <accent><zone></accent> t'est fermé pour le moment."
   no-teleport: "<dark_gray><i>Une force te retient ici... il faudra repartir à pied."
+  passage-timeout: "<gray><i>L'obscurité se dissipe... tu peux de nouveau voir les autres."
   discovered: "<success>Lieu découvert : <accent><zone></accent> <dark_gray>(<count>/<total>)"
   all-discovered: "<success>Tu as découvert les <accent><total></accent> lieux du village !"
   unknown: "<error>Lieu inconnu : <accent><zone></accent>."

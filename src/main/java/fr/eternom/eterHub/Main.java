@@ -183,6 +183,7 @@ public final class Main extends JavaPlugin {
         network = new NetworkGui(this, lib, database, messages, settings, players, friends);
         Visibility visibility = new Visibility(this, database, messages, friends);
         visibility.setIsolated(zones::isolated);
+        zones.setSceneChanged(visibility::refresh);
         seats = new Seats(this, zones, settings);
         Profiles profiles = new Profiles(this, settings, messages, friends, progress);
 

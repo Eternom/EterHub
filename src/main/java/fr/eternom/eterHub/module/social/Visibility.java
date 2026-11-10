@@ -78,7 +78,11 @@ public class Visibility implements Listener, TabExecutor {
     /** Le joueur change de lieu : ce qu'il voit et qui le voit sont remis à jour (lieux isolés). */
     @EventHandler
     public void onZone(fr.eternom.eterHub.api.HubZoneEnterEvent event) {
-        Player player = event.getPlayer();
+        refresh(event.getPlayer());
+    }
+
+    /** Ce que voit ce joueur et qui le voit, remis à jour (lieu isolé, fin de passage). */
+    public void refresh(Player player) {
         for (Player other : Bukkit.getOnlinePlayers()) {
             if (other != player) {
                 show(player, other, sees(player, other));
