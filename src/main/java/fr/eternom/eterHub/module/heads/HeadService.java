@@ -8,6 +8,7 @@ import fr.eternom.eterHub.api.HubHeadFoundEvent;
 import fr.eternom.eterHub.module.core.HubSettings;
 import fr.eternom.eterHub.module.core.HubStats;
 import fr.eternom.eterHub.module.core.Rewards;
+import fr.eternom.eterHub.module.zone.Zone;
 import fr.eternom.eterHub.module.zone.ZoneService;
 import fr.eternom.eterLib.helper.cache.NetworkBus;
 import fr.eternom.eterLib.helper.message.Messages;
@@ -113,19 +114,34 @@ public class HeadService implements Listener {
     }
 
     public void reload() {
+        reload(() -> { });
+    }
+
+    /** Relit les têtes, puis after sur le thread principal (un menu rouvert voit les nouvelles valeurs). */
+    void reload(Runnable after) {
         Tasks.async(plugin, () -> {
             List<HeadStore.Head> fresh = store.all();
             Bukkit.getScheduler().runTask(plugin, () -> {
                 heads = List.copyOf(fresh);
                 byBlock = fresh.stream().collect(Collectors.toMap(HeadStore.Head::key, head -> head, (a, b) -> a));
                 applyVisibility();
+                after.run();
             });
         }, "Têtes non relues");
     }
 
     void changed() {
-        reload();
+        changed(() -> { });
+    }
+
+    void changed(Runnable after) {
+        reload(after);
         Tasks.async(plugin, () -> bus.publish(CHANGED, new JsonObject()), "Têtes non annoncées");
+    }
+
+    /** La tête de cet id (après relecture), null si elle a été retirée. */
+    HeadStore.Head byId(long id) {
+        return heads.stream().filter(head -> head.id() == id).findFirst().orElse(null);
     }
 
     /** Bloquant (arrivée). */
@@ -507,6 +523,26 @@ public class HeadService implements Listener {
         return dx * dx + dy * dy + dz * dz;
     }
 
+    /**
+     * La particule d'une tête : la première couche d'ambiance de son lieu (heads.sparkle.zone-particles), sinon
+     * heads.sparkle.particle (WAX_OFF). Les têtes rares ont en plus END_ROD.
+     */
+    private Particle sparkleOf(HeadStore.Head head) {
+        if (settings.bool("heads.sparkle.zone-particles", true)) {
+            String zone = zoneOf(head);
+            List<Zone.Effect> effects = zone.isEmpty() ? List.of() : zones.zone(zone).map(Zone::particles).orElse(List.of());
+            if (!effects.isEmpty()) {
+                return effects.getFirst().type();
+            }
+        }
+        try {
+            Particle particle = Particle.valueOf(plugin.getConfig().getString("heads.sparkle.particle", "WAX_OFF").toUpperCase(java.util.Locale.ROOT));
+            return particle.getDataType() == Void.class ? particle : Particle.WAX_OFF;
+        } catch (IllegalArgumentException e) {
+            return Particle.WAX_OFF;
+        }
+    }
+
     /** Toutes les 3 s : les têtes proches non trouvées scintillent, pour ce joueur seulement. */
     private void sparkle() {
         if (!settings.bool("heads.sparkle.enabled", true) || !settings.bool("activities.heads", true)) {
@@ -523,8 +559,11 @@ public class HeadService implements Listener {
             String world = at.getWorld().getName();
             for (HeadStore.Head head : heads) {
                 if (head.world().equals(world) && !mine.containsKey(head.id()) && isOpen(head.hunt()) && distanceSquared(head, at) <= max) {
-                    player.spawnParticle(head.rare() ? Particle.END_ROD : Particle.WAX_OFF,
-                            new Location(at.getWorld(), head.x() + 0.5, head.y() + 0.6, head.z() + 0.5), 2, 0.25, 0.2, 0.25, 0);
+                    Location spot = new Location(at.getWorld(), head.x() + 0.5, head.y() + 0.6, head.z() + 0.5);
+                    player.spawnParticle(sparkleOf(head), spot, 2, 0.25, 0.2, 0.25, 0);
+                    if (head.rare()) {
+                        player.spawnParticle(Particle.END_ROD, spot, 1, 0.25, 0.2, 0.25, 0);
+                    }
                 }
             }
         }
@@ -546,6 +585,9 @@ public class HeadService implements Listener {
                 block.setType(Material.AIR, false);
             } else if (!hide && block.getType().isAir() && head.blockData() != null) {
                 restore(block, head);
+            } else if (!hide && isHead(block.getType())) {
+                // Skin changé depuis le menu (ici ou sur un autre lobby) : le bloc posé suit
+                applySkin(block, head);
             }
         }
     }
@@ -556,12 +598,31 @@ public class HeadService implements Listener {
         } catch (IllegalArgumentException e) {
             return;
         }
-        if (head.texture() != null && block.getState(false) instanceof Skull skull) {
-            PlayerProfile profile = Bukkit.createProfile(UUID.nameUUIDFromBytes(head.texture().getBytes()), "");
-            profile.setProperty(new ProfileProperty("textures", head.texture(), head.signature()));
-            skull.setPlayerProfile(profile);
-            skull.update(true, false);
+        applySkin(block, head);
+    }
+
+    /** Met le skin enregistré sur le bloc, s'il est différent. */
+    private static void applySkin(Block block, HeadStore.Head head) {
+        if (head.texture() == null || !(block.getState(false) instanceof Skull skull) || head.texture().equals(texture(skull))) {
+            return;
         }
+        PlayerProfile profile = Bukkit.createProfile(UUID.nameUUIDFromBytes(head.texture().getBytes()), "");
+        profile.setProperty(new ProfileProperty("textures", head.texture(), head.signature()));
+        skull.setPlayerProfile(profile);
+        skull.update(true, false);
+    }
+
+    private static String texture(Skull skull) {
+        PlayerProfile profile = skull.getPlayerProfile();
+        if (profile == null) {
+            return null;
+        }
+        for (ProfileProperty property : profile.getProperties()) {
+            if ("textures".equals(property.getName())) {
+                return property.getValue();
+            }
+        }
+        return null;
     }
 
     // ---------- Pose par le staff ----------

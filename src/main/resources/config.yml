@@ -620,9 +620,13 @@ heads:
     cooldown-seconds: 60
     max-missing: 5
   # Les têtes non trouvées scintillent pour le joueur qui passe à moins de distance blocs.
+  # Particule : la première couche d'ambiance (particles) du lieu de la tête (zone-particles), sinon particle.
+  # Les têtes rares ont en plus END_ROD.
   sparkle:
     enabled: true
     distance: 10
+    zone-particles: true
+    particle: WAX_OFF
   # Textures prêtes pour /eterhub head give <id> : la valeur « textures » (base64) d'une tête,
   # ex. depuis minecraft-heads.com (champ « Value »). Sans texture : /eterhub head give <pseudo> donne son skin.
   textures: {}

@@ -10,6 +10,7 @@ import fr.eternom.eterHub.module.farm.FarmMarket;
 import fr.eternom.eterHub.module.farm.FarmStore;
 import fr.eternom.eterHub.module.farm.Farming;
 import fr.eternom.eterHub.module.heads.HeadCommand;
+import fr.eternom.eterHub.module.heads.HeadEdits;
 import fr.eternom.eterHub.module.heads.HeadEditor;
 import fr.eternom.eterHub.module.heads.HeadMenus;
 import fr.eternom.eterHub.module.heads.HeadService;
@@ -148,7 +149,8 @@ public final class Main extends JavaPlugin {
                 lib.backButton(getConfig().getString("menus.activities.back-command", "")));
         Parkour parkour = new Parkour(this, new ParkourStore(database), settings, stats, messages, bus);
         HeadService heads = new HeadService(this, new HeadStore(database), zones, settings, stats, messages, bus);
-        HeadMenus headMenus = new HeadMenus(heads, lib.backButton(getConfig().getString("menus.activities.back-command", "")));
+        HeadEdits headEdits = new HeadEdits(heads, settings);
+        HeadMenus headMenus = new HeadMenus(heads, headEdits, lib.backButton(getConfig().getString("menus.activities.back-command", "")));
         farming = new Farming(this, zones, new FarmStore(database), settings, stats, messages,
                 lib.backButton(getConfig().getString("menus.activities.back-command", "")));
         FarmMarket farmMarket = new FarmMarket(farming, lib.backButton(getConfig().getString("menus.activities.back-command", "")));
@@ -214,7 +216,7 @@ public final class Main extends JavaPlugin {
         admin.add("pad", pads);
         admin.add("holo", holograms);
         admin.add("parkour", parkour);
-        admin.add("head", new HeadEditor(heads, headMenus, settings));
+        admin.add("head", new HeadEditor(heads, headMenus, settings, headEdits));
         register("heads", new HeadCommand(heads, headMenus));
         register("harvest", farming);
         admin.add("event", events);

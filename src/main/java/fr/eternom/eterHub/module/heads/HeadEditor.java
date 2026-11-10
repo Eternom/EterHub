@@ -23,8 +23,10 @@ import java.util.Locale;
  *   name <texte>               son nom (montré à la découverte et dans le menu) ; « name - » l'efface
  *   rare                       rare ou non (son, particules et récompense à part)
  *   hunt <chasse>              la change de chasse
+ *   skin <pseudo|texture|url>  son skin : celui d'un joueur, une valeur « textures » (base64), une URL textures.minecraft.net
+ *   edit                       son menu d'édition (aussi depuis list : clic sur une tête)
  *   give [texture|pseudo] [chasse]  une tête prête à poser (en mode construction) : ajoutée toute seule à la chasse
- *   list                       toutes les têtes, les moins trouvées d'abord (clic : y aller)
+ *   list                       toutes les têtes, les moins trouvées d'abord (clic : éditer, clic droit : y aller)
  *   check [fix]                les têtes enregistrées dont le bloc a disparu (fix : les retirer)
  *   count                      combien par chasse
  *   reset <chasse|all> confirm  nouvelle saison : trouvailles et classements effacés, têtes gardées
@@ -32,14 +34,16 @@ import java.util.Locale;
  */
 public class HeadEditor implements SubCommand {
 
-    private static final List<String> SUBS = List.of("add", "remove", "name", "rare", "hunt", "give", "list", "check", "count", "reset");
+    private static final List<String> SUBS = List.of("add", "remove", "name", "rare", "hunt", "skin", "edit", "give", "list", "check", "count", "reset");
 
     private final HeadService service;
     private final HeadMenus menus;
     private final HubSettings settings;
+    private final HeadEdits edits;
     private final Messages messages;
 
-    public HeadEditor(HeadService service, HeadMenus menus, HubSettings settings) {
+    public HeadEditor(HeadService service, HeadMenus menus, HubSettings settings, HeadEdits edits) {
+        this.edits = edits;
         this.service = service;
         this.menus = menus;
         this.settings = settings;
@@ -82,57 +86,20 @@ public class HeadEditor implements SubCommand {
             messages.send(player, "editor.head.unknown");
             return;
         }
-        String author = player.getName();
+        Runnable none = () -> { };
         switch (sub) {
-            case "remove" -> Tasks.async(service.plugin(), player, () -> {
-                boolean removed = service.store().remove(head.id());
-                if (removed) {
-                    settings.log("head", head.hunt() + " " + head.x() + "," + head.y() + "," + head.z(), null, author);
-                }
-                return removed;
-            }, removed -> {
-                messages.send(player, removed ? "editor.head.removed" : "editor.head.unknown");
-                service.changed();
-            }, () -> messages.send(player, "error.generic"));
+            case "remove" -> edits.remove(player, head, none);
             case "name" -> {
                 if (args.length < 2) {
                     messages.send(player, "editor.head.usage");
                     return;
                 }
-                String name = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
-                String stored = name.equals("-") ? "" : name.length() > 64 ? name.substring(0, 64) : name;
-                Tasks.async(service.plugin(), player, () -> {
-                    service.store().setName(head.id(), stored);
-                    settings.log("head-name:" + head.id(), head.name(), stored, author);
-                    return true;
-                }, done -> {
-                    messages.send(player, "editor.head.named", "name", stored.isEmpty() ? "-" : stored);
-                    service.changed();
-                }, () -> messages.send(player, "error.generic"));
+                edits.rename(player, head, String.join(" ", Arrays.copyOfRange(args, 1, args.length)), none);
             }
-            case "rare" -> Tasks.async(service.plugin(), player, () -> {
-                service.store().setRare(head.id(), !head.rare());
-                settings.log("head-rare:" + head.id(), String.valueOf(head.rare()), String.valueOf(!head.rare()), author);
-                return !head.rare();
-            }, rare -> {
-                messages.send(player, rare ? "editor.head.rare-on" : "editor.head.rare-off");
-                service.changed();
-            }, () -> messages.send(player, "error.generic"));
-            case "hunt" -> {
-                String hunt = args.length > 1 ? args[1].toLowerCase(Locale.ROOT) : "";
-                if (!service.hunts().containsKey(hunt)) {
-                    messages.send(player, "editor.head.unknown-hunt", "hunts", String.join(", ", service.hunts().keySet()));
-                    return;
-                }
-                Tasks.async(service.plugin(), player, () -> {
-                    service.store().setHunt(head.id(), hunt);
-                    settings.log("head-hunt:" + head.id(), head.hunt(), hunt, author);
-                    return true;
-                }, done -> {
-                    messages.send(player, "editor.head.moved", "hunt", service.huntName(player, hunt));
-                    service.changed();
-                }, () -> messages.send(player, "error.generic"));
-            }
+            case "rare" -> edits.toggleRare(player, head, none);
+            case "hunt" -> edits.move(player, head, args.length > 1 ? args[1].toLowerCase(Locale.ROOT) : "", none);
+            case "skin" -> edits.skin(player, head, args.length > 1 ? String.join("", Arrays.copyOfRange(args, 1, args.length)) : "", none);
+            case "edit" -> menus.openEdit(player, head, 0);
             default -> messages.send(player, "editor.head.usage");
         }
     }
@@ -227,6 +194,12 @@ public class HeadEditor implements SubCommand {
         }
         if (args.length == 2 && sub.equals("check")) {
             return SubCommand.filter(List.of("fix"), args[1]);
+        }
+        if (args.length == 2 && sub.equals("skin")) {
+            ConfigurationSection textures = service.plugin().getConfig().getConfigurationSection("heads.textures");
+            List<String> options = textures == null ? new ArrayList<>() : new ArrayList<>(textures.getKeys(false));
+            Bukkit.getOnlinePlayers().forEach(online -> options.add(online.getName()));
+            return SubCommand.filter(options, args[1]);
         }
         if (args.length == 2 && sub.equals("give")) {
             ConfigurationSection textures = service.plugin().getConfig().getConfigurationSection("heads.textures");

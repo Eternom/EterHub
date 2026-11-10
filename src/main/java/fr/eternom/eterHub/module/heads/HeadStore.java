@@ -71,9 +71,13 @@ public class HeadStore {
             Object rare = row.get("rare");
             heads.add(new Head(row.getLong("id"), row.getString("world"), row.getInt("x"), row.getInt("y"), row.getInt("z"),
                     hunt == null || hunt.isBlank() ? Hunt.MAIN : hunt, row.getString("name"),
-                    rare != null && row.getBoolean("rare"), row.getString("block_data"), row.getString("texture"), row.getString("signature")));
+                    rare != null && row.getBoolean("rare"), row.getString("block_data"), blankToNull(row.getString("texture")), blankToNull(row.getString("signature"))));
         }
         return heads;
+    }
+
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value;
     }
 
     public boolean exists(String world, int x, int y, int z) {
@@ -113,6 +117,11 @@ public class HeadStore {
 
     public void setHunt(long id, String hunt) {
         database.update(HEADS, Map.of("hunt", hunt), Map.of("id", id));
+    }
+
+    /** Le skin de la tête (valeur « textures » en base64) ; signature vide pour une texture faite à la main. */
+    public void setSkin(long id, String texture, String signature) {
+        database.update(HEADS, Map.of("texture", texture, "signature", signature == null ? "" : signature), Map.of("id", id));
     }
 
     // ---------- Trouvailles ----------

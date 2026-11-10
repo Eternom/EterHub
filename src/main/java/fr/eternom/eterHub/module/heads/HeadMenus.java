@@ -2,12 +2,16 @@ package fr.eternom.eterHub.module.heads;
 
 import fr.eternom.eterHub.module.zone.Zone;
 import fr.eternom.eterLib.helper.gui.BackButton;
+import fr.eternom.eterLib.helper.gui.Dialogs;
 import fr.eternom.eterLib.helper.gui.Frame;
 import fr.eternom.eterLib.helper.gui.Items;
 import fr.eternom.eterLib.helper.gui.Menu;
 import fr.eternom.eterLib.helper.gui.Sounds;
 import fr.eternom.eterLib.helper.message.Messages;
 import fr.eternom.eterLib.helper.task.Tasks;
+import io.papermc.paper.registry.data.dialog.DialogBase;
+import io.papermc.paper.registry.data.dialog.body.DialogBody;
+import io.papermc.paper.registry.data.dialog.input.DialogInput;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -33,7 +37,7 @@ import java.util.Map;
  * - /heads (joueurs) : les chasses ouvertes (s'il y en a plusieurs), puis les lieux avec « 2/5 », puis les têtes d'un
  *   lieu (trouvée : son nom et sa date ; sinon « ??? ») ; un bouton d'indice (chaud / froid) ;
  * - /eterhub head list (staff) : toutes les têtes, les moins trouvées d'abord (lieu, chasse, nom, rare, trouvée par
- *   combien de chasseurs) ; clic = s'y téléporter.
+ *   combien de chasseurs) ; clic = l'éditer (nom, rare, chasse, skin, retrait), clic droit = s'y téléporter.
  */
 public class HeadMenus {
 
@@ -44,9 +48,11 @@ public class HeadMenus {
     private final HeadService service;
     private final Messages messages;
     private final BackButton back;
+    private final HeadEdits edits;
 
-    public HeadMenus(HeadService service, BackButton back) {
+    public HeadMenus(HeadService service, HeadEdits edits, BackButton back) {
         this.service = service;
+        this.edits = edits;
         this.messages = service.messages();
         this.back = back;
     }
@@ -232,12 +238,16 @@ public class HeadMenus {
 
     // ---------- Staff ----------
 
-    /** Toutes les têtes, les moins trouvées d'abord ; clic = s'y téléporter. */
+    /** Toutes les têtes, les moins trouvées d'abord ; clic = l'éditer, clic droit = s'y téléporter. */
     public void openStaffList(Player player) {
+        openStaffList(player, 0);
+    }
+
+    void openStaffList(Player player, int page) {
         Tasks.async(service.plugin(), player, () -> new Object[]{service.foundCounts(), service.store().hunters()},
                 data -> {
                     @SuppressWarnings("unchecked") Map<Long, Integer> counts = (Map<Long, Integer>) data[0];
-                    player.openInventory(new StaffList(player, counts, (int) data[1], 0).getInventory());
+                    player.openInventory(new StaffList(player, counts, (int) data[1], page).getInventory());
                 }, () -> messages.send(player, "error.generic"));
     }
 
@@ -297,11 +307,139 @@ public class HeadMenus {
                 return;
             }
             HeadStore.Head head = headAt.get(slot);
-            World world = head == null ? null : Bukkit.getWorld(head.world());
-            if (world != null) {
-                player.closeInventory();
-                player.teleportAsync(new Location(world, head.x() + 0.5, head.y() + 1, head.z() + 0.5, player.getLocation().getYaw(), 30),
-                        PlayerTeleportEvent.TeleportCause.PLUGIN);
+            if (head == null) {
+                return;
+            }
+            if (click.isRightClick()) {
+                teleport(player, head);
+                return;
+            }
+            Sounds.click(player);
+            player.openInventory(new EditMenu(player, head, counts.getOrDefault(head.id(), 0), hunters, page).getInventory());
+        }
+
+        @Override
+        public Inventory getInventory() {
+            return inventory;
+        }
+    }
+    private void teleport(Player player, HeadStore.Head head) {
+        World world = Bukkit.getWorld(head.world());
+        if (world != null) {
+            player.closeInventory();
+            player.teleportAsync(new Location(world, head.x() + 0.5, head.y() + 1, head.z() + 0.5, player.getLocation().getYaw(), 30),
+                    PlayerTeleportEvent.TeleportCause.PLUGIN);
+        }
+    }
+
+    /** Le menu d'édition d'une tête (/eterhub head edit en la visant) ; retour : la liste à cette page. */
+    void openEdit(Player player, HeadStore.Head head, int page) {
+        Tasks.async(service.plugin(), player, () -> new Object[]{service.foundCounts(), service.store().hunters()},
+                data -> {
+                    @SuppressWarnings("unchecked") Map<Long, Integer> counts = (Map<Long, Integer>) data[0];
+                    player.openInventory(new EditMenu(player, head, counts.getOrDefault(head.id(), 0), (int) data[1], page).getInventory());
+                }, () -> messages.send(player, "error.generic"));
+    }
+
+    private static String nameOf(HeadStore.Head head) {
+        return head.name() == null || head.name().isEmpty() ? "-" : head.name();
+    }
+
+    /**
+     * Éditer une tête : nom (fenêtre de saisie), rare, chasse (clic : la suivante, clic droit : la précédente), skin
+     * (pseudo, texture ou URL), y aller, la retirer (Maj + clic), retour à la liste.
+     */
+    private final class EditMenu implements Menu {
+
+        private static final int INFO = 4;
+        private static final int NAME = 10;
+        private static final int RARE = 11;
+        private static final int HUNT = 12;
+        private static final int SKIN = 13;
+        private static final int TP = 14;
+        private static final int REMOVE = 16;
+        private static final int BACK = 22;
+        private final Inventory inventory;
+        private final HeadStore.Head head;
+        private final int foundBy;
+        private final int hunters;
+        private final int page;
+
+        EditMenu(Player viewer, HeadStore.Head head, int foundBy, int hunters, int page) {
+            this.head = head;
+            this.foundBy = foundBy;
+            this.hunters = hunters;
+            this.page = page;
+            inventory = Bukkit.createInventory(this, 27, messages.get(viewer, "editor.head.edit.title", "id", String.valueOf(head.id())));
+            Frame.draw(inventory, Material.RED_STAINED_GLASS_PANE);
+            inventory.setItem(INFO, service.display(head,
+                    messages.get(viewer, "editor.head.list-name", "id", String.valueOf(head.id()), "name", nameOf(head)),
+                    List.of(messages.get(viewer, "editor.head.list-hunt", "hunt", service.huntName(viewer, head.hunt())),
+                            messages.get(viewer, "editor.head.list-zone", "zone", service.zoneName(viewer, service.zoneOf(head))),
+                            messages.get(viewer, "editor.head.list-found", "count", String.valueOf(foundBy), "hunters", String.valueOf(hunters)),
+                            messages.get(viewer, "editor.head.list-at", "x", String.valueOf(head.x()), "y", String.valueOf(head.y()),
+                                    "z", String.valueOf(head.z()))), head.rare()));
+            inventory.setItem(NAME, Items.item(Material.NAME_TAG, messages.get(viewer, "editor.head.edit.name"),
+                    List.of(messages.get(viewer, "editor.head.edit.name-lore", "name", nameOf(head)))));
+            inventory.setItem(RARE, Items.item(head.rare() ? Material.NETHER_STAR : Material.GRAY_DYE, messages.get(viewer, "editor.head.edit.rare"),
+                    List.of(messages.get(viewer, head.rare() ? "editor.head.edit.rare-on" : "editor.head.edit.rare-off")), head.rare()));
+            inventory.setItem(HUNT, Items.item(Material.COMPASS, messages.get(viewer, "editor.head.edit.hunt"),
+                    List.of(messages.get(viewer, "editor.head.edit.hunt-lore", "hunt", service.huntName(viewer, head.hunt())))));
+            inventory.setItem(SKIN, Items.item(Material.PLAYER_HEAD, messages.get(viewer, "editor.head.edit.skin"),
+                    List.of(messages.get(viewer, "editor.head.edit.skin-lore"))));
+            inventory.setItem(TP, Items.item(Material.ENDER_PEARL, messages.get(viewer, "editor.head.edit.tp"), List.of()));
+            inventory.setItem(REMOVE, Items.item(Material.BARRIER, messages.get(viewer, "editor.head.edit.remove"),
+                    List.of(messages.get(viewer, "editor.head.edit.remove-lore"))));
+            inventory.setItem(BACK, Items.item(Material.ARROW, messages.get(viewer, "editor.head.edit.back"), List.of()));
+        }
+
+        /** Après une modification : ce menu, relu (ou la liste si la tête n'est plus là). */
+        private Runnable afterEdit(Player player) {
+            return () -> {
+                if (!player.isOnline()) {
+                    return;
+                }
+                HeadStore.Head fresh = service.byId(head.id());
+                if (fresh == null) {
+                    openStaffList(player, page);
+                } else {
+                    player.openInventory(new EditMenu(player, fresh, foundBy, hunters, page).getInventory());
+                }
+            };
+        }
+
+        @Override
+        public void onClick(Player player, int slot, ClickType click) {
+            switch (slot) {
+                case NAME -> askText(player, "name", head.name() == null ? "" : head.name(), 64,
+                        text -> edits.rename(player, head, text, afterEdit(player)), afterEdit(player));
+                case RARE -> edits.toggleRare(player, head, afterEdit(player));
+                case HUNT -> {
+                    List<String> hunts = new ArrayList<>(service.hunts().keySet());
+                    if (hunts.size() < 2) {
+                        Sounds.refuse(player);
+                        return;
+                    }
+                    int index = hunts.indexOf(head.hunt());
+                    int next = Math.floorMod(index + (click.isRightClick() ? -1 : 1), hunts.size());
+                    edits.move(player, head, hunts.get(next), afterEdit(player));
+                }
+                case SKIN -> askText(player, "skin", "", 1024, text -> edits.skin(player, head, text, afterEdit(player)), afterEdit(player));
+                case TP -> teleport(player, head);
+                case REMOVE -> {
+                    if (!click.isShiftClick()) {
+                        Sounds.refuse(player);
+                        messages.send(player, "editor.head.edit.remove-shift");
+                        return;
+                    }
+                    edits.remove(player, head, () -> openStaffList(player, page));
+                }
+                case BACK -> {
+                    Sounds.page(player);
+                    openStaffList(player, page);
+                }
+                default -> {
+                }
             }
         }
 
@@ -309,5 +447,20 @@ public class HeadMenus {
         public Inventory getInventory() {
             return inventory;
         }
+    }
+
+    /** Fenêtre de saisie (editor.head.edit.<key>-title / -body / -label) ; Annuler : onCancel. */
+    private void askText(Player player, String key, String initial, int max, java.util.function.Consumer<String> action, Runnable onCancel) {
+        player.closeInventory();
+        DialogBase base = DialogBase.builder(messages.get(player, "editor.head.edit." + key + "-title"))
+                .body(List.of(DialogBody.plainMessage(messages.get(player, "editor.head.edit." + key + "-body"))))
+                .inputs(List.of(DialogInput.text("value", messages.get(player, "editor.head.edit." + key + "-label"))
+                        .initial(initial).maxLength(max).build()))
+                .build();
+        Dialogs.show(service.plugin(), player, base, messages.get(player, "editor.head.edit.confirm"), messages.get(player, "editor.head.edit.cancel"),
+                response -> {
+                    String value = response.getText("value");
+                    action.accept(value == null ? "" : value.trim());
+                }, onCancel);
     }
 }
