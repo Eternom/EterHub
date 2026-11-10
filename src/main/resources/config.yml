@@ -329,10 +329,52 @@ parkour:
   reward-first: []
   reward-record: []
 
-# Chasse aux têtes : poser une tête de joueur, la viser, /eterhub head add.
+# Chasse aux têtes : poser une tête de joueur, la viser, /eterhub head add [chasse] ; ou /eterhub head give
+# [texture|pseudo] [chasse] puis la poser en mode construction (ajoutée toute seule). /heads : le menu des joueurs.
+# Récompenses : commandes console ({player}) ou « action: ... ». Chasse principale ici ; chasses à thème : hunts.
 heads:
   reward-each: []
+  reward-rare: []
   reward-all: []
+  # Paliers de la chasse principale : nombre de têtes -> récompenses.
+  milestones:
+    "5": []
+    "10": []
+    "20": []
+  # Annonce sur tous les lobbys quand quelqu'un trouve toutes les têtes d'une chasse (avec son rang d'arrivée).
+  announce-complete: true
+  # /heads hint : chaud / froid vers la tête non trouvée la plus proche ; seulement s'il en manque au plus max-missing
+  # (0 = toujours), une fois toutes les cooldown-seconds.
+  hint:
+    enabled: true
+    cooldown-seconds: 60
+    max-missing: 5
+  # Les têtes non trouvées scintillent pour le joueur qui passe à moins de distance blocs.
+  sparkle:
+    enabled: true
+    distance: 10
+  # Textures prêtes pour /eterhub head give <id> : la valeur « textures » (base64) d'une tête,
+  # ex. depuis minecraft-heads.com (champ « Value »). Sans texture : /eterhub head give <pseudo> donne son skin.
+  textures: {}
+  # Chasses à thème : ouvertes entre start et end (MM-JJ, chaque année ; peut passer le Nouvel An). Fermée, ses têtes ne
+  # comptent plus et disparaissent si hide-when-closed (reposées à la réouverture). Nom : lang/ heads.hunts.<id>.
+  hunts:
+    halloween:
+      start: "10-20"
+      end: "11-02"
+      hide-when-closed: true
+      reward-each: []
+      reward-rare: []
+      reward-all: []
+      milestones: {}
+    noel:
+      start: "12-15"
+      end: "01-05"
+      hide-when-closed: true
+      reward-each: []
+      reward-rare: []
+      reward-all: []
+      milestones: {}
 
 # Hologrammes : /eterhub holo create <id> <text|players|board|progress> [argument]
 #   players <serveur> · board <classement> [time|grams|minutes] (success, playtime_total, monthly_general, clans,

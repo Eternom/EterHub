@@ -50,6 +50,10 @@ commands:
     description: La visite guidée du village.
     usage: /tour [skip|restart]
     permission: eterhub.play
+  heads:
+    description: La chasse aux têtes (menu par lieu, indice chaud / froid).
+    usage: /heads [hint]
+    permission: eterhub.play
   eterhub:
     description: Administration des lobbys (staff).
     usage: /eterhub <zone|spawn|pad|holo|parkour|head|event|announce|build|setting|maintenance|log|stats|reload|info>

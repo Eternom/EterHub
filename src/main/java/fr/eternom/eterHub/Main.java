@@ -6,7 +6,11 @@ import fr.eternom.eterHub.module.activity.Fishing;
 import fr.eternom.eterHub.module.activity.FishingStore;
 import fr.eternom.eterHub.module.activity.FishItems;
 import fr.eternom.eterHub.module.activity.Fishmonger;
-import fr.eternom.eterHub.module.activity.Heads;
+import fr.eternom.eterHub.module.heads.HeadCommand;
+import fr.eternom.eterHub.module.heads.HeadEditor;
+import fr.eternom.eterHub.module.heads.HeadMenus;
+import fr.eternom.eterHub.module.heads.HeadService;
+import fr.eternom.eterHub.module.heads.HeadStore;
 import fr.eternom.eterHub.module.activity.HubEvents;
 import fr.eternom.eterHub.module.activity.Parkour;
 import fr.eternom.eterHub.module.activity.ParkourStore;
@@ -134,7 +138,8 @@ public final class Main extends JavaPlugin {
         archaeology = new Archaeology(this, zones, database, settings, stats, messages,
                 lib.backButton(getConfig().getString("menus.activities.back-command", "")));
         Parkour parkour = new Parkour(this, new ParkourStore(database), settings, stats, messages, bus);
-        Heads heads = new Heads(this, database, settings, stats, messages, bus);
+        HeadService heads = new HeadService(this, new HeadStore(database), zones, settings, stats, messages, bus);
+        HeadMenus headMenus = new HeadMenus(heads, lib.backButton(getConfig().getString("menus.activities.back-command", "")));
         HubEvents events = new HubEvents(this, settings, messages, bus);
 
         // Arrivée
@@ -194,7 +199,8 @@ public final class Main extends JavaPlugin {
         admin.add("pad", pads);
         admin.add("holo", holograms);
         admin.add("parkour", parkour);
-        admin.add("head", heads);
+        admin.add("head", new HeadEditor(heads, headMenus, settings));
+        register("heads", new HeadCommand(heads, headMenus));
         admin.add("event", events);
         admin.add("announce", events.announcer());
         admin.add("build", build);
@@ -203,6 +209,14 @@ public final class Main extends JavaPlugin {
         this.reloadLocal = () -> reloadLocal(settings, zones, fishing, protection);
 
         HubActions.register(this, messages, network, spawnCommands, zones, map, visibility, fishing, fishmonger, archaeology, tour);
+        // Le chasseur de têtes (PNJ) : le menu, et le lieu où il manque le plus de têtes au joueur
+        lib.getActions().register(this, "eterhub:heads", "La chasse aux têtes (menu et indice)", List.of(), (player, args) -> {
+            headMenus.open(player);
+            String zone = heads.mostMissingZone(player.getUniqueId());
+            if (!zone.isEmpty()) {
+                messages.send(player, "heads.npc-hint", "zone", heads.zoneName(player, zone));
+            }
+        });
         getServer().getServicesManager().register(HubApi.class,
                 new HubApiService(spawn, network, zones, map, heads, parkour, tour), this, ServicePriority.Normal);
         getServer().getServicesManager().register(RankingSource.class, fishingStore.monthly(), this, ServicePriority.Normal);
@@ -223,7 +237,7 @@ public final class Main extends JavaPlugin {
         pads.reload();
         cosmetics.start();
         parkour.start();
-        heads.reload();
+        heads.start();
         events.start();
         holograms.start();
         tips.start();
@@ -252,14 +266,11 @@ public final class Main extends JavaPlugin {
     }
 
     /** Progression au village d'un joueur connecté ici (hologramme « progress », profil). */
-    private List<Component> progress(Player player, ZoneService zones, Heads heads, Archaeology archaeology) {
+    private List<Component> progress(Player player, ZoneService zones, HeadService heads, Archaeology archaeology) {
         List<Component> lines = new ArrayList<>();
         lines.add(messages.get(player, "progress.discoveries", "count", String.valueOf(zones.discoveredCount(player.getUniqueId())),
                 "total", String.valueOf(zones.discoverableCount())));
-        if (heads.total() > 0) {
-            lines.add(messages.get(player, "progress.heads", "count", String.valueOf(heads.foundBy(player.getUniqueId())),
-                    "total", String.valueOf(heads.total())));
-        }
+        lines.addAll(heads.progress(player));
         int[] museum = archaeology.progress(player.getUniqueId());
         if (museum[1] > 0) {
             lines.add(messages.get(player, "progress.museum", "count", String.valueOf(museum[0]), "total", String.valueOf(museum[1])));
@@ -267,12 +278,12 @@ public final class Main extends JavaPlugin {
         return lines;
     }
 
-    private List<String> info(EterLib lib, ZoneService zones, Heads heads, Parkour parkour) {
+    private List<String> info(EterLib lib, ZoneService zones, HeadService heads, Parkour parkour) {
         return List.of(
                 "<primary>EterHub " + getPluginMeta().getVersion() + " <dark_gray>· <info>" + lib.getServerName(),
                 "<info>Joueurs ici : <accent>" + Bukkit.getOnlinePlayers().size(),
                 "<info>Lieux tracés : <accent>" + zones.index().size() + "/" + zones.zones().size(),
-                "<info>Têtes : <accent>" + heads.total() + " <dark_gray>· <info>Parcours : <accent>" + parkour.courses().size(),
+                "<info>Têtes : <accent>" + heads.heads().size() + " <dark_gray>· <info>Parcours : <accent>" + parkour.courses().size(),
                 "<info>Lobbys : <accent>" + String.join(", ", network.lobbiesView()),
                 "<info>Maintenance : <accent>" + (network.maintenance().isEmpty() ? "-" : String.join(", ", network.maintenance().keySet())));
     }

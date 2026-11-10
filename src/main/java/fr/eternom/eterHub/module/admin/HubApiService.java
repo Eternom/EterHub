@@ -1,7 +1,7 @@
 package fr.eternom.eterHub.module.admin;
 
 import fr.eternom.eterHub.api.HubApi;
-import fr.eternom.eterHub.module.activity.Heads;
+import fr.eternom.eterHub.module.heads.HeadService;
 import fr.eternom.eterHub.module.activity.Parkour;
 import fr.eternom.eterHub.module.network.NetworkGui;
 import fr.eternom.eterHub.module.spawn.Spawn;
@@ -21,11 +21,11 @@ public class HubApiService implements HubApi {
     private final NetworkGui network;
     private final ZoneService zones;
     private final VillageMap map;
-    private final Heads heads;
+    private final HeadService heads;
     private final Parkour parkour;
     private final Tour tour;
 
-    public HubApiService(Spawn spawn, NetworkGui network, ZoneService zones, VillageMap map, Heads heads, Parkour parkour, Tour tour) {
+    public HubApiService(Spawn spawn, NetworkGui network, ZoneService zones, VillageMap map, HeadService heads, Parkour parkour, Tour tour) {
         this.spawn = spawn;
         this.network = network;
         this.zones = zones;
@@ -82,7 +82,7 @@ public class HubApiService implements HubApi {
 
     @Override
     public int[] heads(Player player) {
-        return new int[]{heads.foundBy(player.getUniqueId()), heads.total()};
+        return new int[]{heads.count(player.getUniqueId(), "main"), heads.total("main")};
     }
 
     @Override

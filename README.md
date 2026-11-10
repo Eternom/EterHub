@@ -25,7 +25,8 @@ l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans
 | `spawn` | `Spawn` (spawn principal + points d'arrivée), `ArrivalListener` (lecture à l'arrivée dans `AsyncPlayerSpawnLocationEvent` priorité LOW : une téléportation réseau d'EterLib passe après et l'emporte), `Tour` (visite guidée), `VoidListener` |
 | `protect` | `ProtectionListener` (tout le village figé et protégé), `BuildMode` (`/eterhub build`) |
 | `movement` | `MovementListener` (double saut), `Pads` (lanceurs, ascenseurs, vitesse, téléporteurs, trampolines), `Cosmetics` (traînées et auras par permission) |
-| `activity` | `Fishing` (pêche à la canne au lac ; poissons = vrais objets marqués `eterhub:fish`, `rarity`, `grams` ; Chance de la mer favorise les raretés ; record par espèce ; carnet), `Fishmonger` (rachat : rareté + poids, poisson du jour ×2), `FishPrices` (testé), `Archaeology` (fouilles, musée), `Parkour`, `Heads`, `HubEvents` (évènements, annonces), `LootTable`/`ParkourTime` (logique pure, testée) |
+| `activity` | `Fishing` (pêche à la canne au lac ; poissons = vrais objets marqués `eterhub:fish`, `rarity`, `grams` ; Chance de la mer favorise les raretés ; record par espèce ; carnet), `Fishmonger` (rachat : rareté + poids, poisson du jour ×2), `FishPrices` (testé), `Archaeology` (fouilles, musée), `Parkour`, `HubEvents` (évènements, annonces), `LootTable`/`ParkourTime` (logique pure, testée) |
+| `heads` | `Hunt` (chasse principale et chasses à thème datées, testée), `HeadStore`, `HeadService` (trouver, paliers, fin avec rang et annonce, indices, scintillement, têtes cachées quand la chasse est fermée), `HeadMenus` (/heads, liste du staff), `HeadEditor`, `HeadCommand` |
 | `display` | `Holograms` (TextDisplay non gardés dans le monde : text, players, board, progress), `Tips` |
 | `network` | `NetworkGui` (sélecteur, lobbys, maintenance, Reprendre), `ServerMenu`, `LobbyMenu`, `PortalListener` |
 | `social` | `Visibility` (4 modes), `Seats`, `Profiles`, `FriendsView` (EterFriend / EterClan isolés dans `FriendLink` / `ClanLink`) |
@@ -38,6 +39,7 @@ l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans
 | `/spawn` · `/servers` · `/lobbies` · `/map` · `/tour [skip\|restart]` | Navigation |
 | `/visibility [all\|friends\|staff\|none]` | Qui l'on voit |
 | `/fishing` · `/museum` · `/parkour [<parcours>\|top <parcours>\|quit\|back]` | Activités |
+| `/heads [hint]` | Chasse aux têtes : menu par lieu, indice chaud / froid |
 
 | Staff (`eterhub.admin`) | |
 |---|---|
@@ -46,7 +48,7 @@ l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans
 | `/eterhub pad add <launch\|elevator\|speed\|teleport> [force] [hauteur] [fixe]\|mark\|remove\|list` | Plaques (bloc où l'on est) |
 | `/eterhub holo list\|create\|addline\|setline\|removeline\|move\|delete` | Hologrammes |
 | `/eterhub parkour list\|start\|checkpoint\|undo\|finish\|delete <parcours>` | Parcours |
-| `/eterhub head add\|remove\|count` | Chasse aux têtes (en visant la tête) |
+| `/eterhub head add [chasse]\|remove\|name <texte>\|rare\|hunt <chasse>\|give [texture\|pseudo] [chasse]\|list\|check [fix]\|count` | Chasse aux têtes (en visant la tête ; give : une tête prête, ajoutée en la posant en mode construction) |
 | `/eterhub event start <minutes> <nom>\|stop` · `/eterhub announce <texte>` | Évènements, annonces (tous les lobbys) |
 | `/eterhub setting [<chemin> [valeur]\|reset <chemin>]` | Réglages communs, en base |
 | `/eterhub maintenance <serveur> on\|off` · `log [n]` · `stats [jours] [préfixe]` · `reload` · `info` | Staff |
@@ -54,7 +56,7 @@ l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans
 
 ## Actions EterLib (PNJ, menus)
 
-`eterhub:servers`, `lobbies`, `spawn`, `server <nom>`, `zone <lieu>`, `map`, `visibility`, `fishing`, `fishmonger` (poissonnier : rachat des poissons du lac, EterEconomy), `fishing-journal`, `museum`,
+`eterhub:servers`, `lobbies`, `spawn`, `server <nom>`, `zone <lieu>`, `map`, `visibility`, `fishing`, `fishmonger` (poissonnier : rachat des poissons du lac, EterEconomy), `fishing-journal`, `heads` (menu et indice du lieu où il en manque le plus), `museum`,
 `tour [restart]`, `soon <quoi>`, `door <lieu>` (config `doors`) ; conditions `?eterhub:discovered <lieu>`,
 `?eterhub:in-zone <lieu>`. Un lieu réservé peut demander une condition d'EterLib (`access.condition`, ex :
 `?eterjob:rank mineur expert`), testée seulement si elle est fournie sur ce serveur.
@@ -62,15 +64,15 @@ l'orchestrateur n'a rien à régler. Chaque changement d'éditeur est noté dans
 ## API
 
 `HubApi` (spawn, menus, lieu d'un joueur, découvertes, aller à un lieu, carte, têtes, parcours, visite) et les
-événements `HubZoneEnterEvent` (entrée dans un lieu, première visite) et `HubActivityEvent` (pêche, fouille, parcours,
+événements `HubZoneEnterEvent` (entrée dans un lieu, première visite), `HubHeadFoundEvent` (tête trouvée : son lieu, sa chasse, rare, progression) et `HubActivityEvent` (pêche, fouille, parcours,
 tête, village découvert, visite finie) : de quoi brancher EterQuest / BetonQuest et des succès.
-Classements EterLib fournis : `hub_fishing` (plus belle prise du mois, en grammes), `hub_parkour_<parcours>` (meilleur
+Classements EterLib fournis : `hub_fishing` (plus belle prise du mois, en grammes), `hub_heads` (têtes trouvées, chasse principale), `hub_heads_finishers` (ordre d'arrivée), `hub_parkour_<parcours>` (meilleur
 temps, en millisecondes).
 
 ## Tables
 
 `eterhub_settings`, `settings_log`, `stats`, `players`, `preferences`, `lobbies`, `spawn`, `zones`, `discoveries`,
-`pads`, `holograms`, `catches`, `finds`, `parkour_points`, `parkour_times`, `heads`, `heads_found`.
+`pads`, `holograms`, `catches`, `finds`, `parkour_points`, `parkour_times`, `heads`, `heads_found`, `heads_finished`.
 Redis : `eterhub:event` (évènement en cours), `eterhub:maintenance` (serveurs en maintenance).
 
 ## Technique
