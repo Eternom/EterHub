@@ -57,11 +57,11 @@ zones:
     name: "<accent>Les Champs"
     subtitle: "<info>Les terres du village"
   champs-ble-ouest:
-    name: "<accent>Blés de l'Ouest"
+    name: "<accent>Grand champ de l'Ouest"
   champs-ble-sud:
     name: "<accent>Blés du Sud"
   champs-ble-est:
-    name: "<accent>Grand champ de blé"
+    name: "<accent>Petit champ de l'Est"
   champs-carottes:
     name: "<accent>Champ de carottes"
   champs-patates:

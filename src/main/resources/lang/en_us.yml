@@ -54,11 +54,11 @@ zones:
     name: "<accent>The Fields"
     subtitle: "<info>The village farmland"
   champs-ble-ouest:
-    name: "<accent>West wheat fields"
+    name: "<accent>Great western field"
   champs-ble-sud:
     name: "<accent>South wheat fields"
   champs-ble-est:
-    name: "<accent>Great wheat field"
+    name: "<accent>Small eastern field"
   champs-carottes:
     name: "<accent>Carrot field"
   champs-patates:
