@@ -1,5 +1,7 @@
 package fr.eternom.eterHub.module.social;
 
+import fr.eternom.eterLib.helper.gui.BackButton;
+import fr.eternom.eterLib.EterLib;
 import fr.eternom.eterHub.module.core.HubSettings;
 import fr.eternom.eterHub.module.zone.ZoneService;
 import fr.eternom.eterLib.helper.gui.Frame;
@@ -83,6 +85,8 @@ public class Profiles implements Listener {
     private final class ProfileMenu implements Menu {
 
         private static final int ADD_FRIEND = 15;
+        private static final int BACK = 22;
+        private final BackButton back = EterLib.get().backButton("close");
         private final Inventory inventory;
         private final String targetName;
         private final boolean canAdd;
@@ -110,10 +114,15 @@ public class Profiles implements Listener {
                 inventory.setItem(ADD_FRIEND, Items.item(Material.EMERALD, messages.get(viewer, "profile.add-friend"),
                         List.of(messages.get(viewer, "profile.add-friend-lore", "player", target.getName()))));
             }
+            inventory.setItem(BACK, back.item(viewer));
         }
 
         @Override
         public void onClick(Player player, int slot, ClickType click) {
+            if (slot == BACK) {
+                back.click(player);
+                return;
+            }
             if (slot == ADD_FRIEND && canAdd) {
                 Sounds.click(player);
                 player.closeInventory();
