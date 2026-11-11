@@ -193,6 +193,7 @@ visibility:
     none: "personne"
 
 profile:
+  actions: "<accent>Clic <dark_gray>· <info>message, téléportation, payer, signaler..."
   title: "Profil de <player>"
   name: "<accent><player>"
   playtime: "<info>Temps de jeu : <accent><hours> h"

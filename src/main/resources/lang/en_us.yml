@@ -187,6 +187,7 @@ visibility:
     none: "nobody"
 
 profile:
+  actions: "<accent>Click <dark_gray>· <info>message, teleport, pay, report..."
   title: "<player>'s profile"
   name: "<accent><player>"
   playtime: "<info>Playtime: <accent><hours> h"

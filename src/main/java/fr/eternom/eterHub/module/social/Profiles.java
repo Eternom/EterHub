@@ -84,6 +84,7 @@ public class Profiles implements Listener {
 
     private final class ProfileMenu implements Menu {
 
+        private static final int HEAD = 11;
         private static final int ADD_FRIEND = 15;
         private static final int BACK = 22;
         private final BackButton back = EterLib.get().backButton("close");
@@ -108,7 +109,7 @@ public class Profiles implements Listener {
                 lore.add(messages.get(viewer, "profile.friend"));
             }
             inventory.setItem(11, Items.head(Bukkit.createProfile(target.getUniqueId(), target.getName()),
-                    messages.get(viewer, "profile.name", "player", target.getName()), lore));
+                    messages.get(viewer, "profile.name", "player", target.getName()), withActions(viewer, lore)));
             inventory.setItem(13, Items.item(Material.FILLED_MAP, messages.get(viewer, "profile.village"), village));
             if (canAdd) {
                 inventory.setItem(ADD_FRIEND, Items.item(Material.EMERALD, messages.get(viewer, "profile.add-friend"),
@@ -117,10 +118,27 @@ public class Profiles implements Listener {
             inventory.setItem(BACK, back.item(viewer));
         }
 
+        /** La ligne « Clic · plus d'actions » quand le menu « joueur » d'EterEssential est là. */
+        private List<Component> withActions(Player viewer, List<Component> lore) {
+            if (Bukkit.getCommandMap().getCommand("menu") == null) {
+                return lore;
+            }
+            List<Component> out = new ArrayList<>(lore);
+            out.add(Component.empty());
+            out.add(messages.get(viewer, "profile.actions"));
+            return out;
+        }
+
         @Override
         public void onClick(Player player, int slot, ClickType click) {
             if (slot == BACK) {
                 back.click(player);
+                return;
+            }
+            // La tête : le menu « joueur » d'EterEssential (message, tpa, payer...), le même partout où on clique sur un joueur
+            if (slot == HEAD && Bukkit.getCommandMap().getCommand("menu") != null) {
+                Sounds.click(player);
+                player.performCommand("menu player " + targetName);
                 return;
             }
             if (slot == ADD_FRIEND && canAdd) {
