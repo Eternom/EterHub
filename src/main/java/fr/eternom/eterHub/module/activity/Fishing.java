@@ -425,7 +425,7 @@ public class Fishing implements Listener, TabExecutor {
                                         "max", String.format(Locale.FRANCE, "%.1f", entry.max()))),
                         entry.rarity() == LootTable.Rarity.LEGENDARY));
             }
-            inventory.setItem(BACK, Items.item(Material.ARROW, messages.get(viewer, "fishing.journal.back"), List.of()));
+            inventory.setItem(BACK, Items.item(Material.OAK_DOOR, messages.get(viewer, "fishing.journal.back"), List.of()));
         }
 
         @Override

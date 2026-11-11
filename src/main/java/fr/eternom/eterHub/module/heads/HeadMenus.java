@@ -116,7 +116,7 @@ public class HeadMenus {
     private final class HuntMenu implements Menu {
 
         private static final int COUNTER = 4;
-        private static final int BACK = 45;
+        private static final int BACK = 48; // 49 = astuce ; 45 = page précédente ailleurs
         private static final int HINT = 49;
         private final Inventory inventory;
         private final String hunt;
@@ -159,7 +159,7 @@ public class HeadMenus {
                     List.of(messages.get(viewer, "heads.menu.counter-lore"))));
             inventory.setItem(HINT, Items.item(Material.COMPASS, messages.get(viewer, "heads.menu.hint"),
                     List.of(messages.get(viewer, "heads.menu.hint-lore"))));
-            inventory.setItem(BACK, fromList ? Items.item(Material.ARROW, messages.get(viewer, "heads.menu.back"), List.of()) : back.item(viewer));
+            inventory.setItem(BACK, fromList ? Items.item(Material.OAK_DOOR, messages.get(viewer, "heads.menu.back"), List.of()) : back.item(viewer));
         }
 
         @Override
@@ -219,7 +219,7 @@ public class HeadMenus {
                     inventory.setItem(SLOTS[i], Items.item(Material.GRAY_DYE, messages.get(viewer, "heads.menu.missing"), lore));
                 }
             }
-            inventory.setItem(BACK, Items.item(Material.ARROW, messages.get(viewer, "heads.menu.back"), List.of()));
+            inventory.setItem(BACK, Items.item(Material.OAK_DOOR, messages.get(viewer, "heads.menu.back"), List.of()));
         }
 
         @Override
@@ -390,7 +390,7 @@ public class HeadMenus {
             inventory.setItem(TP, Items.item(Material.ENDER_PEARL, messages.get(viewer, "editor.head.edit.tp"), List.of()));
             inventory.setItem(REMOVE, Items.item(Material.BARRIER, messages.get(viewer, "editor.head.edit.remove"),
                     List.of(messages.get(viewer, "editor.head.edit.remove-lore"))));
-            inventory.setItem(BACK, Items.item(Material.ARROW, messages.get(viewer, "editor.head.edit.back"), List.of()));
+            inventory.setItem(BACK, Items.item(Material.OAK_DOOR, messages.get(viewer, "editor.head.edit.back"), List.of()));
         }
 
         /** Après une modification : ce menu, relu (ou la liste si la tête n'est plus là). */
