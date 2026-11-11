@@ -149,7 +149,7 @@ network:
     fill: "<dark_gray>▸ <bar> <info><count>/<capacity>"
     friends: "<dark_gray>▸ <success>Friends: <info><friends>"
     here: "<success>● <info>You are here"
-    online: "<success>● <info>Online <dark_gray>· <accent>click</accent> <info>to go"
+    online: "<success>● <info>Online <dark_gray>· <accent>Click <dark_gray>· <info>go there"
     offline: "<error>● <info>Offline"
     maintenance: "<gold>● <info>Under maintenance"
     full: "<error>● <info>Full"

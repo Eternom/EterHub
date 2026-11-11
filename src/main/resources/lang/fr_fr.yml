@@ -154,7 +154,7 @@ network:
     fill: "<dark_gray>▸ <bar> <info><count>/<capacity>"
     friends: "<dark_gray>▸ <success>Amis : <info><friends>"
     here: "<success>● <info>Tu es ici"
-    online: "<success>● <info>En ligne <dark_gray>· <accent>clic</accent> <info>pour y aller"
+    online: "<success>● <info>En ligne <dark_gray>· <accent>Clic <dark_gray>· <info>y aller"
     offline: "<error>● <info>Hors ligne"
     maintenance: "<gold>● <info>En maintenance"
     full: "<error>● <info>Plein"
