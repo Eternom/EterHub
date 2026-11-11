@@ -669,3 +669,6 @@ editor:
       back: "<accent>« Back to the list"
       confirm: "Confirm"
       cancel: "Cancel"
+
+menu:
+  page-of: "<dark_gray>Page <page>/<pages>"
