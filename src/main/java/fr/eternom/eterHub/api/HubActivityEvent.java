@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
  * <ul>
  *     <li>fishing / poisson (rareté dans value : 0 commun → 3 légendaire)</li>
  *     <li>dig / trouvaille de fouille</li>
- *     <li>parkour / parcours (value : temps en millisecondes ; record : nouveau record personnel)</li>
  *     <li>head / tête trouvée (value : têtes trouvées en tout)</li>
  *     <li>discovery-complete / « » (tout le village découvert)</li>
  *     <li>tour / « » (visite guidée finie)</li>

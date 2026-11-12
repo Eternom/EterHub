@@ -42,10 +42,6 @@ commands:
     description: Le musée des fouilles.
     usage: /museum
     permission: eterhub.play
-  parkour:
-    description: Les parcours (classement, abandonner, revenir au dernier point).
-    usage: /parkour [<parcours>|top <parcours>|quit|back]
-    permission: eterhub.play
   tour:
     description: La visite guidée du village.
     usage: /tour [skip|restart]
@@ -60,7 +56,7 @@ commands:
     permission: eterhub.play
   eterhub:
     description: Administration des lobbys (staff).
-    usage: /eterhub <zone|spawn|pad|holo|parkour|head|event|announce|build|setting|maintenance|log|stats|reload|info>
+    usage: /eterhub <zone|spawn|pad|holo|head|event|announce|build|setting|maintenance|log|stats|reload|info>
     permission: eterhub.use
 
 permissions:
@@ -73,7 +69,7 @@ permissions:
   eterhub.visibility:
     default: true
   eterhub.play:
-    description: Carte, pêche, musée, parcours, visite.
+    description: Carte, pêche, musée, têtes, visite.
     default: true
   eterhub.use:
     description: "Ouvre /eterhub (chaque partie demande eterhub.admin, sauf build : eterhub.build)."

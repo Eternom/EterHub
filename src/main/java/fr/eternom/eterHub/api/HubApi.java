@@ -54,8 +54,20 @@ public interface HubApi {
     /** Têtes trouvées / total, pour un joueur connecté ici. */
     int[] heads(Player player);
 
-    /** Le joueur fait un parcours en ce moment. */
-    boolean inParkour(Player player);
+    /** Le joueur est occupé par l'activité d'un autre plugin (ex : un parcours) : l'un d'eux le dit. Depuis 2.15.0. */
+    boolean isBusy(Player player);
+
+    /**
+     * Un plugin déclare quand un joueur est occupé chez lui (ex : pendant un parcours) : pas de double saut ni de
+     * plaques, cosmétiques cachés, astuces en pause. Thread principal. Depuis 2.15.0.
+     */
+    void addBusy(java.util.function.Predicate<Player> busy);
+
+    /**
+     * Chute dans le vide : handler renvoie true s'il s'en occupe (ex : retour au dernier point d'un parcours) ; sinon
+     * (aucun), retour au spawn. Thread principal. Depuis 2.15.0.
+     */
+    void addVoidHandler(java.util.function.Predicate<Player> handler);
 
     /** La visite guidée (depuis le début si restart). Thread principal. */
     void startTour(Player player, boolean restart);

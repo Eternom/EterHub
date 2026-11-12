@@ -1,8 +1,8 @@
 package fr.eternom.eterHub.module.admin;
 
+import java.util.List;
 import fr.eternom.eterHub.api.HubApi;
 import fr.eternom.eterHub.module.heads.HeadService;
-import fr.eternom.eterHub.module.activity.Parkour;
 import fr.eternom.eterHub.module.network.NetworkGui;
 import fr.eternom.eterHub.module.spawn.Spawn;
 import fr.eternom.eterHub.module.spawn.Tour;
@@ -22,16 +22,19 @@ public class HubApiService implements HubApi {
     private final ZoneService zones;
     private final VillageMap map;
     private final HeadService heads;
-    private final Parkour parkour;
+    private final List<java.util.function.Predicate<Player>> busy;
+    private final List<java.util.function.Predicate<Player>> voidHandlers;
     private final Tour tour;
 
-    public HubApiService(Spawn spawn, NetworkGui network, ZoneService zones, VillageMap map, HeadService heads, Parkour parkour, Tour tour) {
+    public HubApiService(Spawn spawn, NetworkGui network, ZoneService zones, VillageMap map, HeadService heads, Tour tour,
+                         List<java.util.function.Predicate<Player>> busy, List<java.util.function.Predicate<Player>> voidHandlers) {
         this.spawn = spawn;
         this.network = network;
         this.zones = zones;
         this.map = map;
         this.heads = heads;
-        this.parkour = parkour;
+        this.busy = busy;
+        this.voidHandlers = voidHandlers;
         this.tour = tour;
     }
 
@@ -86,8 +89,18 @@ public class HubApiService implements HubApi {
     }
 
     @Override
-    public boolean inParkour(Player player) {
-        return parkour.running(player);
+    public boolean isBusy(Player player) {
+        return busy.stream().anyMatch(test -> test.test(player));
+    }
+
+    @Override
+    public void addBusy(java.util.function.Predicate<Player> test) {
+        busy.add(test);
+    }
+
+    @Override
+    public void addVoidHandler(java.util.function.Predicate<Player> handler) {
+        voidHandlers.add(handler);
     }
 
     @Override

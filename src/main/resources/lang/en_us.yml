@@ -403,27 +403,6 @@ archaeology:
     unknown: "<dark_gray>???"
     amount: "<info>Found <accent><count></accent> times"
 
-parkour:
-  started: "<success>Course <accent><course></accent> started! <dark_gray>(<count> checkpoints · double Shift = back)"
-  checkpoint: "<info>Checkpoint <accent><count>/<total></accent> <dark_gray>· <accent><time>"
-  missed: "<error>You are missing <accent><count></accent> checkpoint(s)."
-  timer: "<accent><time></accent> <dark_gray>· <info>checkpoints <count>/<total>"
-  finish-title: "<success>Finish!"
-  finish-subtitle: "<info><time>"
-  finish-record: "<gold>New record: <time>"
-  finished: "<info>Course <accent><course></accent> done in <accent><time></accent> <dark_gray>(record: <best>)"
-  record: "<gold>Personal record on <accent><course></accent>: <accent><time></accent>!"
-  quit: "<info>Course abandoned."
-  not-running: "<error>You are not doing a course."
-  list: "<info>Courses: <accent><courses></accent> <dark_gray>· /parkour <name>"
-  top-title: "<primary>Ranking · <course>"
-  top-line: "<accent><rank>. <info><player> <dark_gray>· <accent><time>"
-  top-you: "<info>You: <accent><time></accent> <dark_gray>(#<rank> · <runs> finishes)"
-  top-none: "<info>You haven't finished this course yet."
-  courses:
-    mines: "The Mines"
-    grotte-glace: "The Ice Cave"
-    grotte-araignees: "The Spider Cave"
 
 heads:
   found: "<success>Head found! <accent><count>/<total>"
@@ -603,15 +582,6 @@ editor:
     deleted: "<success>Hologram <accent><id></accent> deleted."
     list: "<primary>Holograms: <count>"
     line: "<dark_gray>▸ <accent><id></accent> <info><type> <argument> <dark_gray>(<x> <y> <z>)"
-  parkour:
-    usage: "<error>/eterhub parkour list | start | checkpoint | undo | finish | delete <course>"
-    saved: "<success>Course <accent><course></accent>: <point> placed here."
-    undone: "<success>Last checkpoint of <accent><course></accent> removed."
-    deleted: "<success>Course <accent><course></accent> deleted (and its times)."
-    none: "<error>Nothing to remove for <accent><course></accent>."
-    list: "<primary>Courses: <count>"
-    line: "<success>✔ <accent><course></accent> <info><count> checkpoints"
-    line-incomplete: "<error>✘ <accent><course></accent> <info>start or finish missing"
   head:
     usage: "<error>/eterhub head add [hunt] | remove | name <text> | rare | hunt <hunt> | skin <player|texture|url> | edit | give [texture|player] [hunt] | list | check [fix] | count | reset <hunt|all> confirm"
     look: "<error>Look at a player head (6 blocks)."

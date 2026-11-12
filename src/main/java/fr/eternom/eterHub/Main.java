@@ -16,8 +16,6 @@ import fr.eternom.eterHub.module.heads.HeadMenus;
 import fr.eternom.eterHub.module.heads.HeadService;
 import fr.eternom.eterHub.module.heads.HeadStore;
 import fr.eternom.eterHub.module.activity.HubEvents;
-import fr.eternom.eterHub.module.activity.Parkour;
-import fr.eternom.eterHub.module.activity.ParkourStore;
 import fr.eternom.eterHub.module.admin.AdminCommand;
 import fr.eternom.eterHub.module.admin.HubActions;
 import fr.eternom.eterHub.module.admin.HubApiService;
@@ -147,7 +145,10 @@ public final class Main extends JavaPlugin {
         fishing.setFishOfTheDay(fishmonger::fishOfTheDay);
         archaeology = new Archaeology(this, zones, database, settings, stats, messages,
                 lib.backButton(getConfig().getString("menus.activities.back-command", "")));
-        Parkour parkour = new Parkour(this, new ParkourStore(database), settings, stats, messages, bus);
+        // Activités d'autres plugins (ex : le parkour, plugin à part) : qui est occupé, qui gère sa chute dans le vide (HubApi)
+        List<java.util.function.Predicate<Player>> busy = new java.util.concurrent.CopyOnWriteArrayList<>();
+        List<java.util.function.Predicate<Player>> voidHandlers = new java.util.concurrent.CopyOnWriteArrayList<>();
+        java.util.function.Predicate<Player> anyBusy = player -> busy.stream().anyMatch(test -> test.test(player));
         HeadService heads = new HeadService(this, new HeadStore(database), zones, settings, stats, messages, bus);
         HeadEdits headEdits = new HeadEdits(heads, settings);
         HeadMenus headMenus = new HeadMenus(heads, headEdits, lib.backButton(getConfig().getString("menus.activities.back-command", "")));
@@ -163,28 +164,22 @@ public final class Main extends JavaPlugin {
         ArrivalListener arrival = new ArrivalListener(this, players, spawn, zones, tour, settings, stats, messages,
                 List.of(discoveries::load, heads::load, archaeology::load, farming::load));
         VoidListener voidListener = new VoidListener(this, spawn, settings);
-        voidListener.setInterceptor(player -> {
-            if (parkour.running(player)) {
-                parkour.back(player);
-                return true;
-            }
-            return false;
-        });
+        voidListener.setInterceptor(player -> voidHandlers.stream().anyMatch(handler -> handler.test(player)));
 
         // Protection et mouvement
         BuildMode build = new BuildMode(messages);
         ProtectionListener protection = new ProtectionListener(this, zones, build, settings);
         Cosmetics cosmetics = new Cosmetics(this, settings);
-        cosmetics.setHidden(player -> lib.getVanish().isVanished(player.getUniqueId()) || parkour.running(player));
+        cosmetics.setHidden(player -> lib.getVanish().isVanished(player.getUniqueId()) || anyBusy.test(player));
         MovementListener movement = new MovementListener(this, zones, settings, cosmetics);
-        movement.setBusy(parkour::running);
+        movement.setBusy(anyBusy);
         Pads pads = new Pads(this, new PadStore(database), settings, messages, bus, arrival::applySpeed);
 
         // Affichages
         Function<Player, List<Component>> progress = player -> progress(player, zones, heads, archaeology);
         holograms = new Holograms(this, database, settings, messages, bus, progress);
         Tips tips = new Tips(this, zones, settings, messages);
-        tips.setBusy(parkour::running);
+        tips.setBusy(anyBusy);
 
         // Navigation et social
         network = new NetworkGui(this, lib, database, messages, settings, players, friends);
@@ -203,11 +198,10 @@ public final class Main extends JavaPlugin {
         register("map", new SimpleCommand(map::open));
         register("fishing", fishing);
         register("museum", archaeology);
-        register("parkour", parkour);
         register("tour", tour);
         AdminCommand admin = new AdminCommand(this, messages, settings, stats, network, () -> {
             reloadEverywhere(bus);
-        }, () -> info(lib, zones, heads, parkour));
+        }, () -> info(lib, zones, heads));
         admin.add("spawn", spawnCommands);
         ZoneCommand zoneCommand = new ZoneCommand(this, zones, zoneStore, map, settings, messages);
         admin.add("zone", zoneCommand);
@@ -215,7 +209,6 @@ public final class Main extends JavaPlugin {
         getServer().getPluginManager().registerEvents(zoneCommand, this);
         admin.add("pad", pads);
         admin.add("holo", holograms);
-        admin.add("parkour", parkour);
         admin.add("head", new HeadEditor(heads, headMenus, settings, headEdits));
         register("heads", new HeadCommand(heads, headMenus));
         register("harvest", farming);
@@ -251,12 +244,12 @@ public final class Main extends JavaPlugin {
             }
         });
         getServer().getServicesManager().register(HubApi.class,
-                new HubApiService(spawn, network, zones, map, heads, parkour, tour), this, ServicePriority.Normal);
+                new HubApiService(spawn, network, zones, map, heads, tour, busy, voidHandlers), this, ServicePriority.Normal);
         getServer().getServicesManager().register(RankingSource.class, fishingStore.monthly(), this, ServicePriority.Normal);
 
         // Écouteurs
         for (Listener listener : List.of(arrival, voidListener, new ZoneListener(zones, messages), protection, build, movement, pads,
-                fishing, archaeology, parkour, heads, events, tour, holograms, visibility, seats, profiles, farming,
+                fishing, archaeology, heads, events, tour, holograms, visibility, seats, profiles, farming,
                 new fr.eternom.eterHub.module.activity.QuestSignals())) {
             getServer().getPluginManager().registerEvents(listener, this);
         }
@@ -270,7 +263,6 @@ public final class Main extends JavaPlugin {
         tour.start();
         pads.reload();
         cosmetics.start();
-        parkour.start();
         heads.start();
         farming.start();
         events.start();
@@ -314,12 +306,12 @@ public final class Main extends JavaPlugin {
         return lines;
     }
 
-    private List<String> info(EterLib lib, ZoneService zones, HeadService heads, Parkour parkour) {
+    private List<String> info(EterLib lib, ZoneService zones, HeadService heads) {
         return List.of(
                 "<primary>EterHub " + getPluginMeta().getVersion() + " <dark_gray>· <info>" + lib.getServerName(),
                 "<info>Joueurs ici : <accent>" + Bukkit.getOnlinePlayers().size(),
                 "<info>Lieux tracés : <accent>" + zones.index().size() + "/" + zones.zones().size(),
-                "<info>Têtes : <accent>" + heads.heads().size() + " <dark_gray>· <info>Parcours : <accent>" + parkour.courses().size(),
+                "<info>Têtes : <accent>" + heads.heads().size(),
                 "<info>Lobbys : <accent>" + String.join(", ", network.lobbiesView()),
                 "<info>Maintenance : <accent>" + (network.maintenance().isEmpty() ? "-" : String.join(", ", network.maintenance().keySet())));
     }

@@ -25,7 +25,7 @@ import java.util.function.Supplier;
 
 /**
  * /eterhub : l'administration des lobbys (eterhub.admin ; build : eterhub.build). Chaque partie a son éditeur :
- * spawn, zone, pad, holo, parkour, head, event, annonce, build ; plus reglage, maintenance, journal, stats, reload, info.
+ * spawn, zone, pad, holo, head, event, annonce, build ; plus reglage, maintenance, journal, stats, reload, info.
  */
 public class AdminCommand implements TabExecutor {
 

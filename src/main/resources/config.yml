@@ -3,11 +3,11 @@
 # ============================================================
 #
 #  À installer seulement sur les lobbys. EterHub ne touche JAMAIS à l'inventaire (EterSync peut tourner sur un lobby) ;
-#  tout le monde y est en survie, sauf le staff (arrival.force-survival). Tout ce qui se pose en jeu (limites des lieux, spawn, plaques, hologrammes, parcours, têtes)
+#  tout le monde y est en survie, sauf le staff (arrival.force-survival). Tout ce qui se pose en jeu (limites des lieux, spawn, plaques, hologrammes, têtes)
 #  est en base, COMMUN à tous les lobbys : un nouveau lobby n'a rien à régler.
 #
 #  Réglages en jeu : les valeurs simples (oui/non, nombres, textes) des sections activities, arrival, double-jump,
-#  launch-pads, world, tips, cosmetics, social, fishing, archaeology, parkour, heads, tour, discovery et spawn-command
+#  launch-pads, world, tips, cosmetics, social, fishing, archaeology, heads, tour, discovery et spawn-command
 #  se changent avec /eterhub setting <chemin> <valeur>, pour tous les lobbys (la valeur en base l'emporte sur ce
 #  fichier ; /eterhub setting reset <chemin> y revient). Le reste : /eterhub reload (tous les lobbys).
 #  Textes : lang/ (noms des lieux, astuces, poissons, trouvailles...).
@@ -21,7 +21,6 @@ activities:
   tour: true
   fishing: true
   archaeology: true
-  parkour: true
   heads: true
   farming: true
 
@@ -583,13 +582,6 @@ archaeology:
     fragment-chronique-3: {rarity: rare, chance: 4, icon: PAPER}
     sceau-du-roi: {rarity: legendary, chance: 2, icon: HEART_OF_THE_SEA}
 
-# Parcours d'aventure : /eterhub parkour start|checkpoint|finish|undo|delete <parcours> (bloc où l'on se tient).
-# Noms : lang/ parkour.courses.<id>. Retour : deux accroupissements, une chute, ou le vide.
-parkour:
-  fall-distance: 6
-  reward-first: []
-  reward-record: []
-
 # Chasse aux têtes : poser une tête de joueur, la viser, /eterhub head add [chasse] ; ou /eterhub head give
 # [texture|pseudo] [chasse] puis la poser en mode construction (ajoutée toute seule). /heads : le menu des joueurs.
 # Récompenses : commandes console ({player}) ou « action: ... ». Chasse principale ici ; chasses à thème : hunts.
@@ -664,7 +656,7 @@ heads:
 
 # Hologrammes : /eterhub holo create <id> <text|players|board|progress> [argument]
 #   players <serveur> · board <classement> [time|grams|minutes] (success, playtime_total, monthly_general, clans,
-#   hub_fishing, hub_parkour_<id>...) · progress (chaque joueur voit la sienne).
+#   hub_fishing, et ceux d'autres plugins...) · progress (chaque joueur voit la sienne).
 holograms:
   board-size: 10
 

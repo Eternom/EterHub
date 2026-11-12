@@ -1,7 +1,6 @@
 package fr.eternom.eterHub.module.display;
 
 import com.google.gson.JsonObject;
-import fr.eternom.eterHub.module.activity.ParkourTime;
 import fr.eternom.eterHub.module.core.HubSettings;
 import fr.eternom.eterHub.module.core.SubCommand;
 import fr.eternom.eterLib.EterLib;
@@ -41,7 +40,7 @@ import java.util.function.Function;
  * - text : des lignes libres (MiniMessage) : tableau des nouveautés, des règles, panneaux « bientôt » ;
  * - players <serveur> : joueurs en ligne sur ce serveur, au-dessus de son portail ;
  * - board <classement> [time|grams] : les 10 premiers d'un classement d'EterLib (success, playtime_total,
- *   monthly_general, clans, hub_fishing, hub_parkour_<id>...), relu chaque minute (tableaux d'honneur) ;
+ *   monthly_general, clans, hub_fishing, et ceux d'autres plugins...), relu chaque minute (tableaux d'honneur) ;
  * - progress : la progression de chaque joueur, vue par lui seul (lieux découverts, têtes, musée...).
  * La première ligne d'un players / board / progress est son titre. Les entités ne sont pas gardées dans le monde :
  * recréées à chaque démarrage. Éditeur : /eterhub holo.
@@ -248,7 +247,7 @@ public class Holograms implements Listener, SubCommand {
 
     private static String value(String format, long value) {
         return switch (format.toLowerCase(Locale.ROOT)) {
-            case "time" -> ParkourTime.format(value);
+            case "time" -> fr.eternom.eterHub.module.display.TimeFormat.format(value);
             case "grams" -> String.format(Locale.FRANCE, "%.2f kg", value / 1000.0);
             case "minutes" -> value / 60 + " h " + value % 60 + " min";
             default -> String.format(Locale.FRANCE, "%,d", value);

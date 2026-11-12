@@ -40,7 +40,7 @@ public class HubStats {
         Bukkit.getScheduler().runTaskTimerAsynchronously(plugin, this::flush, 20 * 60, 20 * 60);
     }
 
-    /** Un de plus (thread quelconque). Ex : « join », « zone:lac », « parkour:mines ». */
+    /** Un de plus (thread quelconque). Ex : « join », « zone:lac », « fishing ». */
     public void add(String name) {
         pending.computeIfAbsent(name.length() > 80 ? name.substring(0, 80) : name, key -> new AtomicLong()).incrementAndGet();
     }

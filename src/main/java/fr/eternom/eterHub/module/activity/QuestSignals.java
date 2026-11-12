@@ -17,7 +17,6 @@ import java.util.Map;
  *   eterhub:zone {zone, first}              entrée dans un lieu (first : première visite)
  *   eterhub:head {hunt, zone, rare}         tête trouvée
  *   eterhub:find {find, rarity}             trouvaille des fouilles
- *   eterhub:parkour {course, ms, record}    parcours fini
  *   eterhub:tour · eterhub:discovery-complete
  *   eterhub:fish {fish, rarity, grams}      (Fishing)      eterhub:harvest {crop, quality, zone}   (Farming)
  * </pre>
@@ -45,8 +44,6 @@ public class QuestSignals implements Listener {
         switch (event.getKind()) {
             case "dig" -> QuestBridge.signal(event.getPlayer(), "eterhub:find", Map.of("find", event.getDetail(),
                     "rarity", rarity(event.getValue())), 1);
-            case "parkour" -> QuestBridge.signal(event.getPlayer(), "eterhub:parkour", Map.of("course", event.getDetail(),
-                    "ms", String.valueOf(event.getValue()), "record", String.valueOf(event.isRecord())), 1);
             case "tour", "discovery-complete" -> QuestBridge.signal(event.getPlayer(), "eterhub:" + event.getKind(), Map.of(), 1);
             default -> {
                 // fishing et harvest : signalés par Fishing et Farming (poids, qualité, lieu)

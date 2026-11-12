@@ -410,27 +410,6 @@ archaeology:
     unknown: "<dark_gray>???"
     amount: "<info>Trouvé <accent><count></accent> fois"
 
-parkour:
-  started: "<success>Parcours <accent><course></accent> lancé ! <dark_gray>(<count> points de passage · double Maj = retour)"
-  checkpoint: "<info>Point de passage <accent><count>/<total></accent> <dark_gray>· <accent><time>"
-  missed: "<error>Il te manque <accent><count></accent> point(s) de passage."
-  timer: "<accent><time></accent> <dark_gray>· <info>passages <count>/<total>"
-  finish-title: "<success>Arrivée !"
-  finish-subtitle: "<info><time>"
-  finish-record: "<gold>Nouveau record : <time>"
-  finished: "<info>Parcours <accent><course></accent> fini en <accent><time></accent> <dark_gray>(record : <best>)"
-  record: "<gold>Record personnel sur <accent><course></accent> : <accent><time></accent> !"
-  quit: "<info>Parcours abandonné."
-  not-running: "<error>Tu ne fais pas de parcours."
-  list: "<info>Parcours : <accent><courses></accent> <dark_gray>· /parkour <nom>"
-  top-title: "<primary>Classement · <course>"
-  top-line: "<accent><rank>. <info><player> <dark_gray>· <accent><time>"
-  top-you: "<info>Toi : <accent><time></accent> <dark_gray>(<rank>e · <runs> arrivées)"
-  top-none: "<info>Tu n'as pas encore fini ce parcours."
-  courses:
-    mines: "Les Mines"
-    grotte-glace: "La Grotte de glace"
-    grotte-araignees: "La Grotte aux araignées"
 
 heads:
   found: "<success>Tête trouvée ! <accent><count>/<total>"
@@ -613,15 +592,6 @@ editor:
     deleted: "<success>Hologramme <accent><id></accent> supprimé."
     list: "<primary>Hologrammes : <count>"
     line: "<dark_gray>▸ <accent><id></accent> <info><type> <argument> <dark_gray>(<x> <y> <z>)"
-  parkour:
-    usage: "<error>/eterhub parkour list | start | checkpoint | undo | finish | delete <parcours>"
-    saved: "<success>Parcours <accent><course></accent> : <point> posé ici."
-    undone: "<success>Dernier point de passage de <accent><course></accent> retiré."
-    deleted: "<success>Parcours <accent><course></accent> supprimé (et ses temps)."
-    none: "<error>Rien à retirer pour <accent><course></accent>."
-    list: "<primary>Parcours : <count>"
-    line: "<success>✔ <accent><course></accent> <info><count> passages"
-    line-incomplete: "<error>✘ <accent><course></accent> <info>départ ou arrivée manquant"
   head:
     usage: "<error>/eterhub head add [chasse] | remove | name <texte> | rare | hunt <chasse> | skin <pseudo|texture|url> | edit | give [texture|pseudo] [chasse] | list | check [fix] | count | reset <chasse|all> confirm"
     look: "<error>Vise une tête de joueur (6 blocs)."
