@@ -438,6 +438,7 @@ heads:
   found-rare: "<gold>✦ Tête rare trouvée ! <accent><count>/<total>"
   found-rare-named: "<gold>✦ Tête rare : <accent><name></accent> <dark_gray>(<count>/<total>)"
   already: "<info>Déjà trouvée <dark_gray>(<count>/<total>)"
+  zone-count: "<info>Têtes de ce lieu <dark_gray>(<zone>)</dark_gray> : <accent><count>/<total></accent> trouvées"
   closed: "<info>Cette tête fait partie de <accent><hunt></accent>, fermée pour le moment."
   milestone: "<success>Palier atteint : <accent><count></accent> têtes trouvées <dark_gray>(<hunt>)"
   all: "<gold>Tu as trouvé les <accent><total></accent> têtes de <accent><hunt></accent> ! <dark_gray>(<rank>e à finir)"

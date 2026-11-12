@@ -206,6 +206,35 @@ public class HeadService implements Listener {
         return (int) heads.stream().filter(head -> head.hunt().equals(hunt) && mine.containsKey(head.id())).count();
     }
 
+    /** En entrant dans un lieu : les têtes trouvées ici / cachées ici (chasses ouvertes), tant qu'il en manque. */
+    @EventHandler
+    public void onZoneEnter(fr.eternom.eterHub.api.HubZoneEnterEvent event) {
+        Player player = event.getPlayer();
+        String zone = event.getZone();
+        Map<Long, Long> mine = foundBy(player.getUniqueId());
+        int total = 0;
+        int done = 0;
+        for (Hunt hunt : openHunts()) {
+            for (HeadStore.Head head : headsOf(hunt.id())) {
+                if (zoneOf(head).equals(zone)) {
+                    total++;
+                    done += mine.containsKey(head.id()) ? 1 : 0;
+                }
+            }
+        }
+        if (total == 0 || done >= total) {
+            return;
+        }
+        String count = String.valueOf(done);
+        String all = String.valueOf(total);
+        // Un peu après l'arrivée : le titre du lieu passe d'abord
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (player.isOnline()) {
+                messages.actionBar(player, "heads.zone-count", "count", count, "total", all, "zone", zoneName(player, zone));
+            }
+        }, 40);
+    }
+
     public Map<Long, Long> foundBy(UUID player) {
         return found.getOrDefault(player, Map.of());
     }

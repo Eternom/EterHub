@@ -427,6 +427,7 @@ parkour:
 
 heads:
   found: "<success>Head found! <accent><count>/<total>"
+  zone-count: "<info>Heads hidden in <accent><zone></accent>: <accent><count>/<total></accent> found"
   found-named: "<success>Head found: <accent><name></accent> <dark_gray>(<count>/<total>)"
   found-rare: "<gold>✦ Rare head found! <accent><count>/<total>"
   found-rare-named: "<gold>✦ Rare head: <accent><name></accent> <dark_gray>(<count>/<total>)"
