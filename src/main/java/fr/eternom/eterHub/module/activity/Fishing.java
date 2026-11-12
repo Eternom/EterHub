@@ -248,7 +248,8 @@ public class Fishing implements Listener, TabExecutor {
                     messages.get(player, "rarity." + entry.rarity().key()).decoration(TextDecoration.ITALIC, false),
                     messages.get(player, "fishing.item.weight", "weight", weight).decoration(TextDecoration.ITALIC, false),
                     messages.get(player, "fishing.item.caught", "player", player.getName(), "date", DATE.format(LocalDate.now()))
-                            .decoration(TextDecoration.ITALIC, false)));
+                            .decoration(TextDecoration.ITALIC, false),
+                    messages.get(player, "fishing.item.sell").decoration(TextDecoration.ITALIC, false)));
             fishItems.write(meta, entry.id(), entry.rarity(), Math.round(draw.weight() * 1000));
             if (entry.rarity() == LootTable.Rarity.LEGENDARY) {
                 meta.setEnchantmentGlintOverride(true);

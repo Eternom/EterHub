@@ -243,6 +243,7 @@ fishing:
     name-legendary: "<gold><bold><fish>"
     weight: "<gray>Poids : <white><weight> kg"
     caught: "<dark_gray>Pêché au lac par <player>, le <date>"
+    sell: "<dark_gray>Se vend au poissonnier du lac"
   caught-common: "<info>Tu pêches un(e) <accent><fish></accent> de <accent><weight> kg</accent>."
   caught-uncommon: "<success>Joli ! Un(e) <accent><fish></accent> de <accent><weight> kg</accent>."
   caught-rare: "<aqua>Prise rare ! <accent><fish></accent> de <accent><weight> kg</accent> !"
@@ -322,6 +323,8 @@ farming:
     name-golden: "<gold><bold><crop> dorée"
     bonus: "<yellow>★ Parcelle du jour"
     origin: "<dark_gray>Récoltée aux Champs"
+    sell-farmer: "<dark_gray>Se vend au fermier"
+    sell-vineyard: "<dark_gray>Se vend au vigneron"
   journal:
     title: "Carnet des récoltes"
     crop: "<accent><crop>"

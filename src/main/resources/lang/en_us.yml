@@ -236,6 +236,7 @@ fishing:
     name-legendary: "<gold><bold><fish>"
     weight: "<gray>Weight: <white><weight> kg"
     caught: "<dark_gray>Caught at the lake by <player>, on <date>"
+    sell: "<dark_gray>Sells at the lake fishmonger"
   caught-common: "<info>You caught a <accent><fish></accent> of <accent><weight> kg</accent>."
   caught-uncommon: "<success>Nice! A <accent><fish></accent> of <accent><weight> kg</accent>."
   caught-rare: "<aqua>Rare catch! <accent><fish></accent> of <accent><weight> kg</accent>!"
@@ -315,6 +316,8 @@ farming:
     name-golden: "<gold><bold>Golden <crop>"
     bonus: "<yellow>★ Plot of the day"
     origin: "<dark_gray>Harvested in the Fields"
+    sell-farmer: "<dark_gray>Sells at the farmer"
+    sell-vineyard: "<dark_gray>Sells at the winegrower"
   journal:
     title: "Harvest journal"
     crop: "<accent><crop>"

@@ -416,6 +416,8 @@ public class Farming implements Listener, TabExecutor {
                 lore.add(messages.get(player, "farming.item.bonus").decoration(TextDecoration.ITALIC, false));
             }
             lore.add(messages.get(player, "farming.item.origin").decoration(TextDecoration.ITALIC, false));
+            lore.add(messages.get(player, "farming.item.sell-" + crop.buyer())
+                    .decoration(TextDecoration.ITALIC, false));
             meta.lore(lore);
             PersistentDataContainer data = meta.getPersistentDataContainer();
             data.set(cropKey, PersistentDataType.STRING, crop.id());
